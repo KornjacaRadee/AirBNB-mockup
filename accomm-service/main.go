@@ -1,8 +1,8 @@
 package main
 
 import (
+	"accomm-service/domain"
 	handlers2 "accomm-service/handlers"
-	repositories2 "accomm-service/repositories"
 	"context"
 	"log"
 	"net/http"
@@ -30,7 +30,7 @@ func main() {
 	storeLogger := log.New(os.Stdout, "[accommodation-store] ", log.LstdFlags)
 
 	// NoSQL: Initialize Product Repository store
-	store, err := repositories2.New(timeoutContext, storeLogger)
+	store, err := domain.New(timeoutContext, storeLogger)
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -53,7 +53,7 @@ func main() {
 	postRouter.HandleFunc("/", accommodationsHandler.PostAccommodation)
 	postRouter.Use(accommodationsHandler.MiddlewareAccommodationDeserialization)
 
-	router.Use(handlers2.AuthMiddleware)
+	//router.Use(handlers2.AuthMiddleware)
 
 	cors := gorillaHandlers.CORS(gorillaHandlers.AllowedOrigins([]string{"*"}))
 
@@ -82,7 +82,7 @@ func main() {
 	sig := <-sigCh
 	logger.Println("Received terminate, graceful shutdown", sig)
 
-	//Try to shutdown gracefully
+	//Try to shut down gracefully
 	if server.Shutdown(timeoutContext) != nil {
 		logger.Fatal("Cannot gracefully shutdown...")
 	}

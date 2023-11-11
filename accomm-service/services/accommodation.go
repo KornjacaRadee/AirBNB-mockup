@@ -1,14 +1,14 @@
 package services
 
 import (
-	"accomm-service/repositories"
+	"accomm-service/domain"
 )
 
 type AccommodationService struct {
-	accommodations repositories.AccommodationRepo
+	accommodations domain.AccommodationRepo
 }
 
-func NewAccommodationService(accommodations repositories.AccommodationRepo) (AccommodationService, error) {
+func NewAccommodationService(accommodations domain.AccommodationRepo) (AccommodationService, error) {
 	return AccommodationService{
 		accommodations: accommodations,
 	}, nil

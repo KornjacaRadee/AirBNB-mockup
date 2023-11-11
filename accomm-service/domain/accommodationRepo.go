@@ -1,7 +1,6 @@
-package repositories
+package domain
 
 import (
-	"accomm-service/domain"
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
@@ -68,14 +67,14 @@ func (ar *AccommodationRepo) Ping() {
 	fmt.Println(databases)
 }
 
-func (ar *AccommodationRepo) GetAll() (domain.Accommodations, error) {
+func (ar *AccommodationRepo) GetAll() (Accommodations, error) {
 	// Initialise context (after 5 seconds timeout, abort operation)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	accommodationsCollection := ar.getCollection()
 
-	var accommodations domain.Accommodations
+	var accommodations Accommodations
 	accommodationsCursor, err := accommodationsCollection.Find(ctx, bson.M{})
 	if err != nil {
 		ar.logger.Println(err)
@@ -88,7 +87,7 @@ func (ar *AccommodationRepo) GetAll() (domain.Accommodations, error) {
 	return accommodations, nil
 }
 
-func (ar *AccommodationRepo) Insert(accommodation *domain.Accommodation) error {
+func (ar *AccommodationRepo) Insert(accommodation *Accommodation) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	accommodationsCollection := ar.getCollection()
