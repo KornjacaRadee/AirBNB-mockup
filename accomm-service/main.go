@@ -2,7 +2,7 @@ package main
 
 import (
 	"accomm-service/domain"
-	handlers2 "accomm-service/handlers"
+	handlers "accomm-service/handlers"
 	"context"
 	"log"
 	"net/http"
@@ -40,7 +40,7 @@ func main() {
 	store.Ping()
 
 	//Initialize the handler and inject said logger
-	accommodationsHandler := handlers2.NewAccommodationsHandler(logger, store)
+	accommodationsHandler := handlers.NewAccommodationsHandler(logger, store)
 
 	//Initialize the router and add a middleware for all the requests
 	router := mux.NewRouter()
@@ -52,6 +52,13 @@ func main() {
 	postRouter := router.Methods(http.MethodPost).Subrouter()
 	postRouter.HandleFunc("/", accommodationsHandler.PostAccommodation)
 	postRouter.Use(accommodationsHandler.MiddlewareAccommodationDeserialization)
+
+	patchRouter := router.Methods(http.MethodPatch).Subrouter()
+	patchRouter.HandleFunc("/{id}", accommodationsHandler.PatchAccommodation)
+	patchRouter.Use(accommodationsHandler.MiddlewareAccommodationDeserialization)
+
+	deleteRouter := router.Methods(http.MethodDelete).Subrouter()
+	deleteRouter.HandleFunc("/{id}", accommodationsHandler.DeleteAccommodation)
 
 	//router.Use(handlers2.AuthMiddleware)
 

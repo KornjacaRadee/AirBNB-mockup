@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"log"
@@ -98,6 +99,47 @@ func (ar *AccommodationRepo) Insert(accommodation *Accommodation) error {
 		return err
 	}
 	ar.logger.Printf("Documents ID: %v\n", result.InsertedID)
+	return nil
+}
+
+func (ar *AccommodationRepo) Update(id string, accommodation *Accommodation) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	accommodationsCollection := ar.getCollection()
+
+	objID, _ := primitive.ObjectIDFromHex(id)
+	filter := bson.M{"_id": objID}
+	update := bson.M{"$set": bson.M{
+		"name":        accommodation.Name,
+		"minGuestNum": accommodation.MinGuestNum,
+		"maxGuestNum": accommodation.MaxGuestNum,
+		"location":    accommodation.Location,
+		"amenities":   accommodation.Amenities,
+	}}
+	result, err := accommodationsCollection.UpdateOne(ctx, filter, update)
+	ar.logger.Printf("Documents matched: %v\n", result.MatchedCount)
+	ar.logger.Printf("Documents updated: %v\n", result.ModifiedCount)
+
+	if err != nil {
+		ar.logger.Println(err)
+		return err
+	}
+	return nil
+}
+
+func (ar *AccommodationRepo) Delete(id string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	accommodationsCollection := ar.getCollection()
+
+	objID, _ := primitive.ObjectIDFromHex(id)
+	filter := bson.D{{Key: "_id", Value: objID}}
+	result, err := accommodationsCollection.DeleteOne(ctx, filter)
+	if err != nil {
+		ar.logger.Println(err)
+		return err
+	}
+	ar.logger.Printf("Documents deleted: %v\n", result.DeletedCount)
 	return nil
 }
 

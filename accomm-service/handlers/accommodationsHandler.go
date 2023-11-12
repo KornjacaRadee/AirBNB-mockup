@@ -3,6 +3,7 @@ package handlers
 import (
 	"accomm-service/domain"
 	"context"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 )
@@ -47,6 +48,23 @@ func (a *AccommodationsHandler) PostAccommodation(rw http.ResponseWriter, h *htt
 		return
 	}
 	rw.WriteHeader(http.StatusCreated)
+}
+
+func (a *AccommodationsHandler) PatchAccommodation(rw http.ResponseWriter, h *http.Request) {
+	vars := mux.Vars(h)
+	id := vars["id"]
+	accommodation := h.Context().Value(KeyProduct{}).(*domain.Accommodation)
+
+	a.repo.Update(id, accommodation)
+	rw.WriteHeader(http.StatusOK)
+}
+
+func (a *AccommodationsHandler) DeleteAccommodation(rw http.ResponseWriter, h *http.Request) {
+	vars := mux.Vars(h)
+	id := vars["id"]
+
+	a.repo.Delete(id)
+	rw.WriteHeader(http.StatusNoContent)
 }
 
 func (a *AccommodationsHandler) MiddlewareAccommodationDeserialization(next http.Handler) http.Handler {
