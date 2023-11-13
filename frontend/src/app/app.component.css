@@ -1,0 +1,13 @@
+mat-sidenav {
+    width: 200px;
+    background-color: rgb(197, 197, 241);
+    height: 100%;
+  }
+  
+  mat-sidenav-container {
+    height: 100%;
+  }
+
+  mat-list-item a{
+    text-decoration: none;
+  }
