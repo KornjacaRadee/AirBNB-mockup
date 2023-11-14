@@ -12,12 +12,16 @@ import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import { HomeComponent } from './home/home.component';
 import {MatListModule} from '@angular/material/list';
+import { LoginComponent } from './login/login.component';
+import { RegisterComponent } from './register/register.component';
 
 
 @NgModule({
   declarations: [
     AppComponent,
-    HomeComponent
+    HomeComponent,
+    LoginComponent,
+    RegisterComponent
   ],
   imports: [
     BrowserModule,
