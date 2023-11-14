@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -12,7 +13,13 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { HomeComponent } from './home/home.component';
 import { MatListModule } from '@angular/material/list';
-
+import {MatCardModule} from '@angular/material/card';
+import { MessageService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+import { ReactiveFormsModule } from '@angular/forms';
+import { ToastModule } from 'primeng/toast';
 @NgModule({
   declarations: [AppComponent, HomeComponent],
   imports: [
@@ -27,8 +34,14 @@ import { MatListModule } from '@angular/material/list';
     MatSidenavModule,
     MatFormFieldModule,
     MatListModule,
+    MatCardModule,
+    ButtonModule,
+    CardModule,
+    InputTextModule,
+    ReactiveFormsModule,
+    ToastModule
   ],
-  providers: [],
+  providers: [MessageService],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

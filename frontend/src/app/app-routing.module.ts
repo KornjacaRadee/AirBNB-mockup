@@ -6,8 +6,8 @@ import { LoginComponent } from './login/login.component';
 
 const routes: Routes = [
   {
-    path: '', // Empty path for the base URL
-    component: HomeComponent,
+    path: '', 
+    redirectTo:'home',pathMatch:'full',
   },
   {
     path: 'home',
