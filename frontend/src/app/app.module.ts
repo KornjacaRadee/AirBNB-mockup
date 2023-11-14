@@ -13,15 +13,19 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { HomeComponent } from './home/home.component';
 import { MatListModule } from '@angular/material/list';
-import {MatCardModule} from '@angular/material/card';
-import { MessageService } from 'primeng/api';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { InputTextModule } from 'primeng/inputtext';
+import { MatCardModule } from '@angular/material/card';
+import { LoginComponent } from './login/login.component';
+import { RegisterComponent } from './register/register.component';
+
 import { ReactiveFormsModule } from '@angular/forms';
-import { ToastModule } from 'primeng/toast';
+
 @NgModule({
-  declarations: [AppComponent, HomeComponent],
+  declarations: [
+    AppComponent,
+    HomeComponent,
+    LoginComponent,
+    RegisterComponent,
+  ],
   imports: [
     BrowserModule,
     FormsModule,
@@ -35,13 +39,10 @@ import { ToastModule } from 'primeng/toast';
     MatFormFieldModule,
     MatListModule,
     MatCardModule,
-    ButtonModule,
-    CardModule,
-    InputTextModule,
+
     ReactiveFormsModule,
-    ToastModule
   ],
-  providers: [MessageService],
+
   bootstrap: [AppComponent],
 })
 export class AppModule {}
