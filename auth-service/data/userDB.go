@@ -2,14 +2,38 @@ package data
 
 import (
 	"context"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func RegisterUser(client *mongo.Client, user *User) error {
 	userCollection := client.Database("mongodb").Collection("users")
-	_, err := userCollection.InsertOne(context.TODO(), user)
+
+	// Create unique index on email field
+	indexModel := mongo.IndexModel{
+		Keys:    bson.D{{"email", 1}},
+		Options: options.Index().SetUnique(true),
+	}
+	_, err := userCollection.Indexes().CreateOne(context.TODO(), indexModel)
+	if err != nil {
+		return err
+	}
+
+	// Try to insert the user
+	_, err = userCollection.InsertOne(context.TODO(), user)
+
+	// Check for duplicate key error
+	if writeException, ok := err.(mongo.WriteException); ok {
+		for _, writeError := range writeException.WriteErrors {
+			if writeError.Code == 11000 { // Duplicate key error code
+				return fmt.Errorf("email '%s' is already registered", user.Email)
+			}
+		}
+	}
+
 	return err
 }
 

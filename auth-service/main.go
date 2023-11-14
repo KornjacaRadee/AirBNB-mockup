@@ -18,15 +18,12 @@ func main() {
 			Username: "mimiki003",
 			Password: "mimiki003",
 		})
-	// Replace 'your_username' and 'your_password' with your MongoDB username and password
 
-	// Connect to MongoDB
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Check the connection
 	err = client.Ping(context.TODO(), nil)
 	if err != nil {
 		log.Fatal(err)
@@ -34,7 +31,6 @@ func main() {
 
 	fmt.Println("Connected to MongoDB!")
 
-	// Initialize routes
 	r := mux.NewRouter()
 	r.HandleFunc("/register", authHandlers.HandleRegister(client)).Methods("POST")
 	r.HandleFunc("/login", authHandlers.HandleLogin(client)).Methods("POST")
