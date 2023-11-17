@@ -16,8 +16,9 @@ import { MatListModule } from '@angular/material/list';
 import { MatCardModule } from '@angular/material/card';
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
-
 import { ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import { AuthService } from './services/auth.service';
 
 @NgModule({
   declarations: [
@@ -29,6 +30,8 @@ import { ReactiveFormsModule } from '@angular/forms';
   imports: [
     BrowserModule,
     FormsModule,
+    AuthService,
+    HttpClientModule,
     BrowserAnimationsModule,
     AppRoutingModule,
     MatToolbarModule,
@@ -42,6 +45,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 
     ReactiveFormsModule,
   ],
+  providers: [AuthService],
 
   bootstrap: [AppComponent],
 })
