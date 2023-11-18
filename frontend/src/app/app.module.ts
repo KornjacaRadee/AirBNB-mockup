@@ -19,6 +19,7 @@ import { RegisterComponent } from './register/register.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from './services/auth.service';
+import { ApiService } from './services/api.service';
 
 @NgModule({
   declarations: [
@@ -30,7 +31,6 @@ import { AuthService } from './services/auth.service';
   imports: [
     BrowserModule,
     FormsModule,
-    AuthService,
     HttpClientModule,
     BrowserAnimationsModule,
     AppRoutingModule,
@@ -45,7 +45,8 @@ import { AuthService } from './services/auth.service';
 
     ReactiveFormsModule,
   ],
-  providers: [AuthService],
+  providers: [AuthService,
+              ApiService],
 
   bootstrap: [AppComponent],
 })

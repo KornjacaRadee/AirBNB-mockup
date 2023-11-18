@@ -7,16 +7,16 @@ import { AuthService } from '../services/auth.service';
   templateUrl: './register.component.html',
 })
 export class RegisterComponent {
+
+user: any;
+registerUser() {
+throw new Error('Method not implemented.');
+}
+
+
+
+
   constructor(private authService: AuthService) {}
 
-  register(user: any): void {
-    this.authService.register(user).subscribe(
-      (response) => {
-        // Obrada uspešne registracije
-      },
-      (error) => {
-        // Obrada greške pri registraciji
-      }
-    );
-  }
+
 }
