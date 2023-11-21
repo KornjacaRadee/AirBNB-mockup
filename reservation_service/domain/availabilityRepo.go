@@ -142,7 +142,7 @@ func (ar *AvailabilityRepo) Delete(id string) error {
 }
 
 func (ar *AvailabilityRepo) getCollection() *mongo.Collection {
-	AvailabilityRepoDatabase := ar.cli.Database("mongoDemo")
+	AvailabilityRepoDatabase := ar.cli.Database("reservationDB")
 	AvailabilityRepoCollection := AvailabilityRepoDatabase.Collection("availabilityPeriods")
 	return AvailabilityRepoCollection
 }

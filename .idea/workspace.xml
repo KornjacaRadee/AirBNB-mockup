@@ -4,29 +4,13 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="940bb65d-b456-4df8-96b1-cae9fd1c7ad0" name="Changes" comment="">
+    <list default="true" id="940bb65d-b456-4df8-96b1-cae9fd1c7ad0" name="Changes" comment="Got accommodations working with api_gateway">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accomm-service/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/accommodation_service/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accomm-service/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/accommodation_service/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accomm-service/domain/accommodation.go" beforeDir="false" afterPath="$PROJECT_DIR$/accommodation_service/domain/accommodation.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accomm-service/domain/accommodationRepo.go" beforeDir="false" afterPath="$PROJECT_DIR$/accommodation_service/domain/accommodationRepo.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accomm-service/domain/errors.go" beforeDir="false" afterPath="$PROJECT_DIR$/accommodation_service/domain/errors.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accomm-service/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/accommodation_service/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accomm-service/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/accommodation_service/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accomm-service/handlers/accommodationsHandler.go" beforeDir="false" afterPath="$PROJECT_DIR$/accommodation_service/handlers/accommodationsHandler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accomm-service/handlers/auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/accommodation_service/handlers/auth.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accomm-service/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/accommodation_service/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accomm-service/services/accommodation.go" beforeDir="false" afterPath="$PROJECT_DIR$/accommodation_service/services/accommodation.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reservation-service/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/reservation_service/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reservation-service/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/reservation_service/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reservation-service/domain/availability.go" beforeDir="false" afterPath="$PROJECT_DIR$/reservation_service/domain/availability.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reservation-service/domain/availabilityRepo.go" beforeDir="false" afterPath="$PROJECT_DIR$/reservation_service/domain/availabilityRepo.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reservation-service/domain/errors.go" beforeDir="false" afterPath="$PROJECT_DIR$/reservation_service/domain/errors.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reservation-service/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/reservation_service/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reservation-service/go.sum" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reservation-service/handlers/auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/reservation_service/handlers/auth.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reservation-service/handlers/availabilityHandler.go" beforeDir="false" afterPath="$PROJECT_DIR$/reservation_service/handlers/availabilityHandler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reservation-service/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/reservation_service/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accommodation_service/domain/accommodationRepo.go" beforeDir="false" afterPath="$PROJECT_DIR$/accommodation_service/domain/accommodationRepo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api_gateway/api_gateway.conf" beforeDir="false" afterPath="$PROJECT_DIR$/api_gateway/api_gateway.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reservation_service/domain/availabilityRepo.go" beforeDir="false" afterPath="$PROJECT_DIR$/reservation_service/domain/availabilityRepo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reservation_service/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/reservation_service/main.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,6 +77,10 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Got accommodations working with api_gateway" />
+    <option name="LAST_COMMIT_MESSAGE" value="Got accommodations working with api_gateway" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>

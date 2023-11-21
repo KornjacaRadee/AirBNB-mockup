@@ -18,7 +18,7 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
-		port = "8000"
+		port = "8081"
 	}
 
 	// Initialize context
@@ -47,18 +47,18 @@ func main() {
 	router.Use(availabilityHandler.MiddlewareContentTypeSet)
 
 	getRouter := router.Methods(http.MethodGet).Subrouter()
-	getRouter.HandleFunc("/availability/", availabilityHandler.GetAllAvailabilityPeriods)
+	getRouter.HandleFunc("/", availabilityHandler.GetAllAvailabilityPeriods)
 
 	postRouter := router.Methods(http.MethodPost).Subrouter()
-	postRouter.HandleFunc("/availability/", availabilityHandler.PostAvailabilityPeriod)
+	postRouter.HandleFunc("/", availabilityHandler.PostAvailabilityPeriod)
 	postRouter.Use(availabilityHandler.MiddlewareAvailabilityPeriodDeserialization)
 
 	patchRouter := router.Methods(http.MethodPatch).Subrouter()
-	patchRouter.HandleFunc("/availability/{id}", availabilityHandler.PatchAvailabilityPeriod)
+	patchRouter.HandleFunc("/{id}", availabilityHandler.PatchAvailabilityPeriod)
 	patchRouter.Use(availabilityHandler.MiddlewareAvailabilityPeriodDeserialization)
 
 	deleteRouter := router.Methods(http.MethodDelete).Subrouter()
-	deleteRouter.HandleFunc("/availability/{id}", availabilityHandler.DeleteAvailabilityPeriod)
+	deleteRouter.HandleFunc("/{id}", availabilityHandler.DeleteAvailabilityPeriod)
 
 	//router.Use(handlers2.AuthMiddleware)
 
