@@ -1,4 +1,4 @@
-module reservation-service
+module reservation_service
 
 go 1.21
 

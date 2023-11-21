@@ -1,7 +1,7 @@
 package services
 
 import (
-	"accomm-service/domain"
+	"accommodation_service/domain"
 )
 
 type AccommodationService struct {
