@@ -3,13 +3,15 @@ package authHandlers
 import (
 	"auth-service/data"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -152,20 +154,76 @@ func HandleGetAllUsers(client *mongo.Client) http.HandlerFunc {
 
 func HandleDeleteUser(client *mongo.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		userID, err := primitive.ObjectIDFromHex(vars["id"])
+		// Extract user ID from JWT token
+		userIDFromToken, err := extractUserIDFromToken(r)
 		if err != nil {
-			http.Error(w, "Invalid user ID", http.StatusBadRequest)
+			log.Printf("Invalid token: %v", err)
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
 		}
 
-		if err := data.DeleteUser(client, userID); err != nil {
+		log.Printf("Received token: %s", r.Header.Get("Authorization"))
+
+		// Convert user ID from string to primitive.ObjectID
+		objectIDFromToken, err := primitive.ObjectIDFromHex(userIDFromToken)
+		if err != nil {
+			log.Printf("Error converting user ID: %v", err)
+			http.Error(w, "Invalid user ID in token", http.StatusInternalServerError)
+			return
+		}
+
+		// Perform the deletion using the converted user ID
+		if err := data.DeleteUser(client, objectIDFromToken); err != nil {
+			log.Printf("Error deleting user: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
 	}
+}
+
+func extractUserIDFromToken(r *http.Request) (string, error) {
+	// Extract the token from the Authorization header
+	tokenString := r.Header.Get("Authorization")
+	if tokenString == "" {
+		return "", errors.New("missing Authorization header")
+	}
+
+	// Remove 'Bearer ' prefix if present
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+
+	// Parse the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Check the signing method
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		// Provide the secret key used to sign the token
+		return []byte(jwtSecret), nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	// Check if the token is valid
+	if !token.Valid {
+		return "", errors.New("invalid token")
+	}
+
+	// Extract user ID from claims
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", errors.New("invalid token claims")
+	}
+
+	userID, ok := claims["user_id"].(string)
+	if !ok {
+		return "", errors.New("user_id not found in token claims")
+	}
+
+	return userID, nil
 }
 
 func validateUserInput(user *data.User) error {
