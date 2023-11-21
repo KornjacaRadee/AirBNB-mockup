@@ -20,6 +20,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from './services/auth.service';
 import { ApiService } from './services/api.service';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [
@@ -44,9 +45,10 @@ import { ApiService } from './services/api.service';
     MatCardModule,
 
     ReactiveFormsModule,
+    FormsModule,
+    RouterModule,
   ],
-  providers: [AuthService,
-              ApiService],
+  providers: [AuthService, ApiService],
 
   bootstrap: [AppComponent],
 })

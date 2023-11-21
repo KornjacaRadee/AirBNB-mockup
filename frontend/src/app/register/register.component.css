@@ -4,6 +4,7 @@
   box-sizing: border-box;
   font-family: "Poppins", sans-serif;
 }
+
 body {
   min-height: 100vh;
   display: flex;
@@ -11,6 +12,7 @@ body {
   justify-content: center;
   background: rgb(197, 197, 241);
 }
+
 .wrapper {
   position: relative;
   max-width: 430px;
@@ -19,13 +21,16 @@ body {
   padding: 34px;
   border-radius: 6px;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  margin-top: 30px; /* Added margin-top to center the form */
 }
+
 .wrapper h2 {
   position: relative;
   font-size: 22px;
   font-weight: 600;
   color: #333;
 }
+
 .wrapper h2::before {
   content: "";
   position: absolute;
@@ -36,14 +41,13 @@ body {
   border-radius: 12px;
   background: #7b1fa2;
 }
-.wrapper form {
-  margin-top: 30px;
-}
+
 .wrapper form .input-box {
   height: 52px;
   margin: 18px 0;
 }
-form .input-box input {
+
+.wrapper form .input-box input {
   height: 100%;
   width: 100%;
   outline: none;
@@ -56,39 +60,47 @@ form .input-box input {
   border-radius: 6px;
   transition: all 0.3s ease;
 }
-.input-box input:focus,
-.input-box input:valid {
+
+.wrapper form .input-box input:focus,
+.wrapper form .input-box input:valid {
   border-color: #7b1fa2;
 }
-form .policy {
+
+.wrapper form .policy {
   display: flex;
   align-items: center;
 }
-form h3 {
+
+.wrapper form h3 {
   color: #7b1fa2;
   font-size: 14px;
   font-weight: 500;
   margin-left: 10px;
 }
-.input-box.button input {
+
+.wrapper form .input-box.button input {
   color: #fff;
   letter-spacing: 1px;
   border: none;
-  color: #7b1fa2;
+  background: #7b1fa2; /* Changed the background color */
   cursor: pointer;
 }
-.input-box.button input:hover {
-  background: #7b1fa2;
+
+.wrapper form .input-box.button input:hover {
+  background: #651e89; /* Darkened the background color on hover */
 }
-form .text h3 {
+
+.wrapper form .text h3 {
   color: #333;
   width: 100%;
   text-align: center;
 }
-form .text h3 a {
+
+.wrapper form .text h3 a {
   color: #7b1fa2;
   text-decoration: none;
 }
-form .text h3 a:hover {
+
+.wrapper form .text h3 a:hover {
   text-decoration: underline;
 }
