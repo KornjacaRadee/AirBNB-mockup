@@ -1,4 +1,4 @@
-module accomm-service
+module accommodation_service
 
 go 1.21
 

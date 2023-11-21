@@ -1,13 +1,13 @@
 package main
 
 import (
-	"accomm-service/domain"
-	handlers "accomm-service/handlers"
 	"context"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"reservation_service/domain"
+	"reservation_service/handlers"
 	"time"
 
 	gorillaHandlers "github.com/gorilla/handlers"
@@ -18,7 +18,7 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
-		port = "8080"
+		port = "8081"
 	}
 
 	// Initialize context
@@ -27,7 +27,7 @@ func main() {
 
 	//Initialize the logger we are going to use, with prefix and datetime for every log
 	logger := log.New(os.Stdout, "[product-api] ", log.LstdFlags)
-	storeLogger := log.New(os.Stdout, "[accommodation-store] ", log.LstdFlags)
+	storeLogger := log.New(os.Stdout, "[availability-store] ", log.LstdFlags)
 
 	// NoSQL: Initialize Product Repository store
 	store, err := domain.New(timeoutContext, storeLogger)
@@ -40,25 +40,25 @@ func main() {
 	store.Ping()
 
 	//Initialize the handler and inject said logger
-	accommodationsHandler := handlers.NewAccommodationsHandler(logger, store)
+	availabilityHandler := handlers.NewAvailabilityPeriodsHandler(logger, store)
 
 	//Initialize the router and add a middleware for all the requests
 	router := mux.NewRouter()
-	router.Use(accommodationsHandler.MiddlewareContentTypeSet)
+	router.Use(availabilityHandler.MiddlewareContentTypeSet)
 
 	getRouter := router.Methods(http.MethodGet).Subrouter()
-	getRouter.HandleFunc("/", accommodationsHandler.GetAllAccommodations)
+	getRouter.HandleFunc("/", availabilityHandler.GetAllAvailabilityPeriods)
 
 	postRouter := router.Methods(http.MethodPost).Subrouter()
-	postRouter.HandleFunc("/", accommodationsHandler.PostAccommodation)
-	postRouter.Use(accommodationsHandler.MiddlewareAccommodationDeserialization)
+	postRouter.HandleFunc("/", availabilityHandler.PostAvailabilityPeriod)
+	postRouter.Use(availabilityHandler.MiddlewareAvailabilityPeriodDeserialization)
 
 	patchRouter := router.Methods(http.MethodPatch).Subrouter()
-	patchRouter.HandleFunc("/{id}", accommodationsHandler.PatchAccommodation)
-	patchRouter.Use(accommodationsHandler.MiddlewareAccommodationDeserialization)
+	patchRouter.HandleFunc("/{id}", availabilityHandler.PatchAvailabilityPeriod)
+	patchRouter.Use(availabilityHandler.MiddlewareAvailabilityPeriodDeserialization)
 
 	deleteRouter := router.Methods(http.MethodDelete).Subrouter()
-	deleteRouter.HandleFunc("/{id}", accommodationsHandler.DeleteAccommodation)
+	deleteRouter.HandleFunc("/{id}", availabilityHandler.DeleteAvailabilityPeriod)
 
 	//router.Use(handlers2.AuthMiddleware)
 

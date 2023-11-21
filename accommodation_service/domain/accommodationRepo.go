@@ -144,7 +144,7 @@ func (ar *AccommodationRepo) Delete(id string) error {
 }
 
 func (ar *AccommodationRepo) getCollection() *mongo.Collection {
-	accommodationDatabase := ar.cli.Database("mongoDemo")
+	accommodationDatabase := ar.cli.Database("accommodationDB")
 	accommodationsCollection := accommodationDatabase.Collection("accommodations")
 	return accommodationsCollection
 }
