@@ -10,12 +10,13 @@ type User struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	First_Name *string            `bson:"first_name" json:"name" validate:"required"`
 	Last_Name  *string            `bson:"last_name" json:"description"`
-	Email      *string            `bson:"email" json:"email" validate:"gt=0"`
-	Password   *string            `bson:"password" json:"-"`
-	Address    *string            `bson:"address" json:"address"`
-	Created_On string             `bson:"created_on" json:"created_On"`
-	Updated_On string             `bson:"updated_on" json:"updated_On"`
-	Deleted_On string             `bson:"deleted_on" json:"deleted_On"`
+	Email      string             `bson:"email" json:"email" validate:"required,email"`
+	Password   string             `bson:"password" json:"-"`
+	//u slucaju nekih errora email i password su promjenjeni na non pointer varijable s obzirom da su required
+	Address    *string `bson:"address" json:"address"`
+	Created_On string  `bson:"created_on" json:"created_On"`
+	Updated_On string  `bson:"updated_on" json:"updated_On"`
+	Deleted_On string  `bson:"deleted_on" json:"deleted_On"`
 }
 
 type Users []*User

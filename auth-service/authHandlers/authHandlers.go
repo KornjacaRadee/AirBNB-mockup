@@ -6,8 +6,40 @@ import (
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 )
+
+//func HandleRegister(client *mongo.Client) http.HandlerFunc {
+//	return func(w http.ResponseWriter, r *http.Request) {
+//		var newUser data.User
+//		if err := json.NewDecoder(r.Body).Decode(&newUser); err != nil {
+//			http.Error(w, err.Error(), http.StatusBadRequest)
+//			return
+//		}
+//
+//		// Validate user input
+//		if err := validateUserInput(&newUser); err != nil {
+//			http.Error(w, err.Error(), http.StatusBadRequest)
+//			return
+//		}
+//
+//		hashedPassword, err := hashPassword(newUser.Password)
+//		if err != nil {
+//			http.Error(w, err.Error(), http.StatusInternalServerError)
+//			return
+//		}
+//		newUser.Password = hashedPassword
+//
+//		// Register the user
+//		if err := data.RegisterUser(client, &newUser); err != nil {
+//			http.Error(w, err.Error(), http.StatusInternalServerError)
+//			return
+//		}
+//
+//		w.WriteHeader(http.StatusCreated)
+//	}
+//}
 
 func HandleRegister(client *mongo.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -22,6 +54,14 @@ func HandleRegister(client *mongo.Client) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+
+		// Hash the password
+		hashedPassword, err := hashPassword(newUser.Password)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		newUser.Password = hashedPassword
 
 		// Register the user
 		if err := data.RegisterUser(client, &newUser); err != nil {
@@ -84,4 +124,12 @@ func HandleDeleteUser(client *mongo.Client) http.HandlerFunc {
 func validateUserInput(user *data.User) error {
 	// Implement validation logic here
 	return nil
+}
+
+func hashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedPassword), nil
 }
