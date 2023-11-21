@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
+  styleUrls: ['./register.component.css'],
 })
 export class RegisterComponent {
   user: any = {};
@@ -16,7 +17,7 @@ export class RegisterComponent {
     this.authService.register(this.user).subscribe(
       (response) => {
         console.log('Registration successful', response);
-        this.router.navigate(['/']); // Prilagodite putanju prema vašoj početnoj stranici
+        this.router.navigate(['/home']); // Prilagodite putanju prema vašoj početnoj stranici
 
         // Dodaj dodatne akcije po uspešnoj registraciji
       },
