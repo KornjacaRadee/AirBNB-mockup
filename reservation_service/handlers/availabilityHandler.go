@@ -5,7 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"reservation-service/domain"
+	"reservation_service/domain"
 )
 
 type KeyProduct struct{}
