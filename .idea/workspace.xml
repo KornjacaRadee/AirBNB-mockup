@@ -4,18 +4,27 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="940bb65d-b456-4df8-96b1-cae9fd1c7ad0" name="Changes" comment="">
+    <list default="true" id="940bb65d-b456-4df8-96b1-cae9fd1c7ad0" name="Changes" comment="Got accommodations working with api_gateway">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/app.module.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/app.module.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/register/register.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/register/register.component.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/auth.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/services/auth.service.ts" afterDir="false" />
+<<<<<<< HEAD
+      <change beforePath="$PROJECT_DIR$/accomm-service/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/accomm-service/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/authHandlers/authHandlers.go" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/authHandlers/authHandlers.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/data/userDB.go" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/data/userDB.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/data/userModel.go" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/data/userModel.go" afterDir="false" />
+=======
+      <change beforePath="$PROJECT_DIR$/accommodation_service/domain/accommodationRepo.go" beforeDir="false" afterPath="$PROJECT_DIR$/accommodation_service/domain/accommodationRepo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api_gateway/api_gateway.conf" beforeDir="false" afterPath="$PROJECT_DIR$/api_gateway/api_gateway.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reservation_service/domain/availabilityRepo.go" beforeDir="false" afterPath="$PROJECT_DIR$/reservation_service/domain/availabilityRepo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reservation_service/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/reservation_service/main.go" afterDir="false" />
+>>>>>>> c4d79b4be5fe2c13cf3d4970554ac66f0f7e4b79
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="GOROOT" url="file://$USER_HOME$/go/go1.21.0" />
+  <component name="GOROOT" url="file:///usr/local/go" />
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
@@ -35,6 +44,7 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
+<<<<<<< HEAD
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
@@ -46,11 +56,27 @@
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
     &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/velib/Desktop/AirBNB Projekat/AirBNB-mockup&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/velib/Desktop/Shovljas project/RestService-main&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;
+=======
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "RunOnceActivity.go.modules.automatic.dependencies.download": "true",
+    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "go.import.settings.migrated": "true",
+    "go.sdk.automatically.set": "true",
+    "last_opened_file_path": "/home/marko/Desktop/PROJEKAT/AirBNB-mockup",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)"
+>>>>>>> c4d79b4be5fe2c13cf3d4970554ac66f0f7e4b79
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="AirBNB-mockup" />
@@ -75,6 +101,10 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Got accommodations working with api_gateway" />
+    <option name="LAST_COMMIT_MESSAGE" value="Got accommodations working with api_gateway" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>

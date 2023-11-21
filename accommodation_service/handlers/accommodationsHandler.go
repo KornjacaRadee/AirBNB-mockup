@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"accomm-service/domain"
+	"accommodation_service/domain"
 	"context"
 	"github.com/gorilla/mux"
 	"log"

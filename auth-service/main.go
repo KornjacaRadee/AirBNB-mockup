@@ -12,6 +12,8 @@ import (
 	"net/http"
 )
 
+// da probam samo komit jedan
+
 func main() {
 	// Set client options
 	clientOptions := options.Client().ApplyURI("mongodb://mimiki003:mimiki003@mongodb:27017").
