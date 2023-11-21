@@ -11,7 +11,7 @@ type User struct {
 	First_Name *string            `bson:"first_name" json:"name" validate:"required"`
 	Last_Name  *string            `bson:"last_name" json:"description"`
 	Email      string             `bson:"email" json:"email" validate:"required,email"`
-	Password   string             `bson:"password" json:"-"`
+	Password   string             `bson:"password" json:"password"`
 	//u slucaju nekih errora email i password su promjenjeni na non pointer varijable s obzirom da su required
 	Address    *string `bson:"address" json:"address"`
 	Created_On string  `bson:"created_on" json:"created_On"`

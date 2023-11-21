@@ -7,6 +7,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
+	"log"
 )
 
 //func RegisterUser(client *mongo.Client, user *User) error {
@@ -69,11 +71,21 @@ func LoginUser(client *mongo.Client, email, password string) (*User, error) {
 	userCollection := client.Database("mongodb").Collection("users")
 
 	var user User
-	err := userCollection.FindOne(context.TODO(), bson.D{{"email", email}, {"password", password}}).Decode(&user)
+	err := userCollection.FindOne(context.TODO(), bson.D{{"email", email}}).Decode(&user)
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("Retrieved hashed password: %s", user.Password)
+	log.Printf("Entered password: %s", password)
+	// Verify the password
+	// Verify the password
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		log.Printf("Error comparing passwords: %v", err)
+		return nil, err // Passwords do not match
+	}
 
+	// Passwords match, return the user
 	return &user, nil
 }
 

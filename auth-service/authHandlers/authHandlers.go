@@ -3,11 +3,14 @@ package authHandlers
 import (
 	"auth-service/data"
 	"encoding/json"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
+	"log"
 	"net/http"
+	"time"
 )
 
 //func HandleRegister(client *mongo.Client) http.HandlerFunc {
@@ -73,21 +76,65 @@ func HandleRegister(client *mongo.Client) http.HandlerFunc {
 	}
 }
 
+const jwtSecret = "g3HtH5KZNq3KcWglpIc3eOBHcrxChcY/7bTKG8a5cHtjn2GjTqUaMbxR3DBIr+44"
+
+func generateJWTToken(user *data.User) (string, error) {
+	// Create a new token object, specifying signing method and claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": user.ID.Hex(),
+		"exp":     time.Now().Add(time.Hour * 24).Unix(), // Token expiration time (e.g., 24 hours)
+	})
+
+	// Sign the token with the secret key
+	signedToken, err := token.SignedString([]byte(jwtSecret))
+	if err != nil {
+		return "", err
+	}
+
+	return signedToken, nil
+}
+
 func HandleLogin(client *mongo.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Extract email and password from the request
-		email := r.FormValue("email")
-		password := r.FormValue("password")
+		// Decode the JSON request body
+		var credentials struct {
+			Email    string `json:"email"`
+			Password string `json:"password"`
+		}
+
+		if err := json.NewDecoder(r.Body).Decode(&credentials); err != nil {
+			http.Error(w, "Error decoding JSON", http.StatusBadRequest)
+			return
+		}
+		log.Printf("Login request: email=%s, password=%s\n", credentials.Email, credentials.Password)
 
 		// Login the user
-		user, err := data.LoginUser(client, email, password)
+		user, err := data.LoginUser(client, credentials.Email, credentials.Password)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			http.Error(w, "Invalid email or password", http.StatusUnauthorized)
 			return
 		}
 
-		// Return user data (you might want to exclude sensitive information like passwords)
-		json.NewEncoder(w).Encode(user)
+		// Generate a JWT token
+		token, err := generateJWTToken(user)
+		if err != nil {
+			http.Error(w, "Error generating token", http.StatusInternalServerError)
+			return
+		}
+
+		// Return user data and token
+		response := struct {
+			User  *data.User `json:"user"`
+			Token string     `json:"token"`
+		}{
+			User:  user,
+			Token: token,
+		}
+
+		// Set the "Content-Type" header to "application/json"
+		w.Header().Set("Content-Type", "application/json")
+
+		json.NewEncoder(w).Encode(response)
 	}
 }
 
