@@ -38,7 +38,7 @@ func main() {
 	r.HandleFunc("/register", authHandlers.HandleRegister(client)).Methods("POST")
 	r.HandleFunc("/login", authHandlers.HandleLogin(client)).Methods("POST")
 	r.HandleFunc("/users", authHandlers.HandleGetAllUsers(client)).Methods("GET")
-	r.HandleFunc("/users/{id}", authHandlers.HandleDeleteUser(client)).Methods("DELETE")
+	r.HandleFunc("/user", authHandlers.HandleDeleteUser(client)).Methods("DELETE")
 
 	// Enable CORS
 	headers := handlers.AllowedHeaders([]string{"Content-Type", "Authorization"})
