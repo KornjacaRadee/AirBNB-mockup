@@ -11,40 +11,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 )
-
-//func HandleRegister(client *mongo.Client) http.HandlerFunc {
-//	return func(w http.ResponseWriter, r *http.Request) {
-//		var newUser data.User
-//		if err := json.NewDecoder(r.Body).Decode(&newUser); err != nil {
-//			http.Error(w, err.Error(), http.StatusBadRequest)
-//			return
-//		}
-//
-//		// Validate user input
-//		if err := validateUserInput(&newUser); err != nil {
-//			http.Error(w, err.Error(), http.StatusBadRequest)
-//			return
-//		}
-//
-//		hashedPassword, err := hashPassword(newUser.Password)
-//		if err != nil {
-//			http.Error(w, err.Error(), http.StatusInternalServerError)
-//			return
-//		}
-//		newUser.Password = hashedPassword
-//
-//		// Register the user
-//		if err := data.RegisterUser(client, &newUser); err != nil {
-//			http.Error(w, err.Error(), http.StatusInternalServerError)
-//			return
-//		}
-//
-//		w.WriteHeader(http.StatusCreated)
-//	}
-//}
 
 func HandleRegister(client *mongo.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -227,8 +197,26 @@ func extractUserIDFromToken(r *http.Request) (string, error) {
 }
 
 func validateUserInput(user *data.User) error {
-	// Implement validation logic here
+	// Validate email format
+	if user.Email != "" {
+		if !isValidEmail(user.Email) {
+			return errors.New("invalid email format")
+		}
+	} else {
+		return errors.New("email is required")
+	}
+
+	// Other validation logic for other fields
+
 	return nil
+}
+
+func isValidEmail(email string) bool {
+	// Regular expression for basic email validation
+	// Note: This regex might not cover all edge cases, consider using a more comprehensive regex if needed
+	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	match, _ := regexp.MatchString(emailRegex, email)
+	return match
 }
 
 func hashPassword(password string) (string, error) {
