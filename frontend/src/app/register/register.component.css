@@ -4,6 +4,7 @@
   box-sizing: border-box;
   font-family: "Poppins", sans-serif;
 }
+
 body {
   min-height: 100vh;
   display: flex;
@@ -11,84 +12,52 @@ body {
   justify-content: center;
   background: rgb(197, 197, 241);
 }
+
 .wrapper {
-  position: relative;
   max-width: 430px;
   width: 100%;
   background: #fff;
-  padding: 34px;
-  border-radius: 6px;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 7px;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+  padding: 2rem;
 }
+
 .wrapper h2 {
-  position: relative;
-  font-size: 22px;
-  font-weight: 600;
-  color: #333;
+  font-size: 2rem;
+  font-weight: 500;
+  text-align: center;
+  margin-bottom: 1.5rem;
 }
-.wrapper h2::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 3px;
-  width: 28px;
-  border-radius: 12px;
-  background: #7b1fa2;
-}
-.wrapper form {
-  margin-top: 30px;
-}
+
 .wrapper form .input-box {
-  height: 52px;
-  margin: 18px 0;
+  margin-bottom: 1.3rem;
 }
-form .input-box input {
-  height: 100%;
+
+.wrapper form input {
+  height: 60px;
   width: 100%;
-  outline: none;
   padding: 0 15px;
   font-size: 17px;
-  font-weight: 400;
-  color: #333;
-  border: 1.5px solid #c7bebe;
-  border-bottom-width: 2.5px;
+  border: 1px solid #ddd;
   border-radius: 6px;
-  transition: all 0.3s ease;
+  outline: none;
 }
-.input-box input:focus,
-.input-box input:valid {
-  border-color: #7b1fa2;
+
+.wrapper form input:focus {
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 }
-form .policy {
-  display: flex;
-  align-items: center;
-}
-form h3 {
-  color: #7b1fa2;
-  font-size: 14px;
-  font-weight: 500;
-  margin-left: 10px;
-}
-.input-box.button input {
+
+.wrapper form .button input {
   color: #fff;
-  letter-spacing: 1px;
-  border: none;
-  color: #7b1fa2;
-  cursor: pointer;
-}
-.input-box.button input:hover {
   background: #7b1fa2;
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+  margin-top: 1.7rem;
+  cursor: pointer;
+  transition: 0.4s;
 }
-form .text h3 {
-  color: #333;
-  width: 100%;
-  text-align: center;
-}
-form .text h3 a {
-  color: #7b1fa2;
-  text-decoration: none;
-}
-form .text h3 a:hover {
-  text-decoration: underline;
+
+.wrapper form .button input:hover {
+  background: #651e89;
 }
