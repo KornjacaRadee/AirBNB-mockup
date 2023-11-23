@@ -2,6 +2,12 @@
   <mat-toolbar-row>
     <button mat-button (click)="opened=!opened"><mat-icon>menu</mat-icon></button>
     <button mat-button routerLink=""><mat-icon>home</mat-icon>Home</button>
+    
+    <mat-form-field class="search-bar">
+      <input matInput placeholder="Search" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()">
+      <button mat-button matSuffix (click)="onSearchButtonClicked()"><mat-icon>search</mat-icon></button>
+    </mat-form-field>
+
   </mat-toolbar-row>
 </mat-toolbar>
 
@@ -16,6 +22,9 @@
   </mat-sidenav>
 
   <mat-sidenav-content>
+    <div>{{ searchTerm }}</div>
+    <p *ngIf="enterPressed">Enter Pressed</p>
+    <p *ngIf="searchButtonPressed">Search Button Pressed</p>
     <router-outlet></router-outlet>
   </mat-sidenav-content>
 </mat-sidenav-container>
