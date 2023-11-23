@@ -82,10 +82,13 @@ const jwtSecret = "g3HtH5KZNq3KcWglpIc3eOBHcrxChcY/7bTKG8a5cHtjn2GjTqUaMbxR3DBIr
 
 func generateJWTToken(user *data.User) (string, error) {
 	// Create a new token object, specifying signing method and claims
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	claims := jwt.MapClaims{
 		"user_id": user.ID.Hex(),
 		"exp":     time.Now().Add(time.Hour * 24).Unix(), // Token expiration time (e.g., 24 hours)
-	})
+		"roles":   user.Roles,
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// Sign the token with the secret key
 	signedToken, err := token.SignedString([]byte(jwtSecret))

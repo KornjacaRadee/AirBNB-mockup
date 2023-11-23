@@ -1,3 +1,5 @@
+// user.go
+
 package data
 
 import (
@@ -9,21 +11,21 @@ import (
 type User struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	First_Name *string            `bson:"first_name" json:"name" validate:"required"`
-	Last_Name  *string            `bson:"last_name" json:"description"`
+	Last_Name  *string            `bson:"last_name" json:"last_name"`
 	Email      string             `bson:"email" json:"email" validate:"required,email"`
 	Password   string             `bson:"password" json:"password"`
-	//u slucaju nekih errora email i password su promjenjeni na non pointer varijable s obzirom da su required
-	Address    *string `bson:"address" json:"address"`
-	Created_On string  `bson:"created_on" json:"created_On"`
-	Updated_On string  `bson:"updated_on" json:"updated_On"`
-	Deleted_On string  `bson:"deleted_on" json:"deleted_On"`
+	Address    *string            `bson:"address" json:"address"`
+	Created_On string             `bson:"created_on" json:"created_On"`
+	Updated_On string             `bson:"updated_on" json:"updated_On"`
+	Deleted_On string             `bson:"deleted_on" json:"deleted_On"`
+	Roles      []string           `bson:"roles" json:"roles"`
 }
 
 type Users []*User
 
 // Functions to encode and decode products to json and from json.
-// If we inject an interfacchocoe we achieve dependancy injection, meaning that anything that implements this interface can be passed down
-// For us it will be ResponseWriter, but it also may be a file writer or something similar.
+// If we inject an interface, we achieve dependency injection, meaning that anything that implements this interface can be passed down
+// For us, it will be ResponseWriter, but it also may be a file writer or something similar.
 func (u *Users) ToJSON(w io.Writer) error {
 	e := json.NewEncoder(w)
 	return e.Encode(u)
