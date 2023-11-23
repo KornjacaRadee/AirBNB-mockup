@@ -11,3 +11,26 @@ mat-sidenav {
   mat-list-item a{
     text-decoration: none;
   }
+
+  .search-bar {
+    margin-left: auto; /* Push the search bar to the right */
+    margin-right: 16px; /* Add some spacing between the search bar and other buttons */
+    min-width: 300px; /* Set a minimum width for the search bar */
+    transition: min-width 0.3s; /* Add a smooth transition effect */
+  
+    /* Add some styles for the input field */
+    & mat-input {
+      border-radius: 5px;
+      background-color: #fff;
+    }
+  
+    /* Add styles for the search icon button */
+    & button {
+      color: #fff;
+    }
+  
+    /* Styles for the search bar when it's focused */
+    &:focus-within {
+      min-width: 400px; /* Expand the search bar when focused */
+    }
+  }

@@ -8,4 +8,16 @@ import { Component } from '@angular/core';
 export class AppComponent {
   title = 'frontend';
   opened = false;
+  searchTerm: string = '';
+  enterPressed = false;
+  searchButtonPressed = false;
+
+  onSearch() {
+    this.enterPressed = true;
+    console.log('Searching for:', this.searchTerm);
+  }
+
+  onSearchButtonClicked() {
+    this.searchButtonPressed = true;
+  }
 }
