@@ -21,6 +21,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from './services/auth.service';
 import { ApiService } from './services/api.service';
 import { RouterModule } from '@angular/router';
+import { AccomodationService } from './services/accomodation/accomodation.service';
+import { ReservationService } from './services/reservation/reservation.service';
 
 @NgModule({
   declarations: [
@@ -48,7 +50,13 @@ import { RouterModule } from '@angular/router';
     FormsModule,
     RouterModule,
   ],
-  providers: [AuthService, ApiService],
+
+
+  providers: [AuthService, 
+    ApiService,
+    AccomodationService,
+    ReservationService
+  ],
 
   bootstrap: [AppComponent],
 })

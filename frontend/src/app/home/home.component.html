@@ -1,1 +1,22 @@
-<p>home works!</p>
+<div class="container">
+    <div *ngFor="let accommodation of accommodations" class="accommodation-card">
+      <mat-card>
+        <div class="top-part">
+          <mat-card-header>
+            <div mat-card-avatar class="accommodation-image"></div>
+            <mat-card-title>{{ accommodation.name }}</mat-card-title>
+          </mat-card-header>
+        </div>
+        <mat-card-content>
+          <p><strong>Owner Email:</strong> {{ accommodation.owner.email }}</p>
+          <p><strong>Location:</strong> {{ accommodation.location }}</p>
+          <p><strong>Min Guests:</strong> {{ accommodation.minGuestNum }}</p>
+          <p><strong>Max Guests:</strong> {{ accommodation.maxGuestNum }}</p>
+          <p><strong>Amenities:</strong> {{ accommodation.amenities.join(', ') }}</p>
+        </mat-card-content>
+        <mat-card-actions>
+
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>

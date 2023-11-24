@@ -1,0 +1,31 @@
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+
+.accommodation-card {
+  margin: 10px;
+  width: 300px; 
+  border-radius: 15px; 
+  overflow: hidden; 
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; 
+}
+
+.accommodation-card:hover {
+  transform: scale(1.05); 
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  cursor: pointer; 
+}
+
+.top-part {
+  background-color: #3498db; 
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #fff; 
+}
+
+.accommodation-image {
+  background-color: #fff; 
+  border-radius: 50%; 
+}
