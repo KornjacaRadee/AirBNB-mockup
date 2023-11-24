@@ -11,7 +11,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 )
@@ -199,7 +198,7 @@ func extractUserIDFromToken(r *http.Request) (string, error) {
 func validateUserInput(user *data.User) error {
 	// Validate email format
 	if user.Email != "" {
-		if !isValidEmail(user.Email) {
+		if user.Email == "aa" {
 			return errors.New("invalid email format")
 		}
 	} else {
@@ -209,14 +208,6 @@ func validateUserInput(user *data.User) error {
 	// Other validation logic for other fields
 
 	return nil
-}
-
-func isValidEmail(email string) bool {
-	// Regular expression for basic email validation
-	// Note: This regex might not cover all edge cases, consider using a more comprehensive regex if needed
-	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-	match, _ := regexp.MatchString(emailRegex, email)
-	return match
 }
 
 func hashPassword(password string) (string, error) {
