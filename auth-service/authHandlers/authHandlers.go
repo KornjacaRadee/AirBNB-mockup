@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -30,7 +31,7 @@ func HandleRegister(client *mongo.Client) http.HandlerFunc {
 		}
 
 		// Hash the password
-		hashedPassword, err := hashPassword(newUser.Password)
+		hashedPassword, err := data.HashPassword(newUser.Password)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -51,10 +52,13 @@ const jwtSecret = "g3HtH5KZNq3KcWglpIc3eOBHcrxChcY/7bTKG8a5cHtjn2GjTqUaMbxR3DBIr
 
 func generateJWTToken(user *data.User) (string, error) {
 	// Create a new token object, specifying signing method and claims
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	claims := jwt.MapClaims{
 		"user_id": user.ID.Hex(),
 		"exp":     time.Now().Add(time.Hour * 24).Unix(), // Token expiration time (e.g., 24 hours)
-	})
+		"roles":   user.Roles,
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// Sign the token with the secret key
 	signedToken, err := token.SignedString([]byte(jwtSecret))
@@ -107,6 +111,112 @@ func HandleLogin(client *mongo.Client) http.HandlerFunc {
 
 		json.NewEncoder(w).Encode(response)
 	}
+}
+
+// I THINK THIS FUNC SHOULD NOT BE AVAILABLE TO REQUEST
+
+//func HandleGetUserByID(client *mongo.Client) http.HandlerFunc {
+//	return func(w http.ResponseWriter, r *http.Request) {
+//		// Extract user ID from URL parameters
+//		vars := mux.Vars(r)
+//		userID, err := primitive.ObjectIDFromHex(vars["id"])
+//		if err != nil {
+//			http.Error(w, "Invalid user ID", http.StatusBadRequest)
+//			return
+//		}
+//
+//		// Get user by ID
+//		user, err := data.GetUserByID(client, userID)
+//		if err != nil {
+//			http.Error(w, "User not found", http.StatusNotFound)
+//			return
+//		}
+//
+//		// Return user data
+//		w.Header().Set("Content-Type", "application/json")
+//		json.NewEncoder(w).Encode(user)
+//	}
+//}
+
+// authHandlers/authHandlers.go
+
+// ...
+
+func HandleChangePassword(client *mongo.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Extract user ID from JWT token
+		userIDFromToken, err := extractUserIDFromToken(r)
+		if err != nil {
+			log.Printf("Invalid token: %v", err)
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			return
+		}
+
+		// Convert userIDFromToken to ObjectID
+		userID, err := primitive.ObjectIDFromHex(userIDFromToken)
+		if err != nil {
+			http.Error(w, "Invalid user ID", http.StatusBadRequest)
+			return
+		}
+
+		// Decode the JSON request body
+		rawRequestBody, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Printf("Error reading raw request body: %v", err)
+			http.Error(w, "Error reading raw request body", http.StatusInternalServerError)
+			return
+		}
+		log.Printf("Raw request body: %s", rawRequestBody)
+
+		// Decode the JSON request body
+		var passwordChange struct {
+			OldPassword string `json:"old_password"`
+			NewPassword string `json:"new_password"`
+		}
+		if err := json.Unmarshal(rawRequestBody, &passwordChange); err != nil {
+			log.Printf("Error decoding JSON: %v", err)
+			http.Error(w, "Error decoding JSON", http.StatusBadRequest)
+			return
+		}
+		log.Printf("New password from handler is: %s", passwordChange.NewPassword)
+
+		user, err := validateOldPasswordAndGetUser(client, userID, passwordChange.OldPassword)
+		if err != nil {
+			log.Printf("Error validating old password: %v", err)
+			http.Error(w, "Error validating old password", http.StatusInternalServerError)
+			return
+		}
+
+		if user == nil {
+			http.Error(w, "Invalid old password", http.StatusUnauthorized)
+			return
+		}
+
+		// Update the user's password in the database
+		if err := data.UpdatePassword(client, userID, passwordChange.NewPassword); err != nil {
+			log.Printf("Error updating password: %v", err)
+			http.Error(w, "Error updating password", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+// Helper function to validate the old password and get the user
+func validateOldPasswordAndGetUser(client *mongo.Client, userID primitive.ObjectID, oldPassword string) (*data.User, error) {
+	user, err := data.GetUserByID(client, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Compare the old password with the stored hashed password
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword))
+	if err != nil {
+		return nil, nil
+	}
+
+	return user, nil
 }
 
 func HandleGetAllUsers(client *mongo.Client) http.HandlerFunc {
@@ -208,12 +318,4 @@ func validateUserInput(user *data.User) error {
 	// Other validation logic for other fields
 
 	return nil
-}
-
-func hashPassword(password string) (string, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return "", err
-	}
-	return string(hashedPassword), nil
 }
