@@ -67,6 +67,22 @@ func RegisterUser(client *mongo.Client, user *User) error {
 	return err
 }
 
+// data/user.go
+
+// ...
+
+func GetUserByID(client *mongo.Client, userID primitive.ObjectID) (*User, error) {
+	userCollection := client.Database("mongodb").Collection("users")
+
+	var user User
+	err := userCollection.FindOne(context.TODO(), bson.D{{"_id", userID}}).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func LoginUser(client *mongo.Client, email, password string) (*User, error) {
 	userCollection := client.Database("mongodb").Collection("users")
 
@@ -85,8 +101,27 @@ func LoginUser(client *mongo.Client, email, password string) (*User, error) {
 		return nil, err // Passwords do not match
 	}
 
-	// Passwords match, return the user
 	return &user, nil
+}
+func UpdatePassword(client *mongo.Client, userID primitive.ObjectID, newPassword string) error {
+	// Hash the new password
+	log.Printf("New password is: %s ", newPassword)
+	hashedPassword, err := HashPassword(newPassword)
+	if err != nil {
+		return err
+	}
+
+	// Update the user's password in the database
+	userCollection := client.Database("mongodb").Collection("users")
+	filter := bson.D{{"_id", userID}}
+	update := bson.D{
+		{"$set", bson.D{
+			{"password", hashedPassword},
+		}},
+	}
+
+	_, err = userCollection.UpdateOne(context.TODO(), filter, update)
+	return err
 }
 
 func GetAllUsers(client *mongo.Client) (Users, error) {
@@ -115,4 +150,12 @@ func DeleteUser(client *mongo.Client, userID primitive.ObjectID) error {
 
 	_, err := userCollection.DeleteOne(context.TODO(), bson.D{{"_id", userID}})
 	return err
+}
+
+func HashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedPassword), nil
 }
