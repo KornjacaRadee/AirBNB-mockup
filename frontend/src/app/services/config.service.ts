@@ -17,7 +17,7 @@ export class ConfigService {
     this._api_url = 'http://localhost:8080/';
     this._login_url =this._api_url + '/login';
     this._register_url = this._api_url + '/register';
-    this._accomodations_url = this._api_url + '/accomodations';
+    this._accomodations_url = this._api_url + '/accommodations';
     this._reservations_url = this._api_url + '/reservations';
     
 
