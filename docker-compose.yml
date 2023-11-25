@@ -92,12 +92,51 @@ services:
     networks:
       - network
 
+  auth_service:
+    build:
+      context: auth-service/
+      dockerfile: Dockerfile
+    restart: always
+    container_name: "auth_service"
+    hostname: "auth_service"
+    ports:
+      - 8082:8082
+    environment:
+      - PORT=8082
+      - MONGO_DB_URI=mongodb://root:pass@auth_db:27017
+    depends_on:
+      auth_db:
+        condition: service_healthy
+    networks:
+      - network
+
+  auth_db:
+    hostname: "auth_db"
+    container_name: "auth_db"
+    image: mongo
+    restart: always
+    ports:
+      - "27019:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: pass
+      MONGO_INITDB_DATABASE: authDB
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok'
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    volumes:
+      - auth_db:/data/db
+    networks:
+      - network
+
   mongo-express:
     image: mongo-express
     restart: always
     environment:
       # hostname of mongo databse
-      - ME_CONFIG_MONGODB_SERVER=accommodation_db,reservation_db
+      - ME_CONFIG_MONGODB_SERVER=accommodation_db,reservation_db, auth_db
       - ME_CONFIG_MONGODB_ADMINUSERNAME=root
       - ME_CONFIG_MONGODB_ADMINPASSWORD=pass
       - ME_CONFIG_BASICAUTH_USERNAME=admin
@@ -105,6 +144,7 @@ services:
     depends_on:
       - accommodation_db
       - reservation_db
+      - auth_db
     ports:
       - "8083:8083"
     volumes:
@@ -115,6 +155,7 @@ services:
 volumes:
   accommodation_db:
   reservation_db:
+  auth_db:
   mong_express_data:
 
 networks:

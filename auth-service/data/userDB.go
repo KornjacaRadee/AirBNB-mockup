@@ -40,7 +40,7 @@ import (
 }*/
 
 func RegisterUser(client *mongo.Client, user *User) error {
-	userCollection := client.Database("mongodb").Collection("users")
+	userCollection := client.Database("authDB").Collection("users")
 
 	// Create unique index on email field
 	indexModel := mongo.IndexModel{
@@ -72,7 +72,7 @@ func RegisterUser(client *mongo.Client, user *User) error {
 // ...
 
 func GetUserByID(client *mongo.Client, userID primitive.ObjectID) (*User, error) {
-	userCollection := client.Database("mongodb").Collection("users")
+	userCollection := client.Database("authDB").Collection("users")
 
 	var user User
 	err := userCollection.FindOne(context.TODO(), bson.D{{"_id", userID}}).Decode(&user)
@@ -84,7 +84,7 @@ func GetUserByID(client *mongo.Client, userID primitive.ObjectID) (*User, error)
 }
 
 func LoginUser(client *mongo.Client, email, password string) (*User, error) {
-	userCollection := client.Database("mongodb").Collection("users")
+	userCollection := client.Database("authDB").Collection("users")
 
 	var user User
 	err := userCollection.FindOne(context.TODO(), bson.D{{"email", email}}).Decode(&user)
@@ -112,7 +112,7 @@ func UpdatePassword(client *mongo.Client, userID primitive.ObjectID, newPassword
 	}
 
 	// Update the user's password in the database
-	userCollection := client.Database("mongodb").Collection("users")
+	userCollection := client.Database("authDB").Collection("users")
 	filter := bson.D{{"_id", userID}}
 	update := bson.D{
 		{"$set", bson.D{
@@ -125,7 +125,7 @@ func UpdatePassword(client *mongo.Client, userID primitive.ObjectID, newPassword
 }
 
 func GetAllUsers(client *mongo.Client) (Users, error) {
-	userCollection := client.Database("mongodb").Collection("users")
+	userCollection := client.Database("authDB").Collection("users")
 
 	cursor, err := userCollection.Find(context.TODO(), bson.D{})
 	if err != nil {
@@ -146,7 +146,7 @@ func GetAllUsers(client *mongo.Client) (Users, error) {
 }
 
 func DeleteUser(client *mongo.Client, userID primitive.ObjectID) error {
-	userCollection := client.Database("mongodb").Collection("users")
+	userCollection := client.Database("authDB").Collection("users")
 
 	_, err := userCollection.DeleteOne(context.TODO(), bson.D{{"_id", userID}})
 	return err
