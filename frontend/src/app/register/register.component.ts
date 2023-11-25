@@ -17,7 +17,7 @@ export class RegisterComponent {
     this.authService.register(this.user).subscribe(
       (response) => {
         console.log('Registration successful', response);
-        this.router.navigate(['/home']); // Prilagodite putanju prema vašoj početnoj stranici
+        this.router.navigate(['/login']); // Prilagodite putanju prema vašoj početnoj stranici
 
         // Dodaj dodatne akcije po uspešnoj registraciji
       },
