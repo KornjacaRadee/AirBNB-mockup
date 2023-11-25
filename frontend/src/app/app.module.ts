@@ -24,6 +24,9 @@ import { RouterModule } from '@angular/router';
 import { AccomodationService } from './services/accomodation/accomodation.service';
 import { ReservationService } from './services/reservation/reservation.service';
 
+import { RECAPTCHA_SETTINGS, RecaptchaFormsModule, RecaptchaModule, RecaptchaSettings } from 'ng-recaptcha';
+import { environment } from 'src/environments/environment';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -49,10 +52,21 @@ import { ReservationService } from './services/reservation/reservation.service';
     ReactiveFormsModule,
     FormsModule,
     RouterModule,
+    RecaptchaModule,
+    RecaptchaFormsModule,
   ],
 
 
-  providers: [AuthService, 
+  providers: [
+    
+    {
+      provide: RECAPTCHA_SETTINGS,
+      useValue: {
+        siteKey: environment.recaptcha.siteKey,
+      } as RecaptchaSettings,
+    },
+    
+    AuthService, 
     ApiService,
     AccomodationService,
     ReservationService

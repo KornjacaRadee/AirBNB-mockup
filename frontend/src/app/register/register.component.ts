@@ -2,6 +2,7 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
+import { NgForm } from '@angular/forms';
 
 @Component({
   selector: 'app-register',
@@ -10,8 +11,11 @@ import { Router } from '@angular/router';
 })
 export class RegisterComponent {
   user: any = {};
+  token: string|undefined;
 
-  constructor(private authService: AuthService, private router: Router) {} // Dodajte Router ovde
+  constructor(private authService: AuthService, private router: Router) {
+    this.token = undefined;
+  } // Dodajte Router ovde
 
   registerUser() {
     this.authService.register(this.user).subscribe(
@@ -27,4 +31,19 @@ export class RegisterComponent {
       }
     );
   }
+
+
+  // public send(form: NgForm): void {
+  //   if (form.invalid) {
+  //     for (const control of Object.keys(form.controls)) {
+  //       form.controls[control].markAsTouched();
+  //     }
+  //     return;                                              //VEZANO ZA CAPTCHU, OSTAVITI ZA SVAKI SLUCAJ
+  //   }
+
+  //   console.debug(`Token [${this.token}] generated`);
+  // }
+
+
+
 }
