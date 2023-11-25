@@ -61,3 +61,7 @@ body {
 .wrapper form .button input:hover {
   background: #651e89;
 }
+re-captcha.is-invalid > div {
+  border: 1px solid #dc3545 !important;
+  border-radius: 0.2rem;
+}
