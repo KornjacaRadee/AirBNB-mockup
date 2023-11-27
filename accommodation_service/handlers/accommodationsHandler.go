@@ -84,6 +84,30 @@ func (a *AccommodationsHandler) MiddlewareAccommodationDeserialization(next http
 	})
 }
 
+func (a *AccommodationsHandler) SearchAccommodations(rw http.ResponseWriter, h *http.Request) {
+	var searchRequest domain.SearchRequest
+	err := searchRequest.FromJSON(h.Body)
+	if err != nil {
+		http.Error(rw, "Unable to decode search request", http.StatusBadRequest)
+		a.logger.Fatal(err)
+		return
+	}
+
+	accommodations, err := a.repo.SearchAccommodations(searchRequest)
+	if err != nil {
+		http.Error(rw, "Error searching accommodations", http.StatusInternalServerError)
+		a.logger.Fatal(err)
+		return
+	}
+
+	err = accommodations.ToJSON(rw)
+	if err != nil {
+		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
+		a.logger.Fatal("Unable to convert to json:", err)
+		return
+	}
+}
+
 func (a *AccommodationsHandler) MiddlewareContentTypeSet(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, h *http.Request) {
 		a.logger.Println("Method [", h.Method, "] - Hit path :", h.URL.Path)
