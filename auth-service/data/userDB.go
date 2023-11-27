@@ -1,6 +1,7 @@
 package data
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
@@ -9,6 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 	"log"
+	"os"
+	"strings"
 )
 
 /*func RegisterUser(client *mongo.Client, user *User) error {
@@ -152,10 +155,51 @@ func DeleteUser(client *mongo.Client, userID primitive.ObjectID) error {
 	return err
 }
 
+func GetUserByEmail(client *mongo.Client, email string) (*User, error) {
+	userCollection := client.Database("authDB").Collection("users")
+
+	// Create a filter for the email
+	filter := bson.D{{"email", email}}
+
+	// Find the user in the database
+	var user User
+	err := userCollection.FindOne(context.TODO(), filter).Decode(&user)
+	if err != nil {
+		// Handle the error (e.g., user not found)
+		log.Printf("Error getting user by email: %v", err)
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func HashPassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
 	}
 	return string(hashedPassword), nil
+}
+
+func CheckPasswordInBlacklist(password string) (bool, error) {
+	file, err := os.Open("blacklist/blacklist.txt")
+	if err != nil {
+		log.Printf("error while opening blacklist file: %v", err)
+		return false, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		if strings.TrimSpace(scanner.Text()) == password {
+			return false, nil
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Printf("error while scanning blackist: %v", err)
+		return false, err
+	}
+
+	return true, nil
 }

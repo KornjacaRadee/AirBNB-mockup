@@ -19,7 +19,7 @@ services:
       dockerfile: Dockerfile
     image: authservice
     ports:
-      - "8080:8080"
+      - "8082:8082"
     depends_on:
       - mongodb
     networks:

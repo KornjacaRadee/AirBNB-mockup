@@ -18,6 +18,8 @@ import (
 
 func main() {
 	// Set client options
+	// TREBA MI OVO DA TESTIRAM PA MARE SKIDAJ POSLE
+
 	dburi := os.Getenv("MONGO_DB_URI")
 	clientOptions := options.Client().ApplyURI(dburi)
 
@@ -44,7 +46,16 @@ func main() {
 	r.HandleFunc("/users", authHandlers.HandleGetAllUsers(client)).Methods("GET")
 	r.HandleFunc("/user", authHandlers.HandleDeleteUser(client)).Methods("DELETE")
 	//r.HandleFunc("/users/{id}", authHandlers.HandleGetUserByID(client)).Methods("GET")
+	// change user passwrod
 	r.HandleFunc("/change-password", authHandlers.HandleChangePassword(client)).Methods("POST")
+
+	// initiate password recovery
+	r.HandleFunc("/password-recovery", authHandlers.HandlePasswordRecovery(client)).Methods("POST")
+
+	// validate token and lets user access to update password page
+	r.HandleFunc("/reset", authHandlers.HandlePasswordReset(client)).Methods("GET")
+	// updates users password with new one
+	r.HandleFunc("/update", authHandlers.HandlePasswordUpdate(client)).Methods("POST")
 
 	// Enable CORS
 	headers := handlers.AllowedHeaders([]string{"Content-Type", "Authorization"})

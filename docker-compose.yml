@@ -10,7 +10,8 @@ services:
       dockerfile: Dockerfile
     restart: on-failure
     ports:
-      - "8000:8000"
+      - 8000:8000
+      - 443:443
     networks:
       - network
 

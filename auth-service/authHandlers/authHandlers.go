@@ -31,6 +31,18 @@ func HandleRegister(client *mongo.Client) http.HandlerFunc {
 			return
 		}
 
+		// Check if the password is in the blacklist
+		passwordOK, err := data.CheckPasswordInBlacklist(newUser.Password)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if !passwordOK {
+			http.Error(w, "Password is in the blacklist", http.StatusBadRequest)
+			return
+		}
+
 		// Hash the password
 		hashedPassword, err := data.HashPassword(newUser.Password)
 		if err != nil {
@@ -263,6 +275,72 @@ func HandleDeleteUser(client *mongo.Client) http.HandlerFunc {
 	}
 }
 
+// Request for password recovery
+func HandlePasswordRecovery(client *mongo.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Extract user's email from the request
+		var request struct {
+			Email string `json:"email"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			http.Error(w, "Error decoding JSON", http.StatusBadRequest)
+			return
+		}
+
+		// Validate the email and get the user
+		user, err := data.GetUserByEmail(client, request.Email)
+		if err != nil {
+			log.Printf("Error retrieving user: %v", err)
+			http.Error(w, "Error retrieving user", http.StatusInternalServerError)
+			return
+		}
+
+		if user == nil {
+			// User not found, but don't disclose this information to the user
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		// Generate a unique recovery token
+		recoveryToken, err := data.GenerateRecoveryToken(client, user.ID)
+		if err != nil {
+			// Handle the error, for example:
+			log.Printf("Error generating recovery token: %v", err)
+			http.Error(w, "Error generating recovery token", http.StatusInternalServerError)
+			return
+		}
+		// Save the recovery token in the database associated with the user
+
+		// Send a recovery email with a link containing the recovery token
+		data.SendRecoveryEmail(user.Email, recoveryToken)
+
+		// Respond to the user indicating that the recovery email has been sent
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+// Handle the password reset page
+func HandlePasswordReset(client *mongo.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Extract recovery token from the URL parameters
+		token := r.URL.Query().Get("token")
+		if token == "" {
+			http.Error(w, "Invalid or missing recovery token", http.StatusBadRequest)
+			return
+		}
+
+		// Validate the recovery token
+		if !data.IsValidRecoveryToken(client, token) {
+			http.Error(w, "Invalid recovery token", http.StatusBadRequest)
+			return
+		}
+
+		// Allow the user to reset their password
+		// You can redirect them to a password reset page in your frontend
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
 func extractUserIDFromToken(r *http.Request) (string, error) {
 	// Extract the token from the Authorization header
 	tokenString := r.Header.Get("Authorization")
@@ -306,6 +384,46 @@ func extractUserIDFromToken(r *http.Request) (string, error) {
 	return userID, nil
 }
 
+func HandlePasswordUpdate(client *mongo.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Extract reset token from URL parameters
+		resetToken, err := extractResetToken(r)
+		if err != nil {
+			log.Printf("Error extracting reset token: %v", err)
+			http.Error(w, "Invalid reset token", http.StatusBadRequest)
+			return
+		}
+
+		// Decode the JSON request body
+		var passwordChange struct {
+			NewPassword string `json:"password"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&passwordChange); err != nil {
+			log.Printf("Error decoding JSON: %v", err)
+			http.Error(w, "Error decoding JSON", http.StatusBadRequest)
+			return
+		}
+		log.Printf("New password from handler is: %s", passwordChange.NewPassword)
+
+		// Validate the reset token and get the user ID
+		userID, err := data.ValidateResetTokenAndGetUser(client, resetToken)
+		if err != nil {
+			log.Printf("Error validating reset token: %v", err)
+			http.Error(w, "Invalid reset token", http.StatusBadRequest)
+			return
+		}
+
+		// Update the user's password in the database
+		if err := data.UpdatePassword(client, userID, passwordChange.NewPassword); err != nil {
+			log.Printf("Error updating password: %v", err)
+			http.Error(w, "Error updating password", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
 func validateUserInput(user *data.User) error {
 	// Validate email format
 	if user.Email != "" {
@@ -327,4 +445,15 @@ func isValidEmail(email string) bool {
 	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
 	match, _ := regexp.MatchString(emailRegex, email)
 	return match
+}
+
+func extractResetToken(r *http.Request) (string, error) {
+	// Get the token from the "token" query parameter
+	token := r.URL.Query().Get("token")
+
+	if token == "" {
+		return "", errors.New("reset token not found in the URL")
+	}
+
+	return token, nil
 }
