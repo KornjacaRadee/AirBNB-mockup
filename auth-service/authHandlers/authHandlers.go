@@ -31,6 +31,18 @@ func HandleRegister(client *mongo.Client) http.HandlerFunc {
 			return
 		}
 
+		// Check if the password is in the blacklist
+		passwordOK, err := data.CheckPasswordInBlacklist(newUser.Password)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if !passwordOK {
+			http.Error(w, "Password is in the blacklist", http.StatusBadRequest)
+			return
+		}
+
 		// Hash the password
 		hashedPassword, err := data.HashPassword(newUser.Password)
 		if err != nil {
