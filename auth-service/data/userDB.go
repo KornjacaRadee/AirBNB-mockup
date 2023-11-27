@@ -1,6 +1,7 @@
 package data
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
@@ -9,6 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 	"log"
+	"os"
+	"strings"
 )
 
 /*func RegisterUser(client *mongo.Client, user *User) error {
@@ -158,4 +161,27 @@ func HashPassword(password string) (string, error) {
 		return "", err
 	}
 	return string(hashedPassword), nil
+}
+
+func CheckPasswordInBlacklist(password string) (bool, error) {
+	file, err := os.Open("blacklist/blacklist.txt")
+	if err != nil {
+		log.Printf("error while opening blacklist file: %v", err)
+		return false, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		if strings.TrimSpace(scanner.Text()) == password {
+			return false, nil
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Printf("error while scanning blackist: %v", err)
+		return false, err
+	}
+
+	return true, nil
 }
