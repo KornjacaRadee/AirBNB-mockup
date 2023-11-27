@@ -61,7 +61,7 @@ func main() {
 	deleteRouter.HandleFunc("/delete/{id}", accommodationsHandler.DeleteAccommodation)
 
 	// Add the search endpoint
-	router.HandleFunc("/accommodations/search", accommodationsHandler.SearchAccommodations).Methods("POST")
+	router.HandleFunc("/search", accommodationsHandler.SearchAccommodations).Methods("POST")
 
 	// ...
 
