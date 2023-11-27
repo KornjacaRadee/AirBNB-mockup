@@ -60,6 +60,13 @@ func main() {
 	deleteRouter := router.Methods(http.MethodDelete).Subrouter()
 	deleteRouter.HandleFunc("/accommodations/delete/{id}", accommodationsHandler.DeleteAccommodation)
 
+	// Add the search endpoint
+	router.HandleFunc("/accommodations/search", accommodationsHandler.SearchAccommodations).Methods("POST")
+
+	// ...
+
+	// Start server
+
 	//router.Use(handlers2.AuthMiddleware)
 
 	cors := gorillaHandlers.CORS(gorillaHandlers.AllowedOrigins([]string{"*"}))

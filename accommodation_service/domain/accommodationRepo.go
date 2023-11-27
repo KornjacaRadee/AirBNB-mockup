@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"log"
 	"os"
+
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -141,6 +142,40 @@ func (ar *AccommodationRepo) Delete(id string) error {
 	}
 	ar.logger.Printf("Documents deleted: %v\n", result.DeletedCount)
 	return nil
+}
+func (ar *AccommodationRepo) SearchAccommodations(searchRequest SearchRequest) (Accommodations, error) {
+	// Inicijalizujte context (posle 5 sekundi, prekinite operaciju)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	accommodationsCollection := ar.getCollection()
+
+	// Pravljenje filtera na osnovu kriterijuma pretrage
+	filter := bson.M{
+		"location":    searchRequest.Location,
+		"minGuestNum": bson.M{"$lte": searchRequest.MaxGuestNum},
+		"maxGuestNum": bson.M{"$gte": searchRequest.MinGuestNum},
+		"reservations": bson.M{"$not": bson.M{"$elemMatch": bson.M{
+			"startDate": bson.M{"$lt": searchRequest.EndDate},
+			"endDate":   bson.M{"$gt": searchRequest.StartDate},
+		}}},
+	}
+
+	// Izvršavanje upita
+	cursor, err := accommodationsCollection.Find(ctx, filter)
+	if err != nil {
+		ar.logger.Println(err)
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var accommodations Accommodations
+	if err := cursor.All(ctx, &accommodations); err != nil {
+		ar.logger.Println(err)
+		return nil, err
+	}
+
+	return accommodations, nil
 }
 
 func (ar *AccommodationRepo) getCollection() *mongo.Collection {

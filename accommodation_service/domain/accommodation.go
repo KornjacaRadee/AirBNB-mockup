@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io"
+	"time"
 )
 
 type Accommodation struct {
@@ -14,6 +15,18 @@ type Accommodation struct {
 	MinGuestNum int                `bson:"minGuestNum" json:"minGuestNum"`
 	MaxGuestNum int                `bson:"maxGuestNum" json:"maxGuestNum"`
 	Amenities   []string           `bson:"amenities,omitempty" json:"amenities"`
+}
+type SearchRequest struct {
+	Location    string    `json:"location"`
+	MinGuestNum int       `json:"minGuestNum"`
+	MaxGuestNum int       `json:"maxGuestNum"`
+	StartDate   time.Time `json:"startDate"`
+	EndDate     time.Time `json:"endDate"`
+}
+
+func (sr *SearchRequest) FromJSON(r io.Reader) error {
+	d := json.NewDecoder(r)
+	return d.Decode(sr)
 }
 
 type Accommodations []*Accommodation
