@@ -20,6 +20,7 @@ export class ConfigService {
     this._accomodations_url = this._api_url + 'accommodations';
     this._reservations_url = this._api_url + 'reservations';
     
+    
 
 
   }

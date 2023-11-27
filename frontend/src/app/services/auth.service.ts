@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ConfigService } from './config.service';
 
 interface User {
   username: string;
@@ -8,6 +9,7 @@ interface User {
   password?: string;
   firstName?: string;
   address?: string;
+
   // Dodajte druge atribute korisnika prema potrebi
 }
 
@@ -20,15 +22,18 @@ interface LoginCredentials {
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+    private configService:ConfigService) {
+
+
+  }
 
   register(user: User): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, user);
+    return this.http.post(`${this.configService._register_url}`, user);
   }
 
   login(credentials: LoginCredentials): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, credentials);
+    return this.http.post(`${this.configService._login_url}`, credentials);
   }
 }
