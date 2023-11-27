@@ -155,6 +155,24 @@ func DeleteUser(client *mongo.Client, userID primitive.ObjectID) error {
 	return err
 }
 
+func GetUserByEmail(client *mongo.Client, email string) (*User, error) {
+	userCollection := client.Database("authDB").Collection("users")
+
+	// Create a filter for the email
+	filter := bson.D{{"email", email}}
+
+	// Find the user in the database
+	var user User
+	err := userCollection.FindOne(context.TODO(), filter).Decode(&user)
+	if err != nil {
+		// Handle the error (e.g., user not found)
+		log.Printf("Error getting user by email: %v", err)
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func HashPassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
