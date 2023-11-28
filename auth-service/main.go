@@ -45,7 +45,7 @@ func main() {
 	r.HandleFunc("/login", authHandlers.HandleLogin(client)).Methods("POST")
 	r.HandleFunc("/users", authHandlers.HandleGetAllUsers(client)).Methods("GET")
 	r.HandleFunc("/user", authHandlers.HandleDeleteUser(client)).Methods("DELETE")
-	//r.HandleFunc("/users/{id}", authHandlers.HandleGetUserByID(client)).Methods("GET")
+	r.HandleFunc("/users/{id}", authHandlers.HandleGetUserByID(client)).Methods("GET")
 	// change user passwrod
 	r.HandleFunc("/change-password", authHandlers.HandleChangePassword(client)).Methods("POST")
 

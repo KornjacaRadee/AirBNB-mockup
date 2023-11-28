@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
@@ -128,28 +127,28 @@ func HandleLogin(client *mongo.Client) http.HandlerFunc {
 
 // I THINK THIS FUNC SHOULD NOT BE AVAILABLE TO REQUEST
 
-//func HandleGetUserByID(client *mongo.Client) http.HandlerFunc {
-//	return func(w http.ResponseWriter, r *http.Request) {
-//		// Extract user ID from URL parameters
-//		vars := mux.Vars(r)
-//		userID, err := primitive.ObjectIDFromHex(vars["id"])
-//		if err != nil {
-//			http.Error(w, "Invalid user ID", http.StatusBadRequest)
-//			return
-//		}
-//
-//		// Get user by ID
-//		user, err := data.GetUserByID(client, userID)
-//		if err != nil {
-//			http.Error(w, "User not found", http.StatusNotFound)
-//			return
-//		}
-//
-//		// Return user data
-//		w.Header().Set("Content-Type", "application/json")
-//		json.NewEncoder(w).Encode(user)
-//	}
-//}
+func HandleGetUserByID(client *mongo.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Extract user ID from URL parameters
+		vars := mux.Vars(r)
+		userID, err := primitive.ObjectIDFromHex(vars["id"])
+		if err != nil {
+			http.Error(w, "Invalid user ID", http.StatusBadRequest)
+			return
+		}
+
+		// Get user by ID
+		user, err := data.GetUserByID(client, userID)
+		if err != nil {
+			http.Error(w, "User not found", http.StatusNotFound)
+			return
+		}
+
+		// Return user data
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(user)
+	}
+}
 
 // authHandlers/authHandlers.go
 
