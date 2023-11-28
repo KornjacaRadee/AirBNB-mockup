@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { ConfigService } from './config.service';
 import { tap } from 'rxjs';
 import * as jwt_decode_ from 'jwt-decode';
+import { Router } from '@angular/router';
+
 
 interface User {
   username: string;
@@ -29,7 +31,8 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private configService:ConfigService
+    private configService:ConfigService,
+    private router: Router
     ) {
 
 
@@ -55,8 +58,10 @@ export class AuthService {
     );
   }
   logout() {
-    // Remove the token from localStorage on logout
+    console.log('Logout method called');
     localStorage.removeItem(this.tokenKey);
+    console.log('Navigating to lgin page');
+    this.router.navigate(['/login']);
   }
 
   getAuthToken(): string | null {
@@ -76,4 +81,6 @@ export class AuthService {
     // Check if the user is authenticated based on the presence of the token
     return !!this.getAuthToken();
   }
+
+
 }
