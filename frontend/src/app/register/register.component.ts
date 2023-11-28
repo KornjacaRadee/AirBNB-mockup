@@ -12,10 +12,13 @@ import { NgForm } from '@angular/forms';
 export class RegisterComponent {
   user: any = {};
   token: string|undefined;
+  errorMessage: string | undefined;
 
   constructor(private authService: AuthService, private router: Router) {
     this.token = undefined;
   } // Dodajte Router ovde
+
+
 
   registerUser() {
     this.authService.register(this.user).subscribe(
@@ -25,8 +28,10 @@ export class RegisterComponent {
 
         // Dodaj dodatne akcije po uspešnoj registraciji
       },
-      (error) => {
-        console.error('Registration failed', error);
+      (response) => {
+        console.error('Registration failed', response.error);
+        this.errorMessage = response.error;
+
         // Dodaj akcije koje ćeš preduzeti u slučaju greške
       }
     );

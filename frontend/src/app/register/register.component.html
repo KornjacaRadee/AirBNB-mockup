@@ -13,13 +13,7 @@
       <h2>Registration</h2>
       <!-- Dodajemo Angular formu i servis -->
       <form (ngSubmit)="registerUser()" #registrationForm="ngForm">
-        <div class="input-box button">
-          <input
-            type="Submit"
-            value="Register Now"
-            [disabled]="!registrationForm.valid"
-          />
-        </div>
+        <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
         <div class="input-box">
           <!-- Dodajemo Angular form elemente sa ngModel -->
           <input
@@ -69,7 +63,7 @@
 
         <div class="container-fluid py-3">
             <h1>Are you a robot?</h1>
-        
+
           <form #form="ngForm">
             <div class="row mt-3">
               <div class="col-sm-12 mb-2">
