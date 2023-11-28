@@ -26,21 +26,4 @@ export class HomeComponent implements OnInit {
       }
     );
   }
-
-  onSearch() {
-    this.accommodations = this.accommodations.filter((accommodation) =>
-      this.accommodationMatchesSearch(accommodation)
-    );
-  }
-
-  accommodationMatchesSearch(accommodation: any): boolean {
-    return (
-      accommodation.name
-        .toLowerCase()
-        .includes(this.searchTerm.toLowerCase()) ||
-      accommodation.location
-        .toLowerCase()
-        .includes(this.searchTerm.toLowerCase())
-    );
-  }
 }

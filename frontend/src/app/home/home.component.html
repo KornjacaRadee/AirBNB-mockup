@@ -1,13 +1,15 @@
 <div class="container">
   <div *ngFor="let accommodation of accommodations" class="accommodation-card">
-    <mat-card>
+    <mat-card class="mat-mdc-card">
       <div class="top-part">
         <mat-card-header>
           <div mat-card-avatar class="accommodation-image"></div>
-          <mat-card-title>{{ accommodation.name }}</mat-card-title>
+          <mat-card-title class="mat-mdc-card-title">{{
+            accommodation.name
+          }}</mat-card-title>
         </mat-card-header>
       </div>
-      <mat-card-content>
+      <mat-card-content class="mat-mdc-card-content">
         <p><strong>Owner Email:</strong> {{ accommodation.owner.email }}</p>
         <p><strong>Location:</strong> {{ accommodation.location }}</p>
         <p><strong>Min Guests:</strong> {{ accommodation.minGuestNum }}</p>
@@ -16,7 +18,7 @@
           <strong>Amenities:</strong> {{ accommodation.amenities.join(", ") }}
         </p>
       </mat-card-content>
-      <mat-card-actions> </mat-card-actions>
+      <mat-card-actions class="mat-mdc-card-actions"></mat-card-actions>
     </mat-card>
   </div>
 </div>
