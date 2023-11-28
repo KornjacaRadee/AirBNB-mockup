@@ -4,41 +4,40 @@
       <mat-icon>menu</mat-icon>
     </button>
     <button mat-button routerLink=""><mat-icon>home</mat-icon>Home</button>
-
-    <mat-form-field class="search-bar">
-      <input
-        matInput
-        placeholder="Search"
-        [(ngModel)]="searchTerm"
-        (keyup.enter)="onSearch()"
-      />
-      <button mat-button matSuffix (click)="onSearchButtonClicked()">
-        <mat-icon>search</mat-icon>
-      </button>
-    </mat-form-field>
   </mat-toolbar-row>
 </mat-toolbar>
 
-<mat-form-field class="search-bar">
-  <input matInput placeholder="Location" [(ngModel)]="searchTerm" />
-  <input
-    matInput
-    type="number"
-    placeholder="Min Guests"
-    [(ngModel)]="minGuests"
-  />
-  <input
-    matInput
-    type="number"
-    placeholder="Max Guests"
-    [(ngModel)]="maxGuests"
-  />
-  <button mat-button matSuffix (click)="onSearchButtonClicked()">
-    <mat-icon>search</mat-icon>
-  </button>
-</mat-form-field>
-
 <div class="container">
+  <mat-form-field class="search-bar">
+    <input matInput placeholder="Location" [(ngModel)]="searchTerm" />
+    <div class="guest-inputs">
+      <input
+        matInput
+        type="number"
+        placeholder="Min Guests"
+        [(ngModel)]="minGuests"
+      />
+      <span class="separator">-</span>
+      <input
+        matInput
+        type="number"
+        placeholder="Max Guests"
+        [(ngModel)]="maxGuests"
+      />
+    </div>
+    <button mat-button matSuffix (click)="onSearchButtonClicked()">
+      <mat-icon>search</mat-icon>
+    </button>
+  </mat-form-field>
+  <div *ngIf="searchSuccess; else noResults">
+    <mat-card
+      *ngFor="let accommodation of filteredAccommodations"
+      [ngClass]="{ 'found-accommodation': true }"
+    >
+      <!-- ... (ostatak koda ostaje isti) -->
+    </mat-card>
+  </div>
+
   <div *ngIf="searchSuccess; else noResults">
     <mat-card *ngFor="let accommodation of filteredAccommodations">
       <div class="top-part">
@@ -71,7 +70,6 @@
       <mat-list-item><a routerLink="/register">Register</a></mat-list-item>
       <mat-list-item><a routerLink="/login">Login</a></mat-list-item>
       <mat-list-item><a routerLink="/profile">Profile</a></mat-list-item>
-      <!-- Add more links as needed -->
     </mat-list>
   </mat-sidenav>
 

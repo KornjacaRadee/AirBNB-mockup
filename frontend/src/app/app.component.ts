@@ -23,18 +23,29 @@ export class AppComponent {
   onSearch() {
     this.enterPressed = true;
 
+    console.log('Search Term:', this.searchTerm);
+    console.log('Min Guests:', this.minGuests);
+    console.log('Max Guests:', this.maxGuests);
+
     this.accomodationService
       .searchAccomodations(this.searchTerm, this.minGuests, this.maxGuests)
       .subscribe(
-        (accommodations) => {
-          if (accommodations && accommodations.length > 0) {
-            this.accommodations = accommodations;
+        (response) => {
+          console.log('Server Response:', response);
+
+          if (response && response.length > 0) {
+            this.accommodations = response;
             this.filteredAccommodations = this.filterAccommodations();
             this.searchSuccess = true;
+            console.log(
+              'Filtered Accommodations:',
+              this.filteredAccommodations
+            );
           } else {
             this.accommodations = [];
             this.filteredAccommodations = [];
             this.searchSuccess = false;
+            console.log('No accommodations found');
           }
         },
         (error) => {
@@ -61,23 +72,21 @@ export class AppComponent {
   }
 
   filterAccommodations(): any[] {
-    // Implementirajte logiku za filtriranje smeštaja prema trenutnim parametrima pretrage
-    // Na primer, možete koristiti metodu filter ili neki drugi pristup
     return this.accommodations.filter((accommodation) =>
       this.accommodationMatchesSearch(accommodation)
     );
   }
 
   accommodationMatchesSearch(accommodation: any): boolean {
-    // Implementirajte logiku za proveru da li smeštaj odgovara trenutnoj pretrazi
-    // Na primer, možete proveriti da li smeštaj sadrži searchTerm u svom imenu ili lokaciji
     return (
-      accommodation.name
+      (accommodation.name
         .toLowerCase()
         .includes(this.searchTerm.toLowerCase()) ||
-      accommodation.location
-        .toLowerCase()
-        .includes(this.searchTerm.toLowerCase())
+        accommodation.location
+          .toLowerCase()
+          .includes(this.searchTerm.toLowerCase())) &&
+      accommodation.minGuestNum >= this.minGuests &&
+      accommodation.maxGuestNum <= this.maxGuests
     );
   }
 }

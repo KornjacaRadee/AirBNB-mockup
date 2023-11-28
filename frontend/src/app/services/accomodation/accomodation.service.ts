@@ -26,9 +26,9 @@ export class AccomodationService {
     maxGuests: number
   ): Observable<any[]> {
     const body = {
-      searchTerm: searchTerm,
-      minGuests: minGuests.toString(),
-      maxGuests: maxGuests.toString(),
+      location: searchTerm,
+      minGuestNum: minGuests,
+      maxGuestNum: maxGuests,
     };
 
     return this.http.post<any[]>(
