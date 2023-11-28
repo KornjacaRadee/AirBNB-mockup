@@ -12,7 +12,10 @@ body {
   justify-content: center;
   background: rgb(197, 197, 241);
 }
-
+.error-message{
+  color:red;
+  font-size: 15px;
+}
 .wrapper {
   max-width: 430px;
   width: 100%;

@@ -50,8 +50,8 @@ func SendRecoveryEmail(toEmail, recoveryToken string) {
 	// Set up your SMTP configuration
 	smtpServer := "smtp.ethereal.email"
 	smtpPort := 587
-	smtpUsername := "caesar.graham6@ethereal.email"
-	smtpPassword := "d3jsKjjcQrfbzXyMqs"
+	smtpUsername := "meta.nitzsche21@ethereal.email"
+	smtpPassword := "G4FvMNTABjrrXG5q3W\n"
 
 	// Set up the email message
 	from := mail.Address{"no-reply", "passrecovery@airbnbb.com"}
