@@ -69,7 +69,7 @@ func generateJWTToken(user *data.User) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": user.ID.Hex(),
 		"exp":     time.Now().Add(time.Hour * 24).Unix(), // Token expiration time (e.g., 24 hours)
-		"roles":   user.Roles,
+		"roles":   user.Role,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

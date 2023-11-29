@@ -18,7 +18,7 @@ type User struct {
 	Created_On string             `bson:"created_on" json:"created_On"`
 	Updated_On string             `bson:"updated_on" json:"updated_On"`
 	Deleted_On string             `bson:"deleted_on" json:"deleted_On"`
-	Roles      []string           `bson:"roles" json:"roles"`
+	Role       string             `bson:"role" json:"role"`
 }
 
 type Users []*User
