@@ -11,6 +11,7 @@ export class ConfigService {
   _register_url:string;
   _accomodations_url:string;
   _reservations_url:string;
+  _whoami_url: string;
 
 
   constructor() {
@@ -19,6 +20,7 @@ export class ConfigService {
     this._register_url = this._api_url + 'auth/register';
     this._accomodations_url = this._api_url + 'accommodations';
     this._reservations_url = this._api_url + 'reservations';
+    this._whoami_url = this._api_url + 'auth/users/';
     
     
 

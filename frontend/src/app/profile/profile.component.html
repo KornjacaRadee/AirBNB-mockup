@@ -108,44 +108,38 @@
                 aria-labelledby="home-tab"
               >
                 <!-- Profile Information -->
-                <div class="row">
-                  <div class="col-md-6">
-                    <label>Name</label>
+                <div *ngIf="user">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <label>Name</label>
+                    </div>
+                    <div class="col-md-6">
+                      <p>{{ user.name }}</p>
+                    </div>
                   </div>
-                  <div class="col-md-6">
-                    <p>Pera</p>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <label>Surname</label>
+                    </div>
+                    <div class="col-md-6">
+                      <p>{{ user.last_name }}</p>
+                    </div>
                   </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-6">
-                    <label>Surname</label>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <label>Address</label>
+                    </div>
+                    <div class="col-md-6">
+                      <p>{{ user.address }}</p>
+                    </div>
                   </div>
-                  <div class="col-md-6">
-                    <p>Peric</p>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-6">
-                    <label>Age</label>
-                  </div>
-                  <div class="col-md-6">
-                    <p>44</p>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-6">
-                    <label>Email</label>
-                  </div>
-                  <div class="col-md-6">
-                    <p>pera123@gmail.com</p>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-6">
-                    <label>Gender</label>
-                  </div>
-                  <div class="col-md-6">
-                    <p>Male</p>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <label>Email</label>
+                    </div>
+                    <div class="col-md-6">
+                      <p>{{ user.email }}</p>
+                    </div>
                   </div>
                 </div>
               </div>

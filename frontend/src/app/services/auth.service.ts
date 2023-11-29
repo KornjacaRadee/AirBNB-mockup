@@ -1,21 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { ConfigService } from './config.service';
 import { tap } from 'rxjs';
 import * as jwt_decode_ from 'jwt-decode';
 import { Router } from '@angular/router';
+import { catchError} from 'rxjs/operators';
+import { User } from '../model/user';
 
 
-interface User {
-  username: string;
-  email: string;
-  password?: string;
-  firstName?: string;
-  address?: string;
 
-  // Dodajte druge atribute korisnika prema potrebi
-}
 
 interface LoginCredentials {
   email: string;
@@ -81,6 +75,33 @@ export class AuthService {
     // Check if the user is authenticated based on the presence of the token
     return !!this.getAuthToken();
   }
+  whoami(): Observable<User> {
+    const userId = this.getCurrentUserId();
 
+    if (!userId) {
+      // Throw an error observable with a custom message
+      return throwError('User ID not found in the token.');
+    }
+
+    return this.http.get<User>(`${this.configService._whoami_url}${userId}`).pipe(
+      catchError((error) => {
+        // Handle HTTP errors or return a default user object
+        console.error('Error fetching user information:', error);
+        return throwError('Failed to fetch user information.');
+      })
+    );
+  }
+
+  private getCurrentUserId(): string | null {
+    // Logic to get the current user's ID from the token or elsewhere
+    const token = this.getAuthToken();
+    if (token) {
+      const decodedToken: any = jwt_decode_ as any;
+      console.log(decodedToken.user_id) // Type assertion to any
+      return decodedToken(token).user_id;
+       // Adjust this based on your JWT payload
+    }
+    return null;
+  }
 
 }
