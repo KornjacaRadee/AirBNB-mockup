@@ -14,7 +14,9 @@ body {
   justify-content: center;
   background: rgb(197, 197, 241);
 }
-
+.error-message{
+  color: red;
+}
 .container {
   position: absolute;
   top: 50%;

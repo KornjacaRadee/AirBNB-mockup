@@ -12,6 +12,7 @@ import { Router } from '@angular/router';
 export class LoginComponent implements OnInit {
   user: any = {};
   token: string|undefined;
+  errorMessage: string | undefined;
 
   constructor(private authService: AuthService, private router: Router) {
     this.token = undefined;
@@ -28,8 +29,9 @@ export class LoginComponent implements OnInit {
         console.log('Login successful', response);
         this.router.navigate(['/profile']);
       },
-      (error) => {
-        console.error('Login failed', error);
+      (response) => {
+        console.error('Login failed', response.error);
+        this.errorMessage = response.error;
         // Dodaj akcije koje ćeš preduzeti u slučaju greške
       }
     );
