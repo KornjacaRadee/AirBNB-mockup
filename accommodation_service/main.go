@@ -47,18 +47,25 @@ func main() {
 	router.Use(accommodationsHandler.MiddlewareContentTypeSet)
 
 	getRouter := router.Methods(http.MethodGet).Subrouter()
-	getRouter.HandleFunc("/", accommodationsHandler.GetAllAccommodations)
+	getRouter.HandleFunc("/all", accommodationsHandler.GetAllAccommodations)
 
 	postRouter := router.Methods(http.MethodPost).Subrouter()
-	postRouter.HandleFunc("/", accommodationsHandler.PostAccommodation)
+	postRouter.HandleFunc("/new", accommodationsHandler.PostAccommodation)
 	postRouter.Use(accommodationsHandler.MiddlewareAccommodationDeserialization)
 
 	patchRouter := router.Methods(http.MethodPatch).Subrouter()
-	patchRouter.HandleFunc("/{id}", accommodationsHandler.PatchAccommodation)
+	patchRouter.HandleFunc("/patch/{id}", accommodationsHandler.PatchAccommodation)
 	patchRouter.Use(accommodationsHandler.MiddlewareAccommodationDeserialization)
 
 	deleteRouter := router.Methods(http.MethodDelete).Subrouter()
-	deleteRouter.HandleFunc("/{id}", accommodationsHandler.DeleteAccommodation)
+	deleteRouter.HandleFunc("/delete/{id}", accommodationsHandler.DeleteAccommodation)
+
+	// Add the search endpoint
+	router.HandleFunc("/search", accommodationsHandler.SearchAccommodations).Methods("POST")
+
+	// ...
+
+	// Start server
 
 	//router.Use(handlers2.AuthMiddleware)
 

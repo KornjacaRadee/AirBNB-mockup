@@ -1,6 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ConfigService } from './config.service';
+import { tap } from 'rxjs';
+import * as jwt_decode_ from 'jwt-decode';
+import { Router } from '@angular/router';
+
 
 interface User {
   username: string;
@@ -8,6 +13,7 @@ interface User {
   password?: string;
   firstName?: string;
   address?: string;
+
   // Dodajte druge atribute korisnika prema potrebi
 }
 
@@ -20,15 +26,70 @@ interface LoginCredentials {
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080';
 
-  constructor(private http: HttpClient) {}
+  private tokenKey = 'authToken';
+
+  constructor(
+    private http: HttpClient,
+    private configService:ConfigService,
+    private router: Router
+    ) {
+
+
+  }
 
   register(user: User): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, user);
+    return this.http.post(`${this.configService._register_url}`, user);
   }
 
+  // login(credentials: LoginCredentials): Observable<any> {
+  //   return this.http.post(`${this.configService._login_url}`, credentials);
+  // }
+
   login(credentials: LoginCredentials): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, credentials);
+    return this.http.post(`${this.configService._login_url}`, credentials).pipe(
+      tap((response: any) => {
+        const token = response.token;
+        if (token) {
+          // Store the token in localStorage
+          localStorage.setItem(this.tokenKey, token);
+        }
+      })
+    );
   }
+  logout() {
+    console.log('Logout method called');
+    localStorage.removeItem(this.tokenKey);
+    console.log('Navigating to lgin page');
+    this.router.navigate(['/login']);
+  }
+
+  getAuthToken(): string | null {
+    return localStorage.getItem(this.tokenKey);
+  }
+
+  getUserRole(): string | null {
+    const token = this.getAuthToken();
+    if (token) {
+      const decodedToken: any = jwt_decode_ as any; // Type assertion to any
+      return decodedToken(token).roles; // Adjust this based on your JWT payload
+    }
+    return null;
+  }
+
+  // isLoggedIn(): boolean {
+  //   const userRole = this.getAuthToken();
+  //   if (userRole != null ){
+  //     return true
+  //   }
+  //   else{
+  //     return false
+  //   }
+  // }
+
+  isAuthenticated(): boolean {
+    return !!this.getAuthToken();
+  }
+
+
 }

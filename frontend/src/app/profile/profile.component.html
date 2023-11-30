@@ -1,1 +1,178 @@
-<p>profile works!</p>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+      rel="stylesheet"
+      id="bootstrap-css"
+    />
+    <link rel="stylesheet" />
+    <title>AirBnb Profile</title>
+  </head>
+  <body>
+    <div class="container emp-profile">
+      <form method="post">
+        <!-- Profile Image Section -->
+        <div class="row">
+          <div class="col-md-4">
+            <div class="profile-img">
+              <img
+                src="https://via.placeholder.com/150x150/8e44ad/ffffff?text=Profile"
+                alt="Profile Image"
+              />
+            </div>
+          </div>
+
+          <!-- Profile Information Section -->
+          <div class="col-md-8">
+            <div class="profile-head">
+              <h5>Pera Peric</h5>
+              <h6>Host</h6>
+              <p class="proile-rating">RANKINGS : <span>8/10</span></p>
+
+              <!-- Navigation Tabs -->
+              <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item">
+                  <a
+                    class="nav-link active"
+                    id="home-tab"
+                    data-toggle="tab"
+                    href="#home"
+                    role="tab"
+                    aria-controls="home"
+                    aria-selected="true"
+                    >About</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    id="profile-tab"
+                    data-toggle="tab"
+                    href="#profile"
+                    role="tab"
+                    aria-controls="profile"
+                    aria-selected="false"
+                    >Active Reservation</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    id="reservations-tab"
+                    data-toggle="tab"
+                    href="#reservations"
+                    role="tab"
+                    aria-controls="reservations"
+                    aria-selected="false"
+                  >
+                    My accommodation</a
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Edit Profile and Logout Buttons -->
+          <div class="col-md-2">
+            <input
+              type="submit"
+              class="profile-edit-btn"
+              name="btnAddMore"
+              value="Edit Profile"
+            />
+            <input
+              type="button"
+              class="profile-edit-btn"
+              name="btnLogout"
+              value="Logout"
+              (click)="logout()"
+            />
+          </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="row">
+          <div class="col-md-4">
+            <div class="profile-work"></div>
+          </div>
+          <div class="col-md-8">
+            <div class="tab-content profile-tab" id="myTabContent">
+              <!-- About Tab -->
+              <div
+                class="tab-pane fade show active"
+                id="home"
+                role="tabpanel"
+                aria-labelledby="home-tab"
+              >
+                <!-- Profile Information -->
+                <div class="row">
+                  <div class="col-md-6">
+                    <label>Name</label>
+                  </div>
+                  <div class="col-md-6">
+                    <p>Pera</p>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <label>Surname</label>
+                  </div>
+                  <div class="col-md-6">
+                    <p>Peric</p>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <label>Age</label>
+                  </div>
+                  <div class="col-md-6">
+                    <p>44</p>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <label>Email</label>
+                  </div>
+                  <div class="col-md-6">
+                    <p>pera123@gmail.com</p>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <label>Gender</label>
+                  </div>
+                  <div class="col-md-6">
+                    <p>Male</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Timeline Tab -->
+              <div
+                class="tab-pane fade"
+                id="profile"
+                role="tabpanel"
+                aria-labelledby="profile-tab"
+              >
+                <!-- Reservation Information -->
+                <div class="row">
+                  <div class="col-md-12">
+                    <label>Your Reservations</label><br />
+                    <p>List of your reservations goes here.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  </body>
+</html>

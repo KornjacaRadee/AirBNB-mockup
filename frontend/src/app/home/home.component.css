@@ -1,0 +1,58 @@
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+
+.accommodation-card {
+  margin: 10px;
+  width: 300px;
+  border-radius: 15px;
+  overflow: hidden;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.accommodation-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.top-part {
+  background-color: #7b1fa2;
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #fff;
+}
+
+.accommodation-image {
+  background-color: #fff;
+  border-radius: 50%;
+}
+/* Dodajte sledeće stilove za bočni meni */
+.mat-drawer {
+  width: 200px; /* Prilagodite širinu menija prema potrebi */
+  background-color: #7b1fa2; /* Boja pozadine menija */
+  color: #fff; /* Boja teksta u meniju */
+}
+
+.mat-drawer-inner-container {
+  padding: 16px;
+}
+
+.mat-mdc-list-item {
+  color: #fff; /* Boja teksta za stavke menija */
+}
+
+/* Dodajte padding iznad kartica kako biste izbegli preklapanje sa sidenav-om */
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  padding-top: 64px; /* Prilagodite vrednost prema potrebi */
+}
+
+/* Podešavanja za boje bočnog menija u stanju hover */
+.mat-mdc-list-item:hover {
+  background-color: #9144a0; /* Promenite boju na hover prema potrebi */
+}

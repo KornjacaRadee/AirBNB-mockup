@@ -3,9 +3,12 @@ package handlers
 import (
 	"accommodation_service/domain"
 	"context"
+	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type KeyProduct struct{}
@@ -22,6 +25,7 @@ func NewAccommodationsHandler(l *log.Logger, r *domain.AccommodationRepo) *Accom
 }
 
 func (a *AccommodationsHandler) GetAllAccommodations(rw http.ResponseWriter, h *http.Request) {
+
 	accommodations, err := a.repo.GetAll()
 	if err != nil {
 		a.logger.Print("Database exception: ", err)
@@ -40,9 +44,29 @@ func (a *AccommodationsHandler) GetAllAccommodations(rw http.ResponseWriter, h *
 }
 
 func (a *AccommodationsHandler) PostAccommodation(rw http.ResponseWriter, h *http.Request) {
-	accommodation := h.Context().Value(KeyProduct{}).(*domain.Accommodation)
-	err := a.repo.Insert(accommodation)
+	tokenString := h.Header.Get("Authorization")
+	if tokenString == "" {
+		http.Error(rw, "Missing Authorization header", http.StatusUnauthorized)
+		return
+	}
+
+	// Remove 'Bearer ' prefix if present
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	role, err := getRoleFromToken(tokenString)
 	if err != nil {
+		http.Error(rw, fmt.Sprintf("Error extracting user role: %v", err), http.StatusUnauthorized)
+		return
+	}
+
+	// Check if the user has the required role
+	if role != "host" {
+		http.Error(rw, "Unauthorized: Insufficient privileges", http.StatusUnauthorized)
+		return
+	}
+
+	accommodation := h.Context().Value(KeyProduct{}).(*domain.Accommodation)
+	erra := a.repo.Insert(accommodation)
+	if erra != nil {
 		http.Error(rw, "Unable to post accommodation", http.StatusBadRequest)
 		a.logger.Fatal(err)
 		return
@@ -51,6 +75,25 @@ func (a *AccommodationsHandler) PostAccommodation(rw http.ResponseWriter, h *htt
 }
 
 func (a *AccommodationsHandler) PatchAccommodation(rw http.ResponseWriter, h *http.Request) {
+	tokenString := h.Header.Get("Authorization")
+	if tokenString == "" {
+		http.Error(rw, "Missing Authorization header", http.StatusUnauthorized)
+		return
+	}
+
+	// Remove 'Bearer ' prefix if present
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	role, err := getRoleFromToken(tokenString)
+	if err != nil {
+		http.Error(rw, fmt.Sprintf("Error extracting user role: %v", err), http.StatusUnauthorized)
+		return
+	}
+
+	// Check if the user has the required role
+	if role != "host" {
+		http.Error(rw, "Unauthorized: Insufficient privileges", http.StatusUnauthorized)
+		return
+	}
 	vars := mux.Vars(h)
 	id := vars["id"]
 	accommodation := h.Context().Value(KeyProduct{}).(*domain.Accommodation)
@@ -60,6 +103,7 @@ func (a *AccommodationsHandler) PatchAccommodation(rw http.ResponseWriter, h *ht
 }
 
 func (a *AccommodationsHandler) DeleteAccommodation(rw http.ResponseWriter, h *http.Request) {
+
 	vars := mux.Vars(h)
 	id := vars["id"]
 
@@ -84,6 +128,30 @@ func (a *AccommodationsHandler) MiddlewareAccommodationDeserialization(next http
 	})
 }
 
+func (a *AccommodationsHandler) SearchAccommodations(rw http.ResponseWriter, h *http.Request) {
+	var searchRequest domain.SearchRequest
+	err := searchRequest.FromJSON(h.Body)
+	if err != nil {
+		http.Error(rw, "Unable to decode search request", http.StatusBadRequest)
+		a.logger.Fatal(err)
+		return
+	}
+
+	accommodations, err := a.repo.SearchAccommodations(searchRequest)
+	if err != nil {
+		http.Error(rw, "Error searching accommodations", http.StatusInternalServerError)
+		a.logger.Fatal(err)
+		return
+	}
+
+	err = accommodations.ToJSON(rw)
+	if err != nil {
+		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
+		a.logger.Fatal("Unable to convert to json:", err)
+		return
+	}
+}
+
 func (a *AccommodationsHandler) MiddlewareContentTypeSet(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, h *http.Request) {
 		a.logger.Println("Method [", h.Method, "] - Hit path :", h.URL.Path)
@@ -92,4 +160,43 @@ func (a *AccommodationsHandler) MiddlewareContentTypeSet(next http.Handler) http
 
 		next.ServeHTTP(rw, h)
 	})
+}
+
+//CHECKER
+
+const jwtSecret = "g3HtH5KZNq3KcWglpIc3eOBHcrxChcY/7bTKG8a5cHtjn2GjTqUaMbxR3DBIr+44"
+
+func getRoleFromToken(tokenString string) (string, error) {
+	// Parse the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Check the signing method
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		// Provide the secret key used to sign the token
+		return []byte(jwtSecret), nil
+	})
+	if err != nil {
+		return "", fmt.Errorf("Invalid token: %v", err)
+	}
+
+	// Check if the token is valid
+	if !token.Valid {
+		return "", fmt.Errorf("Invalid token")
+	}
+
+	// Extract user role from claims
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", fmt.Errorf("Invalid token claims")
+	}
+
+	// Get user role
+	role, ok := claims["roles"].(string)
+	if !ok {
+		return "", fmt.Errorf("User role not found in token claims")
+	}
+
+	return role, nil
 }

@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-
+import { ToastrModule } from 'ngx-toastr';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -21,6 +21,11 @@ import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from './services/auth.service';
 import { ApiService } from './services/api.service';
 import { RouterModule } from '@angular/router';
+import { AccomodationService } from './services/accomodation/accomodation.service';
+import { ReservationService } from './services/reservation/reservation.service';
+
+import { RECAPTCHA_SETTINGS, RecaptchaFormsModule, RecaptchaModule, RecaptchaSettings } from 'ng-recaptcha';
+import { environment } from 'src/environments/environment';
 
 @NgModule({
   declarations: [
@@ -47,8 +52,25 @@ import { RouterModule } from '@angular/router';
     ReactiveFormsModule,
     FormsModule,
     RouterModule,
+    RecaptchaModule,
+    RecaptchaFormsModule,
   ],
-  providers: [AuthService, ApiService],
+
+
+  providers: [
+    
+    {
+      provide: RECAPTCHA_SETTINGS,
+      useValue: {
+        siteKey: environment.recaptcha.siteKey,
+      } as RecaptchaSettings,
+    },
+    
+    AuthService, 
+    ApiService,
+    AccomodationService,
+    ReservationService
+  ],
 
   bootstrap: [AppComponent],
 })

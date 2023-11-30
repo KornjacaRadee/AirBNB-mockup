@@ -1,6 +1,7 @@
 package data
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
@@ -9,6 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 	"log"
+	"os"
+	"strings"
 )
 
 /*func RegisterUser(client *mongo.Client, user *User) error {
@@ -40,7 +43,7 @@ import (
 }*/
 
 func RegisterUser(client *mongo.Client, user *User) error {
-	userCollection := client.Database("mongodb").Collection("users")
+	userCollection := client.Database("authDB").Collection("users")
 
 	// Create unique index on email field
 	indexModel := mongo.IndexModel{
@@ -67,8 +70,24 @@ func RegisterUser(client *mongo.Client, user *User) error {
 	return err
 }
 
+// data/user.go
+
+// ...
+
+func GetUserByID(client *mongo.Client, userID primitive.ObjectID) (*User, error) {
+	userCollection := client.Database("authDB").Collection("users")
+
+	var user User
+	err := userCollection.FindOne(context.TODO(), bson.D{{"_id", userID}}).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func LoginUser(client *mongo.Client, email, password string) (*User, error) {
-	userCollection := client.Database("mongodb").Collection("users")
+	userCollection := client.Database("authDB").Collection("users")
 
 	var user User
 	err := userCollection.FindOne(context.TODO(), bson.D{{"email", email}}).Decode(&user)
@@ -85,12 +104,31 @@ func LoginUser(client *mongo.Client, email, password string) (*User, error) {
 		return nil, err // Passwords do not match
 	}
 
-	// Passwords match, return the user
 	return &user, nil
+}
+func UpdatePassword(client *mongo.Client, userID primitive.ObjectID, newPassword string) error {
+	// Hash the new password
+	log.Printf("New password is: %s ", newPassword)
+	hashedPassword, err := HashPassword(newPassword)
+	if err != nil {
+		return err
+	}
+
+	// Update the user's password in the database
+	userCollection := client.Database("authDB").Collection("users")
+	filter := bson.D{{"_id", userID}}
+	update := bson.D{
+		{"$set", bson.D{
+			{"password", hashedPassword},
+		}},
+	}
+
+	_, err = userCollection.UpdateOne(context.TODO(), filter, update)
+	return err
 }
 
 func GetAllUsers(client *mongo.Client) (Users, error) {
-	userCollection := client.Database("mongodb").Collection("users")
+	userCollection := client.Database("authDB").Collection("users")
 
 	cursor, err := userCollection.Find(context.TODO(), bson.D{})
 	if err != nil {
@@ -111,8 +149,57 @@ func GetAllUsers(client *mongo.Client) (Users, error) {
 }
 
 func DeleteUser(client *mongo.Client, userID primitive.ObjectID) error {
-	userCollection := client.Database("mongodb").Collection("users")
+	userCollection := client.Database("authDB").Collection("users")
 
 	_, err := userCollection.DeleteOne(context.TODO(), bson.D{{"_id", userID}})
 	return err
+}
+
+func GetUserByEmail(client *mongo.Client, email string) (*User, error) {
+	userCollection := client.Database("authDB").Collection("users")
+
+	// Create a filter for the email
+	filter := bson.D{{"email", email}}
+
+	// Find the user in the database
+	var user User
+	err := userCollection.FindOne(context.TODO(), filter).Decode(&user)
+	if err != nil {
+		// Handle the error (e.g., user not found)
+		log.Printf("Error getting user by email: %v", err)
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func HashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedPassword), nil
+}
+
+func CheckPasswordInBlacklist(password string) (bool, error) {
+	file, err := os.Open("blacklist/blacklist.txt")
+	if err != nil {
+		log.Printf("error while opening blacklist file: %v", err)
+		return false, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		if strings.TrimSpace(scanner.Text()) == password {
+			return false, nil
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Printf("error while scanning blackist: %v", err)
+		return false, err
+	}
+
+	return true, nil
 }
