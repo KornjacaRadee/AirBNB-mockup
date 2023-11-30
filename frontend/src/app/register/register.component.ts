@@ -1,8 +1,7 @@
-// register.component.ts
 import { Component } from '@angular/core';
 import { AuthService } from '../services/auth.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { NgForm } from '@angular/forms';
 
 @Component({
   selector: 'app-register',
@@ -11,44 +10,49 @@ import { NgForm } from '@angular/forms';
 })
 export class RegisterComponent {
   user: any = {};
-  token: string|undefined;
+  token: string | undefined;
   errorMessage: string | undefined;
+  registrationForm!: FormGroup;
 
-  constructor(private authService: AuthService, private router: Router) {
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private formBuilder: FormBuilder
+  ) {
     this.token = undefined;
-  } // Dodajte Router ovde
-
-
-
-  registerUser() {
-    this.authService.register(this.user).subscribe(
-      (response) => {
-        console.log('Registration successful', response);
-        this.router.navigate(['/login']); // Prilagodite putanju prema vašoj početnoj stranici
-
-        // Dodaj dodatne akcije po uspešnoj registraciji
-      },
-      (response) => {
-        console.error('Registration failed', response.error);
-        this.errorMessage = response.error;
-
-        // Dodaj akcije koje ćeš preduzeti u slučaju greške
-      }
-    );
   }
 
+  ngOnInit(): void {
+    this.buildForm();
+  }
 
-  // public send(form: NgForm): void {
-  //   if (form.invalid) {
-  //     for (const control of Object.keys(form.controls)) {
-  //       form.controls[control].markAsTouched();
-  //     }
-  //     return;                                              //VEZANO ZA CAPTCHU, OSTAVITI ZA SVAKI SLUCAJ
-  //   }
+  buildForm(): void {
+    this.registrationForm = this.formBuilder.group({
+      name: ['', [Validators.required, Validators.pattern('[a-zA-Z ]*')]],
+      lastName: ['', [Validators.required, Validators.pattern('[a-zA-Z ]*')]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      address: ['', Validators.required],
+      role: ['host', Validators.required],
+      // Add other form controls and validations as needed
+      // ...
+    });
+  }
 
-  //   console.debug(`Token [${this.token}] generated`);
-  // }
-
-
-
+  registerUser(): void {
+    if (this.registrationForm.valid) {
+      this.authService.register(this.registrationForm.value).subscribe(
+        (response) => {
+          console.log('Registration successful', response);
+          this.router.navigate(['/login']);
+          // Add additional actions on successful registration
+        },
+        (response) => {
+          console.error('Registration failed', response.error);
+          this.errorMessage = response.error;
+          // Add actions on registration failure
+        }
+      );
+    }
+  }
 }
