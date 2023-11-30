@@ -1,6 +1,6 @@
 // login.component.ts
 import { NgForm } from '@angular/forms';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 
@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   user: any = {};
   token: string|undefined;
 
@@ -17,6 +17,11 @@ export class LoginComponent {
     this.token = undefined;
   }
 
+  ngOnInit(): void {
+    if(this.authService.isAuthenticated()){
+      this.router.navigate(['/home']);
+    }
+  }
   loginUser() {
     this.authService.login(this.user).subscribe(
       (response) => {
@@ -44,5 +49,5 @@ export class LoginComponent {
   // }
 
 
-  
+
 }
