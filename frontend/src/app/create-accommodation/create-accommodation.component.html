@@ -1,0 +1,40 @@
+<!-- create-accommodation.component.html -->
+<div class="wrapper">
+<div class="create-accommodation-container">
+  <h2>Create Accommodation</h2>
+
+  <form>
+    <div class="form-group">
+      <label for="name">Accommodation Name</label>
+      <input type="text" id="name" name="name" [(ngModel)]="accommodation.name" required>
+    </div>
+
+    <div class="form-group">
+      <label for="location">Location</label>
+      <input type="text" id="location" name="location" [(ngModel)]="accommodation.location" required>
+    </div>
+
+    <div class="form-group">
+      <label for="minGuestNum">Minimum Guest Number</label>
+      <input type="number" id="minGuestNum" name="minGuestNum" [(ngModel)]="accommodation.minGuestNum" required>
+    </div>
+
+    <div class="form-group">
+      <label for="maxGuestNum">Maximum Guest Number</label>
+      <input type="number" id="maxGuestNum" name="maxGuestNum" [(ngModel)]="accommodation.maxGuestNum" required>
+    </div>
+
+    <div class="form-group">
+      <label>Amenities</label>
+      <div class="amenities-checkboxes">
+        <div *ngFor="let amenity of amenities" class="amenity-checkbox">
+          <input type="checkbox" id="{{ amenity }}" [(ngModel)]="accommodation.amenities" [value]="amenity">
+          <label for="{{ amenity }}">{{ amenity }}</label>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" (click)="createAccommodation()">Create Accommodation</button>
+  </form>
+</div>
+</div>

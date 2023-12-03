@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ConfigService } from '../config.service';
 import { ApiService } from '../api.service';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient,HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 
@@ -18,6 +18,11 @@ export class AccomodationService {
 
   getAccomodations(): Observable<any[]> {
     return this.http.get<any[]>(this.configService._accomodations_url + '/all');
+  }
+
+  createAccommodation(headers: HttpHeaders, accommodation: any): Observable<any[]> {
+    const options = { headers };
+    return this.http.post<any[]>(this.configService._accomodations_url + '/new', accommodation, options);
   }
 
   searchAccomodations(

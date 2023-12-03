@@ -1,26 +1,2 @@
-<mat-sidenav-container>
-  <mat-sidenav [(opened)]="opened" mode="side" class="mat-drawer">
-    <!-- Vaš navigacioni meni ovde -->
-    <mat-list>
-      <mat-list-item><a routerLink="/">Home</a></mat-list-item>
-      <mat-list-item><a routerLink="/register">Register</a></mat-list-item>
-      <mat-list-item><a routerLink="/login">Login</a></mat-list-item>
-    </mat-list>
-  </mat-sidenav>
-
-  <mat-sidenav-content>
-    <mat-toolbar color="primary">
-      <mat-toolbar-row>
-        <button mat-button (click)="opened = !opened">
-          <mat-icon>menu</mat-icon>
-        </button>
-        <button mat-button routerLink=""><mat-icon>home</mat-icon>Home</button>
-      </mat-toolbar-row>
-    </mat-toolbar>
-
-    <div class="container">
-      <!-- Your current home component content here -->
-      <router-outlet></router-outlet>
-    </div>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+<app-navbar></app-navbar>
+<router-outlet></router-outlet>

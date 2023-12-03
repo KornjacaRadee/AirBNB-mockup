@@ -31,10 +31,10 @@
             placeholder="Enter your last name"
             formControlName="lastName"
           />
-          <div *ngIf="registrationForm.get('lastName')!.hasError('required') && registrationForm.get('lastName')!.touched" class="validation-error">
+          <div *ngIf="registrationForm.get('last_name')!.hasError('required') && registrationForm.get('last_name')!.touched" class="validation-error">
             Last Name is required.
           </div>
-          <div *ngIf="registrationForm.get('lastName')!.hasError('pattern') && registrationForm.get('lastName')!.touched" class="validation-error">
+          <div *ngIf="registrationForm.get('last_name')!.hasError('pattern') && registrationForm.get('last_name')!.touched" class="validation-error">
             Last Name should contain only letters.
           </div>
         </div>

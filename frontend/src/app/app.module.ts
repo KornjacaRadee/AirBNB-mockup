@@ -28,6 +28,8 @@ import { RECAPTCHA_SETTINGS, RecaptchaFormsModule, RecaptchaModule, RecaptchaSet
 import { environment } from 'src/environments/environment';
 import { PasswordRecoveryComponent } from './password-recovery/password-recovery.component';
 import { NewPasswrodComponent } from './new-passwrod/new-passwrod.component';
+import { NavbarComponent } from './navbar/navbar.component';
+import { CreateAccommodationComponent } from './create-accommodation/create-accommodation.component';
 
 @NgModule({
   declarations: [
@@ -37,6 +39,8 @@ import { NewPasswrodComponent } from './new-passwrod/new-passwrod.component';
     RegisterComponent,
     PasswordRecoveryComponent,
     NewPasswrodComponent,
+    NavbarComponent,
+    CreateAccommodationComponent,
   ],
   imports: [
     BrowserModule,

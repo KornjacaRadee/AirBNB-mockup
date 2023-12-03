@@ -6,7 +6,8 @@ import { LoginComponent } from './login/login.component';
 import { ProfileComponent } from './profile/profile.component';
 import { PasswordRecoveryComponent } from './password-recovery/password-recovery.component';
 import { NewPasswrodComponent } from './new-passwrod/new-passwrod.component';
-
+import { NavbarComponent } from './navbar/navbar.component';
+import { CreateAccommodationComponent } from './create-accommodation/create-accommodation.component';
 
 const routes: Routes = [
   {
@@ -37,6 +38,14 @@ const routes: Routes = [
   {
     path: 'new-password',
     component: NewPasswrodComponent,
+  },
+  {
+    path: 'navbar',
+    component: NavbarComponent,
+  },
+  {
+    path: 'create-accommodation',
+    component: CreateAccommodationComponent,
   },
 ];
 
