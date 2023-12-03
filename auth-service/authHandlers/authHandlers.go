@@ -152,10 +152,6 @@ func HandleGetUserByID(client *mongo.Client) http.HandlerFunc {
 	}
 }
 
-// authHandlers/authHandlers.go
-
-// ...
-
 func HandleChangePassword(client *mongo.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Extract user ID from JWT token
@@ -338,7 +334,10 @@ func HandlePasswordReset(client *mongo.Client) http.HandlerFunc {
 
 		// Allow the user to reset their password
 		// You can redirect them to a password reset page in your frontend
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		response := map[string]string{"status": "success", "message": "Password reset allowed"}
+		json.NewEncoder(w).Encode(response)
 	}
 }
 

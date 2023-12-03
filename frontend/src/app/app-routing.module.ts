@@ -4,6 +4,9 @@ import { HomeComponent } from './home/home.component';
 import { RegisterComponent } from './register/register.component';
 import { LoginComponent } from './login/login.component';
 import { ProfileComponent } from './profile/profile.component';
+import { PasswordRecoveryComponent } from './password-recovery/password-recovery.component';
+import { NewPasswrodComponent } from './new-passwrod/new-passwrod.component';
+
 
 const routes: Routes = [
   {
@@ -26,6 +29,14 @@ const routes: Routes = [
   {
     path: 'profile',
     component: ProfileComponent,
+  },
+  {
+    path: 'recovery',
+    component: PasswordRecoveryComponent,
+  },
+  {
+    path: 'new-password',
+    component: NewPasswrodComponent,
   },
 ];
 
