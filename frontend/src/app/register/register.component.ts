@@ -24,6 +24,9 @@ export class RegisterComponent {
 
   ngOnInit(): void {
     this.buildForm();
+    if(this.authService.isAuthenticated()){
+      this.router.navigate(['/home']);
+    }
   }
 
   buildForm(): void {

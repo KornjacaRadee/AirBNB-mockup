@@ -77,8 +77,17 @@ export class AuthService {
     return null;
   }
 
+  // isLoggedIn(): boolean {
+  //   const userRole = this.getAuthToken();
+  //   if (userRole != null ){
+  //     return true
+  //   }
+  //   else{
+  //     return false
+  //   }
+  // }
+
   isAuthenticated(): boolean {
-    // Check if the user is authenticated based on the presence of the token
     return !!this.getAuthToken();
   }
 
