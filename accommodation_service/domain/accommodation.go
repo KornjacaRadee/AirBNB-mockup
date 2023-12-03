@@ -52,11 +52,3 @@ func (u User) Equals(user User) bool {
 func (a Accommodation) Of(user User) bool {
 	return a.Owner.Equals(user)
 }
-
-//type AccommodationRepository interface {
-//	Get(id primitive.ObjectID) (Accommodation, error)
-//	GetAll() ([]Accommodation, error)
-//	GetByUser(user User) ([]Accommodation, error)
-//	Create(Accommodation Accommodation) (Accommodation, error)
-//	Update(Accommodation Accommodation) error
-//}
