@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
@@ -128,32 +129,28 @@ func HandleLogin(client *mongo.Client) http.HandlerFunc {
 
 // I THINK THIS FUNC SHOULD NOT BE AVAILABLE TO REQUEST
 
-//func HandleGetUserByID(client *mongo.Client) http.HandlerFunc {
-//	return func(w http.ResponseWriter, r *http.Request) {
-//		// Extract user ID from URL parameters
-//		vars := mux.Vars(r)
-//		userID, err := primitive.ObjectIDFromHex(vars["id"])
-//		if err != nil {
-//			http.Error(w, "Invalid user ID", http.StatusBadRequest)
-//			return
-//		}
-//
-//		// Get user by ID
-//		user, err := data.GetUserByID(client, userID)
-//		if err != nil {
-//			http.Error(w, "User not found", http.StatusNotFound)
-//			return
-//		}
-//
-//		// Return user data
-//		w.Header().Set("Content-Type", "application/json")
-//		json.NewEncoder(w).Encode(user)
-//	}
-//}
+func HandleGetUserByID(client *mongo.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Extract user ID from URL parameters
+		vars := mux.Vars(r)
+		userID, err := primitive.ObjectIDFromHex(vars["id"])
+		if err != nil {
+			http.Error(w, "Invalid user ID", http.StatusBadRequest)
+			return
+		}
 
-// authHandlers/authHandlers.go
+		// Get user by ID
+		user, err := data.GetUserByID(client, userID)
+		if err != nil {
+			http.Error(w, "User not found", http.StatusNotFound)
+			return
+		}
 
-// ...
+		// Return user data
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(user)
+	}
+}
 
 func HandleChangePassword(client *mongo.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -337,7 +334,10 @@ func HandlePasswordReset(client *mongo.Client) http.HandlerFunc {
 
 		// Allow the user to reset their password
 		// You can redirect them to a password reset page in your frontend
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		response := map[string]string{"status": "success", "message": "Password reset allowed"}
+		json.NewEncoder(w).Encode(response)
 	}
 }
 

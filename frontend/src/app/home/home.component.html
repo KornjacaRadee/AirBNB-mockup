@@ -55,3 +55,14 @@
     </ng-template>
   </div>
 </div>
+<!-- accommodation-list.component.html -->
+<div class="accommodation-container">
+  <div *ngFor="let accommodation of accommodations" class="accommodation-card">
+    <h3>{{ accommodation.name }}</h3>
+    <p>{{ accommodation.location }}</p>
+    <p class="details">
+      Min Guests: {{ accommodation.minGuestNum }} - Max Guests: {{ accommodation.maxGuestNum }}
+    </p>
+  </div>
+</div>
+

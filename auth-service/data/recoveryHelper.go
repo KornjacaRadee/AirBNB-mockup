@@ -57,7 +57,7 @@ func SendRecoveryEmail(toEmail, recoveryToken string) {
 	from := mail.Address{"no-reply", "passrecovery@airbnbb.com"}
 	to := mail.Address{"", toEmail}
 	subject := "Password Recovery"
-	body := "Click the following link to reset your password: https://localhost/auth/reset?token=" + recoveryToken
+	body := "Use this token to set new password" + recoveryToken
 
 	// Connect to the SMTP server
 	auth := smtp.PlainAuth("", smtpUsername, smtpPassword, smtpServer)

@@ -36,4 +36,15 @@ export class AuthService {
   login(credentials: LoginCredentials): Observable<any> {
     return this.http.post(`${this.configService._login_url}`, credentials);
   }
+
+  recovery(email: any): Observable<any>{
+    return this.http.post(`${this.configService._recovery_url}`, email);
+  }
+  validateToken(token: string): Observable<any>{
+    return this.http.get(`${this.configService._validatetoken_url}?token=${token}`);
+  }
+  setNewPassword(token: string,password: any): Observable<any>{
+    return this.http.post(`${this.configService._updatenewpassword_url}?token=${token}`, password);
+  }
+
 }

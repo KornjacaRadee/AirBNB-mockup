@@ -1,67 +1,116 @@
-.container {
+.custom-sidenav-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  height: 100vh;
+}
+
+.custom-sidenav {
+  width: 200px;
+  background-color: #ffffff;
+  height: 100%;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.custom-list {
+  list-style: none;
   padding: 16px;
 }
 
-.guest-inputs {
+.custom-list a {
+  text-decoration: none;
+  color: #3498db;
+  transition: color 0.3s ease-in-out;
+}
+
+.custom-list a:hover {
+  color: #2980b9;
+}
+
+.custom-sidenav-content {
+  flex: 1;
+  background-color: #ecf0f1;
+  padding: 16px;
+}
+
+.custom-toolbar {
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #3498db;
+  color: #ffffff;
+  padding: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.guest-inputs input {
-  margin-right: 8px;
+.menu-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
 }
 
-.search-bar {
-  margin-bottom: 16px;
-  width: 300px; /* Postavite željenu širinu pretraživačkog polja */
-  align-self: center; /* Centrirajte pretraživačko polje */
+.menu-button span {
+  background-color: #ffffff;
+  display: block;
+  height: 3px;
+  margin: 6px 0;
+  transition: 0.4s;
 }
 
-.mat-input {
-  border-radius: 5px;
-  background-color: #fff;
+.menu-button:hover span {
+  background-color: #2980b9;
 }
-
-button {
-  color: #fff;
-}
-
-.separator {
-  margin: 0 8px;
-  font-weight: bold;
-}
-
-.accommodations-container {
+/* styles.css (or your component-specific CSS file) */
+.accommodation-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-around;
+  padding: 20px;
 }
 
 .accommodation-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
   margin: 10px;
-  width: 300px;
-  border-radius: 15px;
-  overflow: hidden;
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  padding: 15px;
+  width: 250px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.accommodation-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+.accommodation-card img {
+  width: 100%;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.accommodation-card h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.accommodation-card p {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.accommodation-card .details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #666;
+}
+
+.home-button {
+  background: none;
+  border: none;
   cursor: pointer;
+  color: #ffffff;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
 }
 
-.top-part {
-  background-color: #7b1fa2;
-  padding: 10px;
-  text-align: center;
-  border-bottom: 1px solid #fff;
-}
-
-.accommodation-image {
-  background-color: #fff;
-  border-radius: 50%;
+.home-button mat-icon {
+  margin-right: 8px;
 }

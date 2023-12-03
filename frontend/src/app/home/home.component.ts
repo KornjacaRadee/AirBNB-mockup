@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { AccomodationService } from '../services/accomodation/accomodation.service';
+import { User } from '../models/User';
+import { Accommodation } from '../models/Accommodation';
 
 @Component({
   selector: 'app-home',
@@ -15,6 +17,7 @@ export class HomeComponent {
   enterPressed = false;
   searchButtonPressed = false;
   accommodations: any[] = [];
+  allAccoms: Accommodation[] = [];
   filteredAccommodations: any[] = [];
   searchSuccess = false;
 
