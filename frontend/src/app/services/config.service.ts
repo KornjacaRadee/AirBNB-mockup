@@ -16,6 +16,7 @@ export class ConfigService {
   _updatenewpassword_url: string;
   _getuserbyid_url: string;
   _createaccom_url: string;
+  _deleteuser_url: string;
 
   constructor() {
     this._api_url = 'https://localhost/';
@@ -27,6 +28,7 @@ export class ConfigService {
     this._validatetoken_url = this._api_url + 'auth/reset';
     this._updatenewpassword_url = this._api_url + 'auth/update';
     this._getuserbyid_url = this._api_url + 'auth/users';
+    this._deleteuser_url = this._api_url + 'auth/user';
 
 
     this._createaccom_url = this._api_url + 'accommodations/new';

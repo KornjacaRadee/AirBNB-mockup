@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
@@ -29,8 +30,24 @@ export class ProfileComponent implements OnInit{
   }
 
   deleteProfile(){
-    return ""
-  }
+    const token = this.authService.getAuthToken();
+
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+    this.authService.deleteUser(headers).subscribe(
+      (response) => {
+        console.log('', response);
+        this.authService.logout();
+      },
+      (error) => {
+        // Handle error, e.g., show an error message
+        console.error('Failed to delete user', error);
+      }
+    );
+
+
+}
+
 
   loadUserDetails() {
     this.id = this.authService.getUserId();

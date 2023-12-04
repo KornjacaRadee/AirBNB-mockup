@@ -1,4 +1,9 @@
-/* profile.component.css */
+.wrapper{
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+}
 .profile-container {
   max-width: 400px;
   margin: 20px auto;

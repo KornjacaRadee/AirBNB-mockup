@@ -14,6 +14,9 @@
       <a *ngIf="signed()" routerLink="/profile" class="nav-link profile-link">My Profile</a>
     </li>
     <li class="nav-item">
+      <a *ngIf="isHost()" routerLink="/create-accommodation" class="nav-link logout-link" style="cursor:pointer;">Create new BNB</a>
+    </li>
+    <li class="nav-item">
       <a *ngIf="signed()" (click)="logout()" class="nav-link logout-link" style="cursor:pointer;">Logout</a>
     </li>
   </ul>

@@ -1,3 +1,11 @@
+.wrapper{
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  margin-top: 100px;
+  flex-direction: column;
+}
 .custom-sidenav-container {
   display: flex;
   height: 100vh;

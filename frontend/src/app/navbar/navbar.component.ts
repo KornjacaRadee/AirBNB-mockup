@@ -17,4 +17,13 @@ export class NavbarComponent {
   logout(){
     this.authService.logout();
   }
+
+  isHost(): boolean{
+    if(this.authService.getUserRole() == "host"){
+
+      return true
+    }else{
+      return false
+    }
+  }
 }
