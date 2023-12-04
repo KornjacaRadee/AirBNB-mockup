@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"net/http"
 	"strings"
@@ -43,6 +44,37 @@ func (a *AccommodationsHandler) GetAllAccommodations(rw http.ResponseWriter, h *
 	}
 }
 
+//func (a *AccommodationsHandler) PostAccommodation(rw http.ResponseWriter, h *http.Request) {
+//	tokenString := h.Header.Get("Authorization")
+//	if tokenString == "" {
+//		http.Error(rw, "Missing Authorization header", http.StatusUnauthorized)
+//		return
+//	}
+//
+//	// Remove 'Bearer ' prefix if present
+//	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+//	role, err := getRoleFromToken(tokenString)
+//	if err != nil {
+//		http.Error(rw, fmt.Sprintf("Error extracting user role: %v", err), http.StatusUnauthorized)
+//		return
+//	}
+//
+//	// Check if the user has the required role
+//	if role != "host" {
+//		http.Error(rw, "Unauthorized: Insufficient privileges", http.StatusUnauthorized)
+//		return
+//	}
+//
+//	accommodation := h.Context().Value(KeyProduct{}).(*domain.Accommodation)
+//	erra := a.repo.Insert(accommodation)
+//	if erra != nil {
+//		http.Error(rw, "Unable to post accommodation", http.StatusBadRequest)
+//		a.logger.Fatal(err)
+//		return
+//	}
+//	rw.WriteHeader(http.StatusCreated)
+//}
+
 func (a *AccommodationsHandler) PostAccommodation(rw http.ResponseWriter, h *http.Request) {
 	tokenString := h.Header.Get("Authorization")
 	if tokenString == "" {
@@ -64,13 +96,25 @@ func (a *AccommodationsHandler) PostAccommodation(rw http.ResponseWriter, h *htt
 		return
 	}
 
+	// Extract user ID from the token
+	userID, err := getUserIdFromToken(tokenString)
+	if err != nil {
+		http.Error(rw, fmt.Sprintf("Error extracting user ID: %v", err), http.StatusUnauthorized)
+		return
+	}
+
+	// Create a new accommodation with the extracted user ID as the owner
 	accommodation := h.Context().Value(KeyProduct{}).(*domain.Accommodation)
+	accommodation.Owner.Id, _ = primitive.ObjectIDFromHex(userID)
+
+	// Insert the accommodation
 	erra := a.repo.Insert(accommodation)
 	if erra != nil {
 		http.Error(rw, "Unable to post accommodation", http.StatusBadRequest)
-		a.logger.Fatal(err)
+		a.logger.Fatal(erra)
 		return
 	}
+
 	rw.WriteHeader(http.StatusCreated)
 }
 
@@ -199,4 +243,38 @@ func getRoleFromToken(tokenString string) (string, error) {
 	}
 
 	return role, nil
+}
+func getUserIdFromToken(tokenString string) (string, error) {
+	// Parse the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Check the signing method
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		// Provide the secret key used to sign the token
+		return []byte(jwtSecret), nil
+	})
+	if err != nil {
+		return "", fmt.Errorf("Invalid token: %v", err)
+	}
+
+	// Check if the token is valid
+	if !token.Valid {
+		return "", fmt.Errorf("Invalid token")
+	}
+
+	// Extract user_id from claims
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", fmt.Errorf("Invalid token claims")
+	}
+
+	// Get user_id
+	userID, ok := claims["user_id"].(string)
+	if !ok {
+		return "", fmt.Errorf("User ID not found in token claims")
+	}
+
+	return userID, nil
 }
