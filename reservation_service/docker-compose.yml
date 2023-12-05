@@ -7,8 +7,8 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: always
-    container_name: "reservation-server"
-    hostname: "reservation-server"
+    container_name: "student-server"
+    hostname: "student-server"
     #Mapping ports
     ports:
       # <port_on_local>:<port_in_machine>
@@ -16,55 +16,28 @@ services:
     #Will be accessible through os.Getenv("PORT")
     environment:
       - PORT=8080
-      # NoSQL: environment variable holding connection URI for Mongo database
-      # protocol://username:password@hostname:port
-      - MONGO_DB_URI=mongodb://root:pass@mongo:27017
-      # - MONGO_DB_URI=mongodb://mongo:27017
-    # NoSQL: Our service will try to connect to Mongo before it is up
-    # in order to avoid that problem, we specify that it depends on mongo service
-    # which defines the order of starting the containers
-    # Additionaly we specify that mongo service needs to pass a healthcheck
+      # NoSQL: environment variable holding connection URI for Cassandra database
+      - CASS_DB=cassandra:9042
+    # NoSQL: Extremely important! Cassandra takes a lot of time to start!
+    # If we don't wait for it to fully initialize we will get exceptions and will not be able to connect!
     depends_on:
-      mongo:
+      cassandra:
         condition: service_healthy
 
-  # NoSQL: MongoDB
-  mongo:
-    image: mongo
+  # NoSQL: CassandraDB
+  cassandra:
+    image: cassandra
     restart: always
     ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: pass
-      MONGO_INITDB_DATABASE: mongoDemo
+      - "9042:9042"
     # Docker healtcheck - checks if database is "alive"
     healthcheck:
-      test: echo 'db.runCommand("ping").ok'
-      interval: 10s
-      timeout: 10s
-      retries: 10
+      test: ["CMD-SHELL", "cqlsh -e 'describe cluster'"]
+      interval: 15s
+      timeout: 5s
+      retries: 15
     volumes:
-      - mongo_store:/data/db
-
-  # NoSQL: MognoExpress
-  mongo-express:
-    image: mongo-express
-    restart: always
-    environment:
-      # hostname of mongo databse
-      - ME_CONFIG_MONGODB_SERVER=mongo
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=pass
-      - ME_CONFIG_BASICAUTH_USERNAME=admin
-      - ME_CONFIG_BASICAUTH_PASSWORD=admin
-    depends_on:
-      - mongo
-    ports:
-      - "8081:8081"
-    volumes:
-      - mong_express_data:/data/db
+      - cass_store:/var/lib/cassandra/data
 
 volumes:
-  mongo_store:
-  mong_express_data:
+  cass_store:
