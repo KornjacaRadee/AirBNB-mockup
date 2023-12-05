@@ -63,7 +63,7 @@ func (rr *ReservationsRepo) CreateTables() {
 	err := rr.session.Query(
 		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s 
 					(accommodation_id text, availability_period_id UUID, start_date TIMESTAMP, end_date TIMESTAMP, price int, 
-					PRIMARY KEY ((accommodation_id), start_date, availability_period_id)) 
+					PRIMARY KEY ((accommodation_id), availability_period_id)) 
 					WITH CLUSTERING ORDER BY (availability_period_id ASC)`, 
 					"availability_periods_by_accommodation")).Exec()
 	if err != nil {
@@ -73,7 +73,7 @@ func (rr *ReservationsRepo) CreateTables() {
 	err = rr.session.Query(
 		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s 
 					(availability_period_id UUID, reservation_id UUID, start_date TIMESTAMP, end_date TIMESTAMP, guest_id text,
-					PRIMARY KEY ((availability_period_id), start_date, reservation_id)) 
+					PRIMARY KEY ((availability_period_id), reservation_id)) 
 					WITH CLUSTERING ORDER BY (reservation_id ASC)`, 
 					"reservations_by_availability_period")).Exec()
 	if err != nil {
@@ -132,7 +132,7 @@ func (rr *ReservationsRepo) GetReservationsByAvailabilityPeriod(id string) (Rese
 	for scanner.Next() {
 		var reservation ReservationByAvailabilityPeriod
 		var guestIdHex string
-		err := scanner.Scan(&reservation.AvailabilityPeriodId, &reservation.Id, &reservation.StartDate, &reservation.EndDate, guestIdHex)
+		err := scanner.Scan(&reservation.AvailabilityPeriodId, &reservation.Id, &reservation.StartDate, &reservation.EndDate, &guestIdHex)
 		if err != nil {
 			rr.logger.Println(err)
 			return nil, err

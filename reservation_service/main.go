@@ -34,8 +34,9 @@ func main() {
 	if err != nil {
 		logger.Fatal(err)
 	}
-	defer store.CloseSession()
 	store.CreateTables()
+
+	defer store.CloseSession()
 
 	// NoSQL: Checking if the connection was established
 

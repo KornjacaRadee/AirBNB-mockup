@@ -18,7 +18,7 @@ type AvailabilityPeriodByAccommodation struct {
 
 type ReservationByAvailabilityPeriod struct {
 	AvailabilityPeriodId 	gocql.UUID 
-	Id                 		primitive.ObjectID 
+	Id                 		gocql.UUID 
 	StartDate          		time.Time          
 	EndDate            		time.Time          
 	GuestId              	primitive.ObjectID
