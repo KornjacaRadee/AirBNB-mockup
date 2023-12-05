@@ -26,6 +26,10 @@ import { ReservationService } from './services/reservation/reservation.service';
 
 import { RECAPTCHA_SETTINGS, RecaptchaFormsModule, RecaptchaModule, RecaptchaSettings } from 'ng-recaptcha';
 import { environment } from 'src/environments/environment';
+import { PasswordRecoveryComponent } from './password-recovery/password-recovery.component';
+import { NewPasswrodComponent } from './new-passwrod/new-passwrod.component';
+import { NavbarComponent } from './navbar/navbar.component';
+import { CreateAccommodationComponent } from './create-accommodation/create-accommodation.component';
 
 @NgModule({
   declarations: [
@@ -33,6 +37,10 @@ import { environment } from 'src/environments/environment';
     HomeComponent,
     LoginComponent,
     RegisterComponent,
+    PasswordRecoveryComponent,
+    NewPasswrodComponent,
+    NavbarComponent,
+    CreateAccommodationComponent,
   ],
   imports: [
     BrowserModule,
@@ -58,15 +66,15 @@ import { environment } from 'src/environments/environment';
 
 
   providers: [
-    
+
     {
       provide: RECAPTCHA_SETTINGS,
       useValue: {
         siteKey: environment.recaptcha.siteKey,
       } as RecaptchaSettings,
     },
-    
-    AuthService, 
+
+    AuthService,
     ApiService,
     AccomodationService,
     ReservationService

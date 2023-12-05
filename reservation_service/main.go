@@ -30,37 +30,37 @@ func main() {
 	storeLogger := log.New(os.Stdout, "[availability-store] ", log.LstdFlags)
 
 	// NoSQL: Initialize Product Repository store
-	store, err := domain.New(timeoutContext, storeLogger)
+	store, err := domain.New(storeLogger)
 	if err != nil {
 		logger.Fatal(err)
 	}
-	defer store.Disconnect(timeoutContext)
+	store.CreateTables()
+
+	defer store.CloseSession()
 
 	// NoSQL: Checking if the connection was established
-	store.Ping()
 
 	//Initialize the handler and inject said logger
-	availabilityHandler := handlers.NewAvailabilityPeriodsHandler(logger, store)
+	reservationHandler := handlers.NewReservationsHandler(logger, store)
 
 	//Initialize the router and add a middleware for all the requests
 	router := mux.NewRouter()
-	router.Use(availabilityHandler.MiddlewareContentTypeSet)
+	router.Use(reservationHandler.MiddlewareContentTypeSet)
 
-	getRouter := router.Methods(http.MethodGet).Subrouter()
-	getRouter.HandleFunc("/", availabilityHandler.GetAllAvailabilityPeriods)
+	getAvailabilityRouter := router.Methods(http.MethodGet).Subrouter()
+	getAvailabilityRouter.HandleFunc("/accomm/{id}/availability", reservationHandler.GetAvailabilityPeriodsByAccommodation)
 
-	postRouter := router.Methods(http.MethodPost).Subrouter()
-	postRouter.HandleFunc("/", availabilityHandler.PostAvailabilityPeriod)
-	postRouter.Use(availabilityHandler.MiddlewareAvailabilityPeriodDeserialization)
+	getReservationsRouter := router.Methods(http.MethodGet).Subrouter()
+	getReservationsRouter.HandleFunc("/availability/{id}/reservations", reservationHandler.GetReservationsByAvailabilityPeriod)
 
-	patchRouter := router.Methods(http.MethodPatch).Subrouter()
-	patchRouter.HandleFunc("/{id}", availabilityHandler.PatchAvailabilityPeriod)
-	patchRouter.Use(availabilityHandler.MiddlewareAvailabilityPeriodDeserialization)
+	postAvailabilityRouter := router.Methods(http.MethodPost).Subrouter()
+	postAvailabilityRouter.HandleFunc("/accomm/availability", reservationHandler.InsertAvailabilityPeriodByAccommodation)
+	postAvailabilityRouter.Use(reservationHandler.MiddlewareAvailabilityPeriodDeserialization)
 
-	deleteRouter := router.Methods(http.MethodDelete).Subrouter()
-	deleteRouter.HandleFunc("/{id}", availabilityHandler.DeleteAvailabilityPeriod)
+	postReservationRouter := router.Methods(http.MethodPost).Subrouter()
+	postReservationRouter.HandleFunc("/availability/reservations", reservationHandler.InsertReservationByAvailabilityPeriod)
+	postReservationRouter.Use(reservationHandler.MiddlewareReservationDeserialization)
 
-	//router.Use(handlers2.AuthMiddleware)
 
 	cors := gorillaHandlers.CORS(gorillaHandlers.AllowedOrigins([]string{"*"}))
 

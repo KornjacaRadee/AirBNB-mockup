@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient,HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ConfigService } from './config.service';
 import { tap } from 'rxjs';
 import * as jwt_decode_ from 'jwt-decode';
 import { Router } from '@angular/router';
+import { JwtHelperService } from '@auth0/angular-jwt';
 
 
 interface User {
@@ -25,9 +26,11 @@ interface LoginCredentials {
 @Injectable({
   providedIn: 'root',
 })
+
 export class AuthService {
 
   private tokenKey = 'authToken';
+  private helper = new JwtHelperService();
 
   constructor(
     private http: HttpClient,
@@ -71,25 +74,49 @@ export class AuthService {
   getUserRole(): string | null {
     const token = this.getAuthToken();
     if (token) {
-      const decodedToken: any = jwt_decode_ as any; // Type assertion to any
-      return decodedToken(token).roles; // Adjust this based on your JWT payload
+      const decodedToken = this.helper.decodeToken(token);
+      return decodedToken.roles;
     }
     return null;
   }
 
-  // isLoggedIn(): boolean {
-  //   const userRole = this.getAuthToken();
-  //   if (userRole != null ){
-  //     return true
-  //   }
-  //   else{
-  //     return false
+  getUserId(): string {
+    const token = this.getAuthToken();
+    if (token) {
+      const decodedToken = this.helper.decodeToken(token);
+      return decodedToken.user_id;
+    }
+    return "";
+  }
+
+  // decodeToken(token: string): any {
+  //   try {
+  //     return (jwt_decode as any)(token);
+  //   } catch (error) {
+  //     console.error('Error decoding JWT token:', error);
+  //     return null;
   //   }
   // }
-
   isAuthenticated(): boolean {
     return !!this.getAuthToken();
   }
+  deleteUser(headers: HttpHeaders): Observable<any>{
+    const options = { headers };
+    return this.http.delete<any[]>(`${this.configService._deleteuser_url}`, options);
+  }
 
+  getUserById(id: string): Observable<any>{
+    return this.http.get(`${this.configService._getuserbyid_url}/${id}`);
+  }
+
+  recovery(email: any): Observable<any>{
+    return this.http.post(`${this.configService._recovery_url}`, email);
+  }
+  validateToken(token: string): Observable<any>{
+    return this.http.get(`${this.configService._validatetoken_url}?token=${token}`);
+  }
+  setNewPassword(token: string,password: any): Observable<any>{
+    return this.http.post(`${this.configService._updatenewpassword_url}?token=${token}`, password);
+  }
 
 }

@@ -32,13 +32,11 @@ export class RegisterComponent {
   buildForm(): void {
     this.registrationForm = this.formBuilder.group({
       name: ['', [Validators.required, Validators.pattern('[a-zA-Z ]*')]],
-      lastName: ['', [Validators.required, Validators.pattern('[a-zA-Z ]*')]],
+      last_name: ['', [Validators.required, Validators.pattern('[a-zA-Z ]*')]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
       address: ['', Validators.required],
       role: ['host', Validators.required],
-      // Add other form controls and validations as needed
-      // ...
     });
   }
 

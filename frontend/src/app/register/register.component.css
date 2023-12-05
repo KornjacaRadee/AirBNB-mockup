@@ -52,7 +52,7 @@ body {
 
 .wrapper form .button input {
   color: #fff;
-  background: #7b1fa2;
+  background: rgb(17, 23, 216);
   font-size: 1.2rem;
   font-weight: 500;
   letter-spacing: 1px;
@@ -62,7 +62,7 @@ body {
 }
 
 .wrapper form .button input:hover {
-  background: #651e89;
+  background: #040875;
 }
 re-captcha.is-invalid > div {
   border: 1px solid #dc3545 !important;

@@ -11,7 +11,12 @@ export class ConfigService {
   _register_url:string;
   _accomodations_url:string;
   _reservations_url:string;
-
+  _recovery_url:string;
+  _validatetoken_url:string;
+  _updatenewpassword_url: string;
+  _getuserbyid_url: string;
+  _createaccom_url: string;
+  _deleteuser_url: string;
 
   constructor() {
     this._api_url = 'https://localhost/';
@@ -19,8 +24,16 @@ export class ConfigService {
     this._register_url = this._api_url + 'auth/register';
     this._accomodations_url = this._api_url + 'accommodations';
     this._reservations_url = this._api_url + 'reservations';
-    
-    
+    this._recovery_url = this._api_url + 'auth/password-recovery';
+    this._validatetoken_url = this._api_url + 'auth/reset';
+    this._updatenewpassword_url = this._api_url + 'auth/update';
+    this._getuserbyid_url = this._api_url + 'auth/users';
+    this._deleteuser_url = this._api_url + 'auth/user';
+
+
+    this._createaccom_url = this._api_url + 'accommodations/new';
+
+
 
 
   }
