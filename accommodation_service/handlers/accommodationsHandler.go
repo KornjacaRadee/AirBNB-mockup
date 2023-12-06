@@ -146,10 +146,58 @@ func (a *AccommodationsHandler) PatchAccommodation(rw http.ResponseWriter, h *ht
 	rw.WriteHeader(http.StatusOK)
 }
 
+//func (a *AccommodationsHandler) DeleteAccommodation(rw http.ResponseWriter, h *http.Request) {
+//
+//	vars := mux.Vars(h)
+//	id := vars["id"]
+//
+//	a.repo.Delete(id)
+//	rw.WriteHeader(http.StatusNoContent)
+//}
+
 func (a *AccommodationsHandler) DeleteAccommodation(rw http.ResponseWriter, h *http.Request) {
+	tokenString := h.Header.Get("Authorization")
+	if tokenString == "" {
+		http.Error(rw, "Missing Authorization header", http.StatusUnauthorized)
+		return
+	}
+
+	// Remove 'Bearer ' prefix if present
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	role, err := getRoleFromToken(tokenString)
+	if err != nil {
+		http.Error(rw, fmt.Sprintf("Error extracting user role: %v", err), http.StatusUnauthorized)
+		return
+	}
+
+	// Extract user ID from the token
+	userID, err := getUserIdFromToken(tokenString)
+	if err != nil {
+		http.Error(rw, fmt.Sprintf("Error extracting user ID: %v", err), http.StatusUnauthorized)
+		return
+	}
 
 	vars := mux.Vars(h)
 	id := vars["id"]
+
+	// Check if the user has the required role or is the owner of the accommodation
+	if role != "host" {
+		http.Error(rw, "Unauthorized: Insufficient privileges", http.StatusUnauthorized)
+		return
+	}
+
+	// Provjeri da li je korisnik vlasnik smjestaja
+	accommodation, err := a.repo.GetByID(id) // Use the new GetByID function
+	if err != nil {
+		http.Error(rw, "Error getting accommodation", http.StatusInternalServerError)
+		a.logger.Fatal(err)
+		return
+	}
+
+	if accommodation.Owner.Id.String() != userID {
+		http.Error(rw, "Unauthorized: User is not the owner of the accommodation", http.StatusUnauthorized)
+		return
+	}
 
 	a.repo.Delete(id)
 	rw.WriteHeader(http.StatusNoContent)

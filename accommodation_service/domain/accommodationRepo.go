@@ -88,6 +88,28 @@ func (ar *AccommodationRepo) GetAll() (Accommodations, error) {
 	}
 	return accommodations, nil
 }
+func (ar *AccommodationRepo) GetByID(id string) (*Accommodation, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	accommodationsCollection := ar.getCollection()
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		ar.logger.Println(err)
+		return nil, err
+	}
+
+	filter := bson.M{"_id": objID}
+	var accommodation Accommodation
+	err = accommodationsCollection.FindOne(ctx, filter).Decode(&accommodation)
+	if err != nil {
+		ar.logger.Println(err)
+		return nil, err
+	}
+
+	return &accommodation, nil
+}
 
 func (ar *AccommodationRepo) Insert(accommodation *Accommodation) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
