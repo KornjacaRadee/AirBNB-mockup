@@ -153,12 +153,59 @@ services:
     networks:
       - network
 
+
+
+
+  profile_service:
+      build:
+        context: ./profile_service
+      restart: always
+      container_name: "profile_service"
+      hostname: "profile_service"
+      ports:
+        - 8084:8084
+      environment:
+        - PORT=8084
+        - MONGO_DB_URI=mongodb://root:pass@auth_db:27017
+      depends_on:
+        db_profile:
+          condition: service_healthy
+
+      networks:
+        - network
+
+  db_profile:
+      hostname: "db_profile"
+      container_name: "db_profile"
+      image: mongo
+      restart: always
+      ports:
+        - "27020:27017"
+      environment:
+        MONGO_INITDB_ROOT_USERNAME: root
+        MONGO_INITDB_ROOT_PASSWORD: pass
+        MONGO_INITDB_DATABASE: profileDB
+      healthcheck:
+        test: echo 'db.runCommand("ping").ok'
+        interval: 10s
+        timeout: 10s
+        retries: 10
+      volumes:
+        - profile_db:/data/db
+      networks:
+        - network
+
+
 volumes:
   accommodation_db:
   reservation_db:
   auth_db:
   mong_express_data:
+  profile_db:
 
 networks:
   network:
     driver: bridge
+
+
+
