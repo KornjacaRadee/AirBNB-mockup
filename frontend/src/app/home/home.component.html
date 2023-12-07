@@ -1,6 +1,6 @@
 <div class="wrapper">
 <div class="container">
-  <mat-form-field class="search-bar">
+  <mat-form-field  class="search-bar">
     <input matInput placeholder="Location" [(ngModel)]="searchTerm" />
     <div class="guest-inputs">
       <input
@@ -51,19 +51,20 @@
       </div>
     </ng-container>
     <ng-template #noResults>
-      <p>No results found.</p>
     </ng-template>
   </div>
 </div>
-<!-- accommodation-list.component.html -->
-<div class="accommodation-container">
-  <div *ngFor="let accommodation of accommodations" class="accommodation-card">
-    <h3>{{ accommodation.name }}</h3>
-    <p>{{ accommodation.location }}</p>
-    <p class="details">
-      Min Guests: {{ accommodation.minGuestNum }} - Max Guests: {{ accommodation.maxGuestNum }}
-    </p>
-  </div>
+<div class="cards-wrapper">
+<div *ngFor="let accommodation of accommodations" class="accommodation-card">
+  <h3>{{ accommodation.name }}</h3>
+  <p>{{ accommodation.location }}</p>
+  <p class="details">
+    Min Guests: {{ accommodation.minGuestNum }} - Max Guests: {{ accommodation.maxGuestNum }}
+  </p>
+  <p class="price">Price: ${{ accommodation.price }}</p>
 </div>
 </div>
+
+</div>
+
 

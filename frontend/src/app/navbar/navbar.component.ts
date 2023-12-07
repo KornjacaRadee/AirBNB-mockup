@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component,Output, EventEmitter } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 
@@ -8,7 +8,6 @@ import { Router } from '@angular/router';
   styleUrls: ['./navbar.component.css']
 })
 export class NavbarComponent {
-
 
   constructor(private authService: AuthService,private router: Router) { }
   signed(): boolean{
