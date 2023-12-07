@@ -1,0 +1,206 @@
+version: "3.1"
+
+services:
+
+  api_gateway:
+    container_name: api_gateway
+    hostname: api_gateway
+    build:
+      context: ./api_gateway
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - 8000:8000
+      - 443:443
+    networks:
+      - network
+
+  accommodation_service:
+    build:
+      context: accommodation_service/
+      dockerfile: Dockerfile
+    restart: always
+    container_name: "accommodation_service"
+    hostname: "accommodation_service"
+    ports:
+      - 8080:8080
+    environment:
+      - PORT=8080
+      - MONGO_DB_URI=mongodb://root:pass@accommodation_db:27017
+    depends_on:
+      accommodation_db:
+        condition: service_healthy
+    networks:
+      - network
+
+  accommodation_db:
+    hostname: "accommodation_db"
+    container_name: "accommodation_db"
+    image: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: pass
+      MONGO_INITDB_DATABASE: accommodationDB
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok'
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    volumes:
+      - accommodation_db:/data/db
+    networks:
+      - network
+
+  reservation_service:
+    build:
+      context: reservation_service/
+      dockerfile: Dockerfile
+    restart: always
+    container_name: "reservation_service"
+    hostname: "reservation_service"
+    ports:
+      - 8081:8081
+    environment:
+      - PORT=8081
+      - CASS_DB=reservation_db:9042
+    depends_on:
+      reservation_db:
+        condition: service_healthy
+    networks:
+      - network
+
+  reservation_db:
+    image: cassandra
+    restart: always
+    ports:
+      - "9042:9042"
+    # Docker healtcheck - checks if database is "alive"
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh -e 'describe cluster'"]
+      interval: 15s
+      timeout: 5s
+      retries: 15
+    volumes:
+      - cass_store:/var/lib/cassandra/data
+    networks:
+      - network
+
+  auth_service:
+    build:
+      context: auth-service/
+      dockerfile: Dockerfile
+    restart: always
+    container_name: "auth_service"
+    hostname: "auth_service"
+    ports:
+      - 8082:8082
+    environment:
+      - PORT=8082
+      - MONGO_DB_URI=mongodb://root:pass@auth_db:27017
+    depends_on:
+      auth_db:
+        condition: service_healthy
+    networks:
+      - network
+
+  auth_db:
+    hostname: "auth_db"
+    container_name: "auth_db"
+    image: mongo
+    restart: always
+    ports:
+      - "27019:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: pass
+      MONGO_INITDB_DATABASE: authDB
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok'
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    volumes:
+      - auth_db:/data/db
+    networks:
+      - network
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    environment:
+      # hostname of mongo databse
+      - ME_CONFIG_MONGODB_SERVER=accommodation_db,reservation_db, auth_db
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=pass
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin
+    depends_on:
+      - accommodation_db
+      - reservation_db
+      - auth_db
+    ports:
+      - "8083:8083"
+    volumes:
+      - mong_express_data:/data/db
+    networks:
+      - network
+
+
+
+
+  profile_service:
+      build:
+        context: ./profile_service
+      restart: always
+      container_name: "profile_service"
+      hostname: "profile_service"
+      ports:
+        - 8084:8084
+      environment:
+        - PORT=8084
+        - MONGO_DB_URI=mongodb://root:pass@auth_db:27017
+      depends_on:
+        db_profile:
+          condition: service_healthy
+
+      networks:
+        - network
+
+  db_profile:
+      hostname: "db_profile"
+      container_name: "db_profile"
+      image: mongo
+      restart: always
+      ports:
+        - "27020:27017"
+      environment:
+        MONGO_INITDB_ROOT_USERNAME: root
+        MONGO_INITDB_ROOT_PASSWORD: pass
+        MONGO_INITDB_DATABASE: profileDB
+      healthcheck:
+        test: echo 'db.runCommand("ping").ok'
+        interval: 10s
+        timeout: 10s
+        retries: 10
+      volumes:
+        - profile_db:/data/db
+      networks:
+        - network
+
+
+volumes:
+  accommodation_db:
+  cass_store:
+  auth_db:
+  mong_express_data:
+  profile_db:
+
+networks:
+  network:
+    driver: bridge
+
+
+
