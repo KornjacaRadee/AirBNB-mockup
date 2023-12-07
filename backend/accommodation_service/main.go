@@ -63,6 +63,8 @@ func main() {
 	// Add the search endpoint
 	router.HandleFunc("/search", accommodationsHandler.SearchAccommodations).Methods("POST")
 
+	router.HandleFunc("/user-accommodations", accommodationsHandler.GetUserAcommodations).Methods("GET")
+
 	// ...
 
 	// Start server

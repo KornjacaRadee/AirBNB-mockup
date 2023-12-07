@@ -205,3 +205,33 @@ func (ar *AccommodationRepo) getCollection() *mongo.Collection {
 	accommodationsCollection := accommodationDatabase.Collection("accommodations")
 	return accommodationsCollection
 }
+func (ar *AccommodationRepo) GetAccommodationsByUserID(userID string) (Accommodations, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	accommodationsCollection := ar.getCollection()
+	objID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		ar.logger.Println(err)
+		return nil, err
+	}
+	// Create a filter to find accommodations owned by the user
+	filter := bson.M{"owner._id": objID}
+	log.Printf("Iz rikvesta %s", userID)
+
+	// Execute the query
+	cursor, err := accommodationsCollection.Find(ctx, filter)
+	if err != nil {
+		ar.logger.Println(err)
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var accommodations Accommodations
+	if err := cursor.All(ctx, &accommodations); err != nil {
+		ar.logger.Println(err)
+		return nil, err
+	}
+
+	return accommodations, nil
+}
