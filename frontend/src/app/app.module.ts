@@ -30,6 +30,7 @@ import { PasswordRecoveryComponent } from './password-recovery/password-recovery
 import { NewPasswrodComponent } from './new-passwrod/new-passwrod.component';
 import { NavbarComponent } from './navbar/navbar.component';
 import { CreateAccommodationComponent } from './create-accommodation/create-accommodation.component';
+import { ProfileComponent } from './profile/profile.component';
 
 @NgModule({
   declarations: [
@@ -41,6 +42,7 @@ import { CreateAccommodationComponent } from './create-accommodation/create-acco
     NewPasswrodComponent,
     NavbarComponent,
     CreateAccommodationComponent,
+    ProfileComponent
   ],
   imports: [
     BrowserModule,

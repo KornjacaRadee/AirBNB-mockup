@@ -125,7 +125,7 @@
 .accommodation-card:hover {
   transform: scale(1.05);
 }
-/* accommodation-card.component.css */
+
 
 .accommodation-card {
   display: flex;

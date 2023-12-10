@@ -1,32 +1,40 @@
-<!-- profile.component.html -->
 <div class="wrapper">
-<div class="profile-container">
-  <!-- Display profile picture -->
-  <!-- <img alt="Profile Picture" class="profile-pic"> -->
+  <div class="container profile-container">
+    <div class="profile-header">
+      <img src="/assets/pfp.jpg" alt="Profile Picture" class="profile-pic">
+      <h1 class="text-primary">{{user.name }} <span> {{user.last_name}}</span></h1>
+    </div>
+    <div class="profile-info">
+      <p><strong>Address:</strong> {{user.address}}</p>
+      <p><strong>Nesto:</strong> {{user.address}}</p>
+      <p><strong>Nesto:</strong> {{user.address}}</p>
 
-  <div class="profile-detail">
-    <span class="label">Email:</span>
-    <span class="value">{{ user.email }}</span>
+
+    </div>
+    <div class="profile-actions">
+      <button class="btn btn-danger" (click)="deleteProfile()">Delete Account</button>
+      <button class="btn btn-warning">Edit Account</button>
+      <button class="btn btn-primary" (click)="toggleAccommodations()">Show Accommodations</button>
+    </div>
   </div>
 
-  <div class="profile-detail">
-    <span class="label">Name:</span>
-    <span class="value">{{ user.name }}</span>
+
+
+
+  <div *ngIf="showAccommodations" class="cards-wrapper">
+    <div *ngFor="let accommodation of accomms" class="card" style="width: 18rem;">
+      <img class="card-img-top" src="/assets/accommex.png" alt="Card image cap">
+      <div class="card-body">
+        <h5 class="card-title">{{ accommodation.name }}</h5>
+        <p class="card-text">{{ accommodation.location }}</p>
+        <a href="#" class="btn btn-primary">Edit</a>
+        <a href="#" class="btn btn-danger">Delete</a>
+      </div>
+
+    </div>
   </div>
 
-  <div class="profile-detail">
-    <span class="label">Last Name:</span>
-    <span class="value">{{ user.last_name }}</span>
   </div>
 
-  <div class="profile-detail">
-    <span class="label">Address:</span>
-    <span class="value">{{ user.address }}</span>
-  </div>
+  <!-- profile-accommodations.component.html -->
 
-  <div class="button-container">
-    <button class="edit-button" (click)="editProfile()">Edit Profile</button>
-    <button class="delete-button" (click)="deleteProfile()">Delete Profile</button>
-  </div>
-</div>
-</div>

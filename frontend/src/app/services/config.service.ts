@@ -17,6 +17,7 @@ export class ConfigService {
   _getuserbyid_url: string;
   _createaccom_url: string;
   _deleteuser_url: string;
+  _userAccoms_url: string;
 
   constructor() {
     this._api_url = 'https://localhost/';
@@ -33,6 +34,8 @@ export class ConfigService {
 
     this._createaccom_url = this._api_url + 'accommodations/new';
 
+
+    this._userAccoms_url = this._api_url + 'accommodations/user-accommodations';
 
 
 

@@ -55,16 +55,15 @@
   </div>
 </div>
 <div class="cards-wrapper">
-<div *ngFor="let accommodation of accommodations" class="accommodation-card">
-  <h3>{{ accommodation.name }}</h3>
-  <p>{{ accommodation.location }}</p>
-  <p class="details">
-    Min Guests: {{ accommodation.minGuestNum }} - Max Guests: {{ accommodation.maxGuestNum }}
-  </p>
-  <p class="price">Price: ${{ accommodation.price }}</p>
+  <div *ngFor="let accommodation of accommodations" class="card" style="width: 18rem;">
+    <img class="card-img-top" src="/assets/accommex.png" alt="Card image cap">
+    <div class="card-body">
+      <h5 class="card-title">{{ accommodation.name }}</h5>
+      <p class="card-text">{{ accommodation.location }}</p>
+      <a href="#" class="btn btn-primary">View More</a>
+    </div>
+  </div>
 </div>
-</div>
-
 </div>
 
 
