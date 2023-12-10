@@ -8,6 +8,8 @@ import { PasswordRecoveryComponent } from './password-recovery/password-recovery
 import { NewPasswrodComponent } from './new-passwrod/new-passwrod.component';
 import { NavbarComponent } from './navbar/navbar.component';
 import { CreateAccommodationComponent } from './create-accommodation/create-accommodation.component';
+import { BrowserModule } from '@angular/platform-browser';
+import { CommonModule } from '@angular/common';
 
 const routes: Routes = [
   {
@@ -50,7 +52,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes),BrowserModule,CommonModule],
   exports: [RouterModule],
 })
 export class AppRoutingModule {}

@@ -122,3 +122,43 @@
 .home-button mat-icon {
   margin-right: 8px;
 }
+.accommodation-card:hover {
+  transform: scale(1.05);
+}
+
+
+.accommodation-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin: 10px;
+  padding: 16px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.accommodation-card:hover {
+  transform: scale(1.05);
+}
+
+.accommodation-card h3 {
+  font-weight: bold;
+}
+
+.accommodation-card p {
+  margin: 8px 0;
+}
+
+.accommodation-card .details {
+  font-weight: 600; /* Semi-Bold */
+}
+
+.accommodation-card .price {
+  font-weight: 600; /* Semi-Bold */
+  color: #007bff; /* Blue color for price */
+}
+.cards-wrapper{
+  display: flex;
+  flex-direction: row;
+  margin-top: 200px;
+}

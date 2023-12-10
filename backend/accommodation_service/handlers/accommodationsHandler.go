@@ -3,6 +3,7 @@ package handlers
 import (
 	"accommodation_service/domain"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
@@ -201,6 +202,38 @@ func (a *AccommodationsHandler) DeleteAccommodation(rw http.ResponseWriter, h *h
 
 	a.repo.Delete(id)
 	rw.WriteHeader(http.StatusNoContent)
+}
+
+func (a *AccommodationsHandler) GetUserAcommodations(rw http.ResponseWriter, h *http.Request) {
+	tokenString := h.Header.Get("Authorization")
+	if tokenString == "" {
+		http.Error(rw, "Missing Authorization header", http.StatusUnauthorized)
+		return
+	}
+
+	// Remove 'Bearer ' prefix if present
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	userID, err := getUserIdFromToken(tokenString)
+	if err != nil {
+		http.Error(rw, fmt.Sprintf("Error extracting user ID: %v", err), http.StatusUnauthorized)
+		return
+	}
+	// Extract user ID from JWT token
+
+	// Get accommodations for the user
+	accommodations, err := a.repo.GetAccommodationsByUserID(userID)
+	if err != nil {
+		http.Error(rw, fmt.Sprintf("Error getting accommodations: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Return the accommodations as JSON
+	rw.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(rw).Encode(accommodations); err != nil {
+		http.Error(rw, fmt.Sprintf("Error encoding response: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 }
 
 func (a *AccommodationsHandler) MiddlewareAccommodationDeserialization(next http.Handler) http.Handler {

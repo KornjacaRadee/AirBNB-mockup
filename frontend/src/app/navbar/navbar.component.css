@@ -9,6 +9,8 @@
   left: 0;
   z-index: 1000; /* Ensure the navbar is on top of other elements */
   transition: background-color 0.3s ease;
+  padding-right: 100px;
+  padding-left: 100px;
 }
 
 .navbar-nav {
@@ -52,3 +54,18 @@
     transform: translateY(0);
   }
 }
+.register-button {
+  background-color: blue;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 20px;
+}
+
+.register-button:hover {
+  background-color: darkblue;
+}
+
+
