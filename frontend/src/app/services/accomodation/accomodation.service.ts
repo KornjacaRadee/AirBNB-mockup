@@ -24,6 +24,11 @@ export class AccomodationService {
     const options = { headers };
     return this.http.post<any[]>(this.configService._accomodations_url + '/new', accommodation, options);
   }
+  getUserAccommodations(headers: HttpHeaders): Observable<any[]> {
+    const options = { headers };
+    return this.http.get<any[]>(this.configService._userAccoms_url, options);
+
+  }
 
   searchAccomodations(
     searchTerm: string,
