@@ -16,9 +16,7 @@ type Profile struct {
 	Username   *string            `bson:"username" json:"username" validate:"required"`
 	Email      string             `bson:"email" json:"email" validate:"required,email"`
 	Address    *string            `bson:"address" json:"address"`
-	Created_On string             `bson:"created_on" json:"created_On"`
-	Updated_On string             `bson:"updated_on" json:"updated_On"`
-	Deleted_On string             `bson:"deleted_on" json:"deleted_On"`
+	Role       string             `bson:"role" json:"role"`
 }
 
 type Profiles []*Profile
