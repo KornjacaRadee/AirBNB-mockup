@@ -1,0 +1,31 @@
+<!-- product-page.component.html -->
+
+<div class="product-page">
+  <div class="left">
+    <div class="photo-section">
+      <img class="img-fluid" src="https://placekitten.com/800/600" alt="Accommodation Photo">
+    </div>
+    <div class="details-section animated fadeInLeft">
+      <h2 class="text-primary">{{accommodation.name}}</h2>
+      <p class="description">A comfortable and stylish apartment with breathtaking views. Enjoy your stay in this modern and cozy space.</p>
+    </div>
+  </div>
+  <div class="right">
+    <!-- Availability Section -->
+    <div class="availability-section animated fadeInRight">
+      <h3>Availability</h3>
+      <div *ngFor="let period of availabilityPeriods" class="availability-period">
+        <div class="">
+          <p style="font-weight: bold;">Start</p>
+        <p>{{ period.StartDate }}</p>
+      </div>
+      <div class="">
+        <p style="font-weight: bold;">End</p>
+        <p> {{ period.EndDate }}</p>
+      </div>
+      <p style="font-weight: bold;"> Price {{ period.Price }}</p>
+        <button type="button" class="btn btn-primary" (click)="reservePeriod(period.Id, period.StartDate,period.EndDate)">Reserve Period</button>
+      </div>
+    </div>
+  </div>
+</div>
