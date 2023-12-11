@@ -5,18 +5,20 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"reservation_service/client"
 	"reservation_service/domain"
 )
 
 type KeyProduct struct{}
 
 type ReservationsHandler struct {
-	logger *log.Logger
-	repo   *domain.ReservationsRepo
+	logger              *log.Logger
+	repo                *domain.ReservationsRepo
+	accommodationClient client.AccommodationClient
 }
 
-func NewReservationsHandler(l *log.Logger, r *domain.ReservationsRepo) *ReservationsHandler {
-	return &ReservationsHandler{l, r}
+func NewReservationsHandler(l *log.Logger, r *domain.ReservationsRepo, ac client.AccommodationClient) *ReservationsHandler {
+	return &ReservationsHandler{l, r, ac}
 }
 
 func (r *ReservationsHandler) GetAvailabilityPeriodsByAccommodation(rw http.ResponseWriter, h *http.Request) {
@@ -63,7 +65,15 @@ func (r *ReservationsHandler) GetReservationsByAvailabilityPeriod(rw http.Respon
 
 func (r *ReservationsHandler) InsertAvailabilityPeriodByAccommodation(rw http.ResponseWriter, h *http.Request) {
 	availabilityPeriodsByAccommodation := h.Context().Value(KeyProduct{}).(*domain.AvailabilityPeriodByAccommodation)
-	err := r.repo.InsertAvailabilityPeriodByAccommodation(availabilityPeriodsByAccommodation)
+	accommodationCheck, err := r.accommodationClient.CheckIfAccommodationExists(availabilityPeriodsByAccommodation.AccommodationId)
+
+	if err != nil || !accommodationCheck {
+		r.logger.Print("Accommodation does not exist")
+		http.Error(rw, "Accommodation does not exist", http.StatusBadRequest)
+		return
+	}
+
+	err = r.repo.InsertAvailabilityPeriodByAccommodation(availabilityPeriodsByAccommodation)
 	if err != nil {
 		r.logger.Print("Database exception: ", err)
 		rw.WriteHeader(http.StatusBadRequest)

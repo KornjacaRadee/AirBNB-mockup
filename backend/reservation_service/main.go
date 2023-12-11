@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"reservation_service/client"
 	"reservation_service/domain"
 	"reservation_service/handlers"
 	"time"
@@ -38,10 +39,11 @@ func main() {
 
 	defer store.CloseSession()
 
-	// NoSQL: Checking if the connection was established
+	//Initialize clients for other services
+	accommodation := client.NewAccommodationClient(os.Getenv("ACCOMMODATION_SERVICE_URI"))
 
 	//Initialize the handler and inject said logger
-	reservationHandler := handlers.NewReservationsHandler(logger, store)
+	reservationHandler := handlers.NewReservationsHandler(logger, store, accommodation)
 
 	//Initialize the router and add a middleware for all the requests
 	router := mux.NewRouter()
