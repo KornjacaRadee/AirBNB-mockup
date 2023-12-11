@@ -1,7 +1,6 @@
 package authHandlers
 
 import (
-	"auth-service/client"
 	"auth-service/data"
 	"encoding/json"
 	"errors"
@@ -19,7 +18,8 @@ import (
 	"time"
 )
 
-func HandleRegister(client *mongo.Client, pc *client.ProfileClient) http.HandlerFunc {
+// func HandleRegister(client *mongo.Client, pc *client.ProfileClient) http.HandlerFunc {
+func HandleRegister(client *mongo.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var newUser data.User
 		if err := json.NewDecoder(r.Body).Decode(&newUser); err != nil {
@@ -58,11 +58,11 @@ func HandleRegister(client *mongo.Client, pc *client.ProfileClient) http.Handler
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		if err := pc.SendUserData(&newUser); err != nil {
-
-			http.Error(w, "Error sending user data to the profile service", http.StatusInternalServerError)
-			return
-		}
+		//if err := pc.SendUserData(&newUser); err != nil {
+		//
+		//	http.Error(w, "Error sending user data to the profile service", http.StatusInternalServerError)
+		//	return
+		//}
 
 		w.WriteHeader(http.StatusCreated)
 	}

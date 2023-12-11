@@ -66,6 +66,7 @@ services:
     environment:
       - PORT=8081
       - CASS_DB=reservation_db:9042
+      - ACCOMMODATION_SERVICE_URI=http://accommodation_service:8080
     depends_on:
       reservation_db:
         condition: service_healthy

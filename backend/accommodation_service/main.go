@@ -29,7 +29,7 @@ func main() {
 	logger := log.New(os.Stdout, "[product-api] ", log.LstdFlags)
 	storeLogger := log.New(os.Stdout, "[accommodation-store] ", log.LstdFlags)
 
-	// NoSQL: Initialize Product Repository store
+	// NoSQL: Initialize Accommodation Repository store
 	store, err := domain.New(timeoutContext, storeLogger)
 	if err != nil {
 		logger.Fatal(err)
@@ -39,7 +39,7 @@ func main() {
 	// NoSQL: Checking if the connection was established
 	store.Ping()
 
-	//Initialize the handler and inject said logger
+	//Initialize the handler and inject logger
 	accommodationsHandler := handlers.NewAccommodationsHandler(logger, store)
 
 	//Initialize the router and add a middleware for all the requests
@@ -48,6 +48,7 @@ func main() {
 
 	getRouter := router.Methods(http.MethodGet).Subrouter()
 	getRouter.HandleFunc("/all", accommodationsHandler.GetAllAccommodations)
+	getRouter.HandleFunc("/{id}", accommodationsHandler.GetAccommodation)
 
 	postRouter := router.Methods(http.MethodPost).Subrouter()
 	postRouter.HandleFunc("/new", accommodationsHandler.PostAccommodation)
