@@ -31,6 +31,7 @@ import { NewPasswrodComponent } from './new-passwrod/new-passwrod.component';
 import { NavbarComponent } from './navbar/navbar.component';
 import { CreateAccommodationComponent } from './create-accommodation/create-accommodation.component';
 import { ProfileComponent } from './profile/profile.component';
+import { AccommodationPageComponent } from './accommodation-page/accommodation-page.component';
 
 @NgModule({
   declarations: [
@@ -42,7 +43,8 @@ import { ProfileComponent } from './profile/profile.component';
     NewPasswrodComponent,
     NavbarComponent,
     CreateAccommodationComponent,
-    ProfileComponent
+    ProfileComponent,
+    AccommodationPageComponent
   ],
   imports: [
     BrowserModule,

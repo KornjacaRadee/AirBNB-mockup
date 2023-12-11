@@ -187,13 +187,15 @@ func (a *AccommodationsHandler) DeleteAccommodation(rw http.ResponseWriter, h *h
 		return
 	}
 
-	if accommodation.Owner.Id.String() != userID {
+	idUser, _ := primitive.ObjectIDFromHex(userID)
+
+	if accommodation.Owner.Id != idUser {
 		http.Error(rw, "Unauthorized: User is not the owner of the accommodation", http.StatusUnauthorized)
 		return
 	}
 
 	a.repo.Delete(id)
-	rw.WriteHeader(http.StatusNoContent)
+	rw.WriteHeader(http.StatusOK)
 }
 
 func (a *AccommodationsHandler) GetUserAcommodations(rw http.ResponseWriter, h *http.Request) {

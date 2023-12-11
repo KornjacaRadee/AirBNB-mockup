@@ -30,6 +30,11 @@ export class AccomodationService {
 
   }
 
+  getAccommodation(id: string): Observable<any[]> {
+    return this.http.get<any[]>(this.configService._accomodations_url+ "/" + id);
+
+  }
+
   searchAccomodations(
     searchTerm: string,
     minGuests: number,
