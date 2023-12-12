@@ -32,7 +32,7 @@ func (c *ProfileClient) SendUserData(user data.User) error {
 	}
 
 	bodyReader := bytes.NewReader(reqBytes)
-	requestURL := c.address + "/profiles/new"
+	requestURL := c.address + "/new"
 	httpReq, err := http.NewRequest(http.MethodPost, requestURL, bodyReader)
 
 	if err != nil {

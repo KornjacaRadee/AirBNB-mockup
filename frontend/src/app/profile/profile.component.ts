@@ -14,6 +14,7 @@ export class ProfileComponent implements OnInit{
   id: string = "";
   accomms: any[] = [];
   showAccommodations = false;
+  profile:any;
 
 
 
@@ -28,6 +29,8 @@ export class ProfileComponent implements OnInit{
     this.getUserAccommodations()
     this.loadUserDetails();
     console.log(this.accomms);
+
+
   }
   getUserAccommodations(): void {
     const token = this.authService.getAuthToken();
@@ -88,4 +91,6 @@ export class ProfileComponent implements OnInit{
   toggleAccommodations() {
     this.showAccommodations = !this.showAccommodations;
   }
+
+
 }

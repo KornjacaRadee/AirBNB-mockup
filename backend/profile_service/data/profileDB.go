@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"log"
 )
 
 func CreateProfile(client *mongo.Client, profile *Profile) error {
@@ -87,4 +88,22 @@ func DeleteProfile(client *mongo.Client, profileID primitive.ObjectID) error {
 	}
 
 	return nil
+}
+
+func GetProfileByEmail(client *mongo.Client, email string) (*Profile, error) {
+	profileCollection := client.Database("authDB").Collection("profiles")
+
+	// Create a filter for the email
+	filter := bson.D{{"email", email}}
+
+	// Find the user in the database
+	var profile Profile
+	err := profileCollection.FindOne(context.TODO(), filter).Decode(&profile)
+	if err != nil {
+		// Handle the error (e.g., user not found)
+		log.Printf("Error getting user by email: %v", err)
+		return nil, err
+	}
+
+	return &profile, nil
 }
