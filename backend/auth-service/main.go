@@ -2,6 +2,7 @@ package main
 
 import (
 	"auth-service/authHandlers"
+	"auth-service/client"
 	"context"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -23,12 +24,12 @@ func main() {
 	dburi := os.Getenv("MONGO_DB_URI")
 	clientOptions := options.Client().ApplyURI(dburi)
 
-	client, err := mongo.Connect(context.TODO(), clientOptions)
+	dbClient, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = client.Ping(context.TODO(), nil)
+	err = dbClient.Ping(context.TODO(), nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,22 +41,25 @@ func main() {
 		port = "8082"
 	}
 
+	//Initialize clients for other services
+	profileClient := client.NewProfileClient(os.Getenv("PROFILE_SERVICE_URI"))
+
 	r := mux.NewRouter()
-	r.HandleFunc("/register", authHandlers.HandleRegister(client)).Methods("POST")
-	r.HandleFunc("/login", authHandlers.HandleLogin(client)).Methods("POST")
-	r.HandleFunc("/users", authHandlers.HandleGetAllUsers(client)).Methods("GET")
-	r.HandleFunc("/user", authHandlers.HandleDeleteUser(client)).Methods("DELETE")
-	r.HandleFunc("/users/{id}", authHandlers.HandleGetUserByID(client)).Methods("GET")
+	r.HandleFunc("/register", authHandlers.HandleRegister(dbClient, profileClient)).Methods("POST")
+	r.HandleFunc("/login", authHandlers.HandleLogin(dbClient)).Methods("POST")
+	r.HandleFunc("/users", authHandlers.HandleGetAllUsers(dbClient)).Methods("GET")
+	r.HandleFunc("/user", authHandlers.HandleDeleteUser(dbClient)).Methods("DELETE")
+	r.HandleFunc("/users/{id}", authHandlers.HandleGetUserByID(dbClient)).Methods("GET")
 	// change user passwrod
-	r.HandleFunc("/change-password", authHandlers.HandleChangePassword(client)).Methods("POST")
+	r.HandleFunc("/change-password", authHandlers.HandleChangePassword(dbClient)).Methods("POST")
 
 	// initiate password recovery
-	r.HandleFunc("/password-recovery", authHandlers.HandlePasswordRecovery(client)).Methods("POST")
+	r.HandleFunc("/password-recovery", authHandlers.HandlePasswordRecovery(dbClient)).Methods("POST")
 
 	// validate token and lets user access to update password page
-	r.HandleFunc("/reset", authHandlers.HandlePasswordReset(client)).Methods("GET")
+	r.HandleFunc("/reset", authHandlers.HandlePasswordReset(dbClient)).Methods("GET")
 	// updates users password with new one
-	r.HandleFunc("/update", authHandlers.HandlePasswordUpdate(client)).Methods("POST")
+	r.HandleFunc("/update", authHandlers.HandlePasswordUpdate(dbClient)).Methods("POST")
 
 	// Enable CORS
 	headers := handlers.AllowedHeaders([]string{"Content-Type", "Authorization"})
