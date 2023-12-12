@@ -101,6 +101,7 @@ services:
     environment:
       - PORT=8082
       - MONGO_DB_URI=mongodb://root:pass@auth_db:27017
+      - PROFILE_SERVICE_URI=http://profile_service:8084
     depends_on:
       auth_db:
         condition: service_healthy
