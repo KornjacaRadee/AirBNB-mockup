@@ -20,7 +20,7 @@ export class ConfigService {
   _userAccoms_url: string;
   _getAvailability: string;
   _createReservation: string;
-
+  _profiles_url:string;
 
 
   constructor() {
@@ -44,7 +44,7 @@ export class ConfigService {
 
     this._getAvailability = this._reservations_url + '/accomm/';
     this._createReservation = this._reservations_url + '/availability/reservations';
-
+    this._profiles_url = this._api_url +'/profiles';
 
 
   }
