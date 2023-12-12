@@ -29,6 +29,6 @@ export class ProfilesService {
 
 
   getProfileByEmail(id: string): Observable<any>{
-    return this.http.get(`${this.configService._profiles_url}/${id}`);
+    return this.http.get(`${this.configService._profiles_url}/u/${id}`);
   }
 }

@@ -113,7 +113,9 @@ func DeleteProfileHandler(client *mongo.Client) http.HandlerFunc {
 func GetProfileByEmailHandler(client *mongo.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Extract email from URL parameters or request body
-		email := r.FormValue("email")
+		vars := mux.Vars(r)
+		var email string
+		email = vars["email"]
 		if email == "" {
 			http.Error(w, "Email parameter missing", http.StatusBadRequest)
 			return
