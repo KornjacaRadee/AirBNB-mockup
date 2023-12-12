@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gocql/gocql"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -73,8 +74,8 @@ func (rr *ReservationsRepo) CreateTables() {
 	err = rr.session.Query(
 		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s 
 					(availability_period_id UUID, reservation_id UUID, start_date TIMESTAMP, end_date TIMESTAMP, guest_id text,
-					PRIMARY KEY ((availability_period_id), reservation_id)) 
-					WITH CLUSTERING ORDER BY (reservation_id ASC)`,
+					PRIMARY KEY ((availability_period_id), start_date, end_date, reservation_id)) 
+					WITH CLUSTERING ORDER BY (start_date ASC, end_date ASC, reservation_id ASC)`,
 			"reservations_by_availability_period")).Exec()
 	if err != nil {
 		rr.logger.Println(err)
@@ -109,6 +110,34 @@ func (rr *ReservationsRepo) GetAvailabilityPeriodsByAccommodation(id string) (Av
 		return nil, err
 	}
 	return avaiabilityPeriods, nil
+}
+
+func (rr *ReservationsRepo) GetAvailabilityPeriodById(id string) (*AvailabilityPeriodByAccommodation, error) {
+	scanner := rr.session.Query(`SELECT accommodation_id, availability_period_id, start_date, end_date, price FROM availability_periods_by_accommodation WHERE availability_period_id = ?`,
+		id).Iter().Scanner()
+
+	scanner.Next()
+
+	var availabilityPeriod AvailabilityPeriodByAccommodation
+	var accommodationIdHex string
+	err := scanner.Scan(&accommodationIdHex, &availabilityPeriod.Id, &availabilityPeriod.StartDate, &availabilityPeriod.EndDate, &availabilityPeriod.Price)
+	if err != nil {
+		rr.logger.Println(err)
+		return nil, err
+	}
+
+	accommodationId, err := primitive.ObjectIDFromHex(accommodationIdHex)
+	if err != nil {
+		rr.logger.Println(err)
+		return nil, err
+	}
+	availabilityPeriod.AccommodationId = accommodationId
+
+	if err := scanner.Err(); err != nil {
+		rr.logger.Println(err)
+		return nil, err
+	}
+	return &availabilityPeriod, nil
 }
 
 func (rr *ReservationsRepo) InsertAvailabilityPeriodByAccommodation(period *AvailabilityPeriodByAccommodation) error {
@@ -154,7 +183,16 @@ func (rr *ReservationsRepo) GetReservationsByAvailabilityPeriod(id string) (Rese
 }
 
 func (rr *ReservationsRepo) InsertReservationByAvailabilityPeriod(reservation *ReservationByAvailabilityPeriod) error {
-	err := rr.session.Query(
+	checkReservationDates, err := rr.checkReservationDates(reservation)
+	if err != nil {
+		rr.logger.Println(err)
+		return err
+	}
+	if !checkReservationDates {
+		err = errors.New("reservation dates not available")
+		return err
+	}
+	err = rr.session.Query(
 		`INSERT INTO reservations_by_availability_period (availability_period_id, reservation_id, start_date, end_date, guest_id) 
 		VALUES (?, UUID(), ?, ?, ?)`,
 		reservation.AvailabilityPeriodId, reservation.StartDate, reservation.EndDate, reservation.GuestId.Hex()).Exec()
@@ -163,4 +201,33 @@ func (rr *ReservationsRepo) InsertReservationByAvailabilityPeriod(reservation *R
 		return err
 	}
 	return nil
+}
+
+// function that checks if reservation dates are available, returns true if they are
+func (rr *ReservationsRepo) checkReservationDates(reservation *ReservationByAvailabilityPeriod) (bool, error) {
+	//check if reservation dates are within period dates
+	//availabilityPeriod, _ := rr.GetAvailabilityPeriodById(reservation.AvailabilityPeriodId.String())
+	//if !(reservation.StartDate.After(availabilityPeriod.StartDate) && reservation.EndDate.Before(availabilityPeriod.EndDate)) {
+	//	err := errors.New("reservation dates not available")
+	//	return false, err
+	//}
+	//check if reservation dates overlap with other reservation dates
+	iter := rr.session.Query(`
+        SELECT reservation_id FROM reservations_by_availability_period 
+        WHERE availability_period_id = ? AND start_date < ? AND end_date > ?
+        ALLOW FILTERING`,
+		reservation.AvailabilityPeriodId, reservation.EndDate, reservation.StartDate).Iter()
+
+	// Iterate over the result set to check if there are any rows
+	for iter.Scan(nil) {
+		return false, nil
+	}
+
+	if err := iter.Close(); err != nil {
+		rr.logger.Println(err)
+		return false, err
+	}
+
+	// If there are no rows, it means no overlap, so return true
+	return true, nil
 }
