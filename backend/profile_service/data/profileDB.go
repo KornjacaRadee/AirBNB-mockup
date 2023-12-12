@@ -91,7 +91,7 @@ func DeleteProfile(client *mongo.Client, profileID primitive.ObjectID) error {
 }
 
 func GetProfileByEmail(client *mongo.Client, email string) (*Profile, error) {
-	profileCollection := client.Database("authDB").Collection("profiles")
+	profileCollection := client.Database("profileDB").Collection("profiles")
 
 	// Create a filter for the email
 	filter := bson.D{{"email", email}}

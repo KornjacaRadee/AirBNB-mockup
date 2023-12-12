@@ -3,6 +3,7 @@ import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AccomodationService } from '../services/accomodation/accomodation.service';
+import { ProfilesService } from '../services/profile/profiles.service';
 import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-profile',
@@ -18,7 +19,7 @@ export class ProfileComponent implements OnInit{
 
 
 
-  constructor(private authService: AuthService,private accommodationService: AccomodationService,private router: Router) { }
+  constructor(private profileService: ProfilesService,private authService: AuthService,private accommodationService: AccomodationService,private router: Router) { }
 
   ngOnInit(): void {
 
@@ -64,6 +65,7 @@ export class ProfileComponent implements OnInit{
     this.authService.deleteUser(headers).subscribe(
       (response) => {
         this.authService.logout();
+
       },
       (error) => {
         // Handle error, e.g., show an error message
@@ -76,12 +78,13 @@ export class ProfileComponent implements OnInit{
 
 
 
-  loadUserDetails() {
+  loadUserDetails()  {
     this.id = this.authService.getUserId();
     this.authService.getUserById(this.id).subscribe(
       (response) => {
         // Map the response to the 'user' property
         this.user = response;
+        this.loadProfileDetails();
       },
       (error) => {
         console.error('Error fetching user details', error);
@@ -90,6 +93,19 @@ export class ProfileComponent implements OnInit{
   }
   toggleAccommodations() {
     this.showAccommodations = !this.showAccommodations;
+  }
+
+  loadProfileDetails() {
+    this.profileService.getProfileByEmail(this.user.email).subscribe(
+      (response) => {
+        // Map the response to the 'user' property
+        this.profile = response;
+        console.log(this.profile)
+      },
+      (error) => {
+        console.error('Error fetching user details', error);
+      }
+    );
   }
 
 

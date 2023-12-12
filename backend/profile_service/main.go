@@ -95,7 +95,7 @@ func registerProfileRoutes(r *mux.Router, client *mongo.Client) {
 	r.HandleFunc("/new", profileHandler.CreateProfileHandler(client)).Methods("POST")
 	r.HandleFunc("/all", profileHandler.GetAllProfilesHandler(client)).Methods("GET")
 	r.HandleFunc("/{id}", profileHandler.GetProfileByIDHandler(client)).Methods("GET")
-	r.HandleFunc("/{email}", profileHandler.GetProfileByEmailHandler(client)).Methods("GET")
+	r.HandleFunc("/u/{email}", profileHandler.GetProfileByEmailHandler(client)).Methods("GET")
 	r.HandleFunc("/update/{id}", profileHandler.UpdateProfileHandler(client)).Methods("PUT")
 	r.HandleFunc("/delete/{id}", profileHandler.DeleteProfileHandler(client)).Methods("DELETE")
 }
