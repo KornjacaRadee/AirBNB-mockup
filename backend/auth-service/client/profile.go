@@ -4,75 +4,59 @@ import (
 	"auth-service/data"
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"errors"
+	"log"
 	"net/http"
 )
 
 type ProfileClient struct {
-	client  *http.Client
 	address string
 	//cb      *gobreaker.CircuitBreaker
 }
 
-func NewProfileClient(client *http.Client, address string) ProfileClient {
+func NewProfileClient(address string) ProfileClient {
 	return ProfileClient{
-		client:  client,
 		address: address,
 		//cb:      cb,
 	}
 
 }
 
-// Add a function to send user data to the profile service
-func (c *ProfileClient) SendUserData(user *data.User) error {
-	url := fmt.Sprintf("%s/profiles", c.address) // Adjust the URL according to your profile service routes
+func (c *ProfileClient) SendUserData(user data.User) error {
+	req := convertUser(user)
 
-	// Convert user data to JSON
-	userJSON, err := json.Marshal(user)
+	reqBytes, err := json.Marshal(req)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
-	// Make a POST request to the profile service
-	resp, err := c.client.Post(url, "application/json", bytes.NewBuffer(userJSON))
+	bodyReader := bytes.NewReader(reqBytes)
+	requestURL := c.address + "/profiles/new"
+	httpReq, err := http.NewRequest(http.MethodPost, requestURL, bodyReader)
+
 	if err != nil {
-		return err
+		log.Println(err)
+		return errors.New("error sending user data")
 	}
-	defer resp.Body.Close()
+	res, err := http.DefaultClient.Do(httpReq)
 
-	// Check the response status
-	if resp.StatusCode != http.StatusCreated {
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	if err != nil || res.StatusCode != http.StatusCreated {
+		log.Println(err)
+		log.Println(res.StatusCode)
+		return errors.New("error sending user data")
 	}
-
 	return nil
 }
 
-//func (pc *ProfileClient) SendUserDataToProfile(user *data.User) error {
-//	// Prepare the request body
-//	body, err := json.Marshal(user)
-//	if err != nil {
-//		return err
-//	}
-//
-//	// Create a request to the profile service
-//	req, err := http.NewRequest("POST", fmt.Sprintf("%s/profiles", pc.address), bytes.NewBuffer(body))
-//	if err != nil {
-//		return err
-//	}
-//	req.Header.Set("Content-Type", "application/json")
-//
-//	// Send the request
-//	resp, err := pc.client.Do(req)
-//	if err != nil {
-//		return err
-//	}
-//	defer resp.Body.Close()
-//
-//	// Check the response status code
-//	if resp.StatusCode != http.StatusOK {
-//		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-//	}
-//
-//	return nil
-//}
+func convertUser(user data.User) UserData {
+	userData := UserData{
+		Name:      user.First_Name,
+		Last_Name: user.Last_Name,
+		Username:  user.Username,
+		Email:     user.Email,
+		Address:   user.Address,
+		Role:      user.Role,
+	}
+	return userData
+}

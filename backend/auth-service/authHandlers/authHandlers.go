@@ -1,6 +1,7 @@
 package authHandlers
 
 import (
+	"auth-service/client"
 	"auth-service/data"
 	"encoding/json"
 	"errors"
@@ -18,8 +19,7 @@ import (
 	"time"
 )
 
-// func HandleRegister(client *mongo.Client, pc *client.ProfileClient) http.HandlerFunc {
-func HandleRegister(client *mongo.Client) http.HandlerFunc {
+func HandleRegister(dbClient *mongo.Client, pc client.ProfileClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var newUser data.User
 		if err := json.NewDecoder(r.Body).Decode(&newUser); err != nil {
@@ -54,15 +54,15 @@ func HandleRegister(client *mongo.Client) http.HandlerFunc {
 		newUser.Password = hashedPassword
 
 		// Register the user
-		if err := data.RegisterUser(client, &newUser); err != nil {
+		if err := data.RegisterUser(dbClient, &newUser); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		//if err := pc.SendUserData(&newUser); err != nil {
-		//
-		//	http.Error(w, "Error sending user data to the profile service", http.StatusInternalServerError)
-		//	return
-		//}
+
+		if err := pc.SendUserData(newUser); err != nil {
+			http.Error(w, "Error sending user data to the profile service", http.StatusInternalServerError)
+			return
+		}
 
 		w.WriteHeader(http.StatusCreated)
 	}
@@ -89,7 +89,7 @@ func generateJWTToken(user *data.User) (string, error) {
 	return signedToken, nil
 }
 
-func HandleLogin(client *mongo.Client) http.HandlerFunc {
+func HandleLogin(dbClient *mongo.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode the JSON request body
 		var credentials struct {
@@ -104,7 +104,7 @@ func HandleLogin(client *mongo.Client) http.HandlerFunc {
 		log.Printf("Login request: email=%s, password=%s\n", credentials.Email, credentials.Password)
 
 		// Login the user
-		user, err := data.LoginUser(client, credentials.Email, credentials.Password)
+		user, err := data.LoginUser(dbClient, credentials.Email, credentials.Password)
 		if err != nil {
 			http.Error(w, "Invalid email or password", http.StatusUnauthorized)
 			return
@@ -135,7 +135,7 @@ func HandleLogin(client *mongo.Client) http.HandlerFunc {
 
 // I THINK THIS FUNC SHOULD NOT BE AVAILABLE TO REQUEST
 
-func HandleGetUserByID(client *mongo.Client) http.HandlerFunc {
+func HandleGetUserByID(dbClient *mongo.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Extract user ID from URL parameters
 		vars := mux.Vars(r)
@@ -146,7 +146,7 @@ func HandleGetUserByID(client *mongo.Client) http.HandlerFunc {
 		}
 
 		// Get user by ID
-		user, err := data.GetUserByID(client, userID)
+		user, err := data.GetUserByID(dbClient, userID)
 		if err != nil {
 			http.Error(w, "User not found", http.StatusNotFound)
 			return
@@ -158,7 +158,7 @@ func HandleGetUserByID(client *mongo.Client) http.HandlerFunc {
 	}
 }
 
-func HandleChangePassword(client *mongo.Client) http.HandlerFunc {
+func HandleChangePassword(dbClient *mongo.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Extract user ID from JWT token
 		userIDFromToken, err := extractUserIDFromToken(r)
@@ -196,7 +196,7 @@ func HandleChangePassword(client *mongo.Client) http.HandlerFunc {
 		}
 		log.Printf("New password from handler is: %s", passwordChange.NewPassword)
 
-		user, err := validateOldPasswordAndGetUser(client, userID, passwordChange.OldPassword)
+		user, err := validateOldPasswordAndGetUser(dbClient, userID, passwordChange.OldPassword)
 		if err != nil {
 			log.Printf("Error validating old password: %v", err)
 			http.Error(w, "Error validating old password", http.StatusInternalServerError)
@@ -209,7 +209,7 @@ func HandleChangePassword(client *mongo.Client) http.HandlerFunc {
 		}
 
 		// Update the user's password in the database
-		if err := data.UpdatePassword(client, userID, passwordChange.NewPassword); err != nil {
+		if err := data.UpdatePassword(dbClient, userID, passwordChange.NewPassword); err != nil {
 			log.Printf("Error updating password: %v", err)
 			http.Error(w, "Error updating password", http.StatusInternalServerError)
 			return
@@ -220,8 +220,8 @@ func HandleChangePassword(client *mongo.Client) http.HandlerFunc {
 }
 
 // Helper function to validate the old password and get the user
-func validateOldPasswordAndGetUser(client *mongo.Client, userID primitive.ObjectID, oldPassword string) (*data.User, error) {
-	user, err := data.GetUserByID(client, userID)
+func validateOldPasswordAndGetUser(dbClient *mongo.Client, userID primitive.ObjectID, oldPassword string) (*data.User, error) {
+	user, err := data.GetUserByID(dbClient, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -235,9 +235,9 @@ func validateOldPasswordAndGetUser(client *mongo.Client, userID primitive.Object
 	return user, nil
 }
 
-func HandleGetAllUsers(client *mongo.Client) http.HandlerFunc {
+func HandleGetAllUsers(dbClient *mongo.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		users, err := data.GetAllUsers(client)
+		users, err := data.GetAllUsers(dbClient)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -247,7 +247,7 @@ func HandleGetAllUsers(client *mongo.Client) http.HandlerFunc {
 	}
 }
 
-func HandleDeleteUser(client *mongo.Client) http.HandlerFunc {
+func HandleDeleteUser(dbClient *mongo.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Extract user ID from JWT token
 		userIDFromToken, err := extractUserIDFromToken(r)
@@ -268,7 +268,7 @@ func HandleDeleteUser(client *mongo.Client) http.HandlerFunc {
 		}
 
 		// Perform the deletion using the converted user ID
-		if err := data.DeleteUser(client, objectIDFromToken); err != nil {
+		if err := data.DeleteUser(dbClient, objectIDFromToken); err != nil {
 			log.Printf("Error deleting user: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -279,7 +279,7 @@ func HandleDeleteUser(client *mongo.Client) http.HandlerFunc {
 }
 
 // Request for password recovery
-func HandlePasswordRecovery(client *mongo.Client) http.HandlerFunc {
+func HandlePasswordRecovery(dbClient *mongo.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Extract user's email from the request
 		var request struct {
@@ -291,7 +291,7 @@ func HandlePasswordRecovery(client *mongo.Client) http.HandlerFunc {
 		}
 
 		// Validate the email and get the user
-		user, err := data.GetUserByEmail(client, request.Email)
+		user, err := data.GetUserByEmail(dbClient, request.Email)
 		if err != nil {
 			log.Printf("Error retrieving user: %v", err)
 			http.Error(w, "Error retrieving user", http.StatusInternalServerError)
@@ -305,7 +305,7 @@ func HandlePasswordRecovery(client *mongo.Client) http.HandlerFunc {
 		}
 
 		// Generate a unique recovery token
-		recoveryToken, err := data.GenerateRecoveryToken(client, user.ID)
+		recoveryToken, err := data.GenerateRecoveryToken(dbClient, user.ID)
 		if err != nil {
 			// Handle the error, for example:
 			log.Printf("Error generating recovery token: %v", err)
@@ -323,7 +323,7 @@ func HandlePasswordRecovery(client *mongo.Client) http.HandlerFunc {
 }
 
 // Handle the password reset page
-func HandlePasswordReset(client *mongo.Client) http.HandlerFunc {
+func HandlePasswordReset(dbClient *mongo.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Extract recovery token from the URL parameters
 		token := r.URL.Query().Get("token")
@@ -333,7 +333,7 @@ func HandlePasswordReset(client *mongo.Client) http.HandlerFunc {
 		}
 
 		// Validate the recovery token
-		if !data.IsValidRecoveryToken(client, token) {
+		if !data.IsValidRecoveryToken(dbClient, token) {
 			http.Error(w, "Invalid recovery token", http.StatusBadRequest)
 			return
 		}
@@ -390,7 +390,7 @@ func extractUserIDFromToken(r *http.Request) (string, error) {
 	return userID, nil
 }
 
-func HandlePasswordUpdate(client *mongo.Client) http.HandlerFunc {
+func HandlePasswordUpdate(dbClient *mongo.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Extract reset token from URL parameters
 		resetToken, err := extractResetToken(r)
@@ -412,7 +412,7 @@ func HandlePasswordUpdate(client *mongo.Client) http.HandlerFunc {
 		log.Printf("New password from handler is: %s", passwordChange.NewPassword)
 
 		// Validate the reset token and get the user ID
-		userID, err := data.ValidateResetTokenAndGetUser(client, resetToken)
+		userID, err := data.ValidateResetTokenAndGetUser(dbClient, resetToken)
 		if err != nil {
 			log.Printf("Error validating reset token: %v", err)
 			http.Error(w, "Invalid reset token", http.StatusBadRequest)
@@ -420,7 +420,7 @@ func HandlePasswordUpdate(client *mongo.Client) http.HandlerFunc {
 		}
 
 		// Update the user's password in the database
-		if err := data.UpdatePassword(client, userID, passwordChange.NewPassword); err != nil {
+		if err := data.UpdatePassword(dbClient, userID, passwordChange.NewPassword); err != nil {
 			log.Printf("Error updating password: %v", err)
 			http.Error(w, "Error updating password", http.StatusInternalServerError)
 			return
