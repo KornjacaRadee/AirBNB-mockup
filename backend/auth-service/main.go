@@ -3,9 +3,11 @@ package main
 import (
 	"auth-service/authHandlers"
 	"auth-service/client"
+	"auth-service/domain"
 	"context"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/sony/gobreaker"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
@@ -40,12 +42,40 @@ func main() {
 	if len(port) == 0 {
 		port = "8082"
 	}
+	profileClient := &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConns:        10,
+			MaxIdleConnsPerHost: 10,
+			MaxConnsPerHost:     10,
+		},
+	}
+	profileBreaker := gobreaker.NewCircuitBreaker(
+		gobreaker.Settings{
+			Name:        "profile",
+			MaxRequests: 1,
+			Timeout:     10 * time.Second,
+			Interval:    0,
+			ReadyToTrip: func(counts gobreaker.Counts) bool {
+				return counts.ConsecutiveFailures > 2
+			},
+			OnStateChange: func(name string, from, to gobreaker.State) {
+				logger.Printf("CB '%s' changed from '%s' to '%s'\n", name, from, to)
+			},
+			IsSuccessful: func(err error) bool {
+				if err == nil {
+					return true
+				}
+				errResp, ok := err.(domain.ErrResp)
+				return ok && errResp.StatusCode >= 400 && errResp.StatusCode < 500
+			},
+		},
+	)
 
 	//Initialize clients for other services
-	profileClient := client.NewProfileClient(os.Getenv("PROFILE_SERVICE_URI"))
+	profile := client.NewProfileClient(profileClient, os.Getenv("PROFILE_SERVICE_URI"), profileBreaker)
 
 	r := mux.NewRouter()
-	r.HandleFunc("/register", authHandlers.HandleRegister(dbClient, profileClient)).Methods("POST")
+	r.HandleFunc("/register", authHandlers.HandleRegister(dbClient, profile)).Methods("POST")
 	r.HandleFunc("/login", authHandlers.HandleLogin(dbClient)).Methods("POST")
 	r.HandleFunc("/users", authHandlers.HandleGetAllUsers(dbClient)).Methods("GET")
 	r.HandleFunc("/user", authHandlers.HandleDeleteUser(dbClient)).Methods("DELETE")
