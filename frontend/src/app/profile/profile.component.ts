@@ -27,12 +27,25 @@ export class ProfileComponent implements OnInit{
       this.router.navigate(['/login']);
     }
     this.accomms = [];
-    this.getUserAccommodations()
+    //this.getUserAccommodations()
+    this.tempLoadAccoms();
     this.loadUserDetails();
     console.log(this.accomms);
 
 
   }
+  tempLoadAccoms(): void{
+    this.accommodationService.getAccomodations().subscribe(
+      (data: any[]) => {
+        this.accomms = data;
+        data.filter(accommodation => accommodation.owner.id === this.id);
+      },
+      (error: any) => {
+        console.error('Error fetching accommodations:', error);
+      }
+    );
+  }
+
   getUserAccommodations(): void {
     const token = this.authService.getAuthToken();
 
