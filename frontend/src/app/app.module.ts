@@ -32,6 +32,7 @@ import { NavbarComponent } from './navbar/navbar.component';
 import { CreateAccommodationComponent } from './create-accommodation/create-accommodation.component';
 import { ProfileComponent } from './profile/profile.component';
 import { AccommodationPageComponent } from './accommodation-page/accommodation-page.component';
+import { ProfilesService } from './services/profile/profiles.service';
 
 @NgModule({
   declarations: [
@@ -77,11 +78,11 @@ import { AccommodationPageComponent } from './accommodation-page/accommodation-p
         siteKey: environment.recaptcha.siteKey,
       } as RecaptchaSettings,
     },
-
     AuthService,
     ApiService,
     AccomodationService,
-    ReservationService
+    ReservationService,
+    ProfilesService
   ],
 
   bootstrap: [AppComponent],

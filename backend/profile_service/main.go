@@ -92,9 +92,10 @@ func initializeMongoDB() (*mongo.Client, error) {
 }
 
 func registerProfileRoutes(r *mux.Router, client *mongo.Client) {
-	r.HandleFunc("/profiles/new", profileHandler.CreateProfileHandler(client)).Methods("POST")
-	r.HandleFunc("/profiles/all", profileHandler.GetAllProfilesHandler(client)).Methods("GET")
-	r.HandleFunc("/profiles/byId/{id}", profileHandler.GetProfileByIDHandler(client)).Methods("GET")
-	r.HandleFunc("/profiles/updateById/{id}", profileHandler.UpdateProfileHandler(client)).Methods("PUT")
-	r.HandleFunc("/profiles/deleteById/{id}", profileHandler.DeleteProfileHandler(client)).Methods("DELETE")
+	r.HandleFunc("/new", profileHandler.CreateProfileHandler(client)).Methods("POST")
+	r.HandleFunc("/all", profileHandler.GetAllProfilesHandler(client)).Methods("GET")
+	r.HandleFunc("/{id}", profileHandler.GetProfileByIDHandler(client)).Methods("GET")
+	r.HandleFunc("/u/{email}", profileHandler.GetProfileByEmailHandler(client)).Methods("GET")
+	r.HandleFunc("/update/{id}", profileHandler.UpdateProfileHandler(client)).Methods("PUT")
+	r.HandleFunc("/delete/{id}", profileHandler.DeleteProfileHandler(client)).Methods("DELETE")
 }

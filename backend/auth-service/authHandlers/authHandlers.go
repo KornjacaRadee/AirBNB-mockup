@@ -3,6 +3,7 @@ package authHandlers
 import (
 	"auth-service/client"
 	"auth-service/data"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -58,11 +59,22 @@ func HandleRegister(dbClient *mongo.Client, pc client.ProfileClient) http.Handle
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		ctx, cancel := context.WithTimeout(r.Context(), 5000*time.Millisecond)
+		defer cancel()
 
-		if err := pc.SendUserData(newUser); err != nil {
-			http.Error(w, "Error sending user data to the profile service", http.StatusInternalServerError)
-			return
+		// Call the profile service and handle fallback logic
+		_, err = pc.SendUserData(ctx, newUser)
+		if err != nil {
+			log.Printf("Error sending user data to the profile service: %v", err)
+
+			http.Error(w, "Error sending user data to the profile service. Registering user without profile data.", http.StatusServiceUnavailable)
+			writeResp(err, http.StatusServiceUnavailable, w)
 		}
+
+		//if err := pc.SendUserData(newUser); err != nil {
+		//	http.Error(w, "Error sending user data to the profile service", http.StatusInternalServerError)
+		//	return
+		//}
 
 		w.WriteHeader(http.StatusCreated)
 	}

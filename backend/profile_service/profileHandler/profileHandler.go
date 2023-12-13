@@ -109,3 +109,27 @@ func DeleteProfileHandler(client *mongo.Client) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 	}
 }
+
+func GetProfileByEmailHandler(client *mongo.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Extract email from URL parameters or request body
+		vars := mux.Vars(r)
+		var email string
+		email = vars["email"]
+		if email == "" {
+			http.Error(w, "Email parameter missing", http.StatusBadRequest)
+			return
+		}
+
+		// Get profile by email
+		profile, err := data.GetProfileByEmail(client, email)
+		if err != nil {
+			http.Error(w, "Profile not found", http.StatusNotFound)
+			return
+		}
+
+		// Return profile data
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(profile)
+	}
+}

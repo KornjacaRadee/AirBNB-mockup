@@ -4,18 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="76e2c8b2-7cb5-4351-8e2a-7c313d6c49ba" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/accommodation_service/domain/accommodationRepo.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/accommodation_service/domain/accommodationRepo.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/accommodation_service/handlers/accommodationsHandler.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/accommodation_service/handlers/accommodationsHandler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/app-routing.module.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/app-routing.module.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/app.module.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/app.module.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/profile/profile.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/profile/profile.component.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/accomodation/accomodation.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/services/accomodation/accomodation.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/config.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/services/config.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/reservation/reservation.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/services/reservation/reservation.service.ts" afterDir="false" />
-    </list>
+    <list default="true" id="76e2c8b2-7cb5-4351-8e2a-7c313d6c49ba" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -46,7 +35,7 @@
     "RunOnceActivity.go.modules.automatic.dependencies.download": "true",
     "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "feature/reservationFront",
+    "git-widget-placeholder": "feature/userAccomFix",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
     "last_opened_file_path": "C:/Users/mmiki/OneDrive/Documents/GitHub/AirBNB/AirBNB-mockup",
