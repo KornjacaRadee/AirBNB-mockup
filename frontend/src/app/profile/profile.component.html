@@ -29,6 +29,7 @@
         <h5 class="card-title">{{ accommodation.name }}</h5>
         <p class="card-text">{{ accommodation.location }}</p>
         <a href="#" class="btn btn-primary">Edit</a>
+        <a [routerLink]="'/create-period'" [queryParams]="{ id: accommodation.id }" class="btn btn-primary">Add Period</a>
         <!-- <a href="#" class="btn btn-danger" (click)="handleDelete(accommodation.id)">Delete</a> -->
       </div>
 

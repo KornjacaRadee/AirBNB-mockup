@@ -1,0 +1,27 @@
+.availability-period-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+.date-picker {
+  font-size: 15px;
+  margin-bottom: 40px;
+}
+
+button {
+  padding: 10px;
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #2980b9;
+}
