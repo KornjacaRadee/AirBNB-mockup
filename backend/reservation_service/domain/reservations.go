@@ -14,6 +14,7 @@ type AvailabilityPeriodByAccommodation struct {
 	StartDate       time.Time
 	EndDate         time.Time
 	Price           int
+	IsPricePerGuest bool
 }
 
 type ReservationByAvailabilityPeriod struct {
@@ -23,6 +24,8 @@ type ReservationByAvailabilityPeriod struct {
 	EndDate              time.Time
 	AccommodationId      primitive.ObjectID
 	GuestId              primitive.ObjectID
+	GuestNum             int
+	Price                int
 }
 
 type AvailabilityPeriodsByAccommodation []*AvailabilityPeriodByAccommodation
