@@ -50,7 +50,12 @@ export class RegisterComponent {
         },
         (response) => {
           console.error('Registration failed', response.error);
-          this.errorMessage = response.error;
+          if (response.error && response.error.includes('502')) {
+            this.errorMessage = 'Service not available';
+          } else {
+            this.errorMessage = response.error;
+          }
+
           // Add actions on registration failure
         }
       );
