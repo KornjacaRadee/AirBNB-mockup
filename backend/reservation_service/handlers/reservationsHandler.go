@@ -86,7 +86,7 @@ func (r *ReservationsHandler) GetReservationsByGuestId(rw http.ResponseWriter, h
 
 func (r *ReservationsHandler) InsertAvailabilityPeriodByAccommodation(rw http.ResponseWriter, h *http.Request) {
 	availabilityPeriodsByAccommodation := h.Context().Value(KeyProduct{}).(*domain.AvailabilityPeriodByAccommodation)
-	accommodationCheck, err := r.accommodationClient.CheckIfAccommodationExists(availabilityPeriodsByAccommodation.AccommodationId)
+	accommodationCheck, err := r.accommodationClient.CheckIfAccommodationExists(h.Context(), availabilityPeriodsByAccommodation.AccommodationId)
 
 	if err != nil || !accommodationCheck {
 		r.logger.Print("Accommodation does not exist")
