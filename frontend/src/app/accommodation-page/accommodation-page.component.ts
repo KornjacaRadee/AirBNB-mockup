@@ -4,6 +4,8 @@ import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { AccomodationService } from '../services/accomodation/accomodation.service';
 import { ReservationService } from '../services/reservation/reservation.service';
+import { DatePipe } from '@angular/common';
+import { formatDate } from '@angular/common';
 
 @Component({
   selector: 'app-accommodation-page',
@@ -11,15 +13,31 @@ import { ReservationService } from '../services/reservation/reservation.service'
   styleUrls: ['./accommodation-page.component.css']
 })
 export class AccommodationPageComponent implements OnInit {
-
+  selectedStartDate: string | null = "";
+  selectedEndDate: string | null = "";
+  parsedStartDate: any;
+  parsedEndDate: any;
+  minDate: string = "";
+  maxDate: string = "";
   accommID = "";
   accommodation: any | null;
   availabilityPeriods: any[] = [];
   currentUserID: string = ""
-  reservationData: any | null;
+  reservationData: any | null = {
+    AvailabilityPeriodId: null,
+    AccommodationId: null,
+    StartDate: null,
+    EndDate: null,
+    GuestId: null,
+    GuestNum: 1,
+  };
 
-
-  constructor(private reservationService: ReservationService,private authService: AuthService, private router: Router,private route: ActivatedRoute, private accommodationService: AccomodationService){}
+  constructor(private reservationService: ReservationService,
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private datePipe: DatePipe,
+    private accommodationService: AccomodationService){}
   ngOnInit(): void {
     if(this.authService.getUserRole() == "host"){
       this.router.navigate(['/home']);
@@ -59,6 +77,17 @@ export class AccommodationPageComponent implements OnInit {
     this.reservationService.getAvailability(accommodationId).subscribe(
       (data: any[]) => {
         this.availabilityPeriods = data;
+        if (this.availabilityPeriods.length > 0) {
+
+          const earliestStartDate = this.availabilityPeriods.reduce((min, period) =>
+            period.StartDate < min ? period.StartDate : min, this.availabilityPeriods[0].StartDate);
+
+          const latestEndDate = this.availabilityPeriods.reduce((max, period) =>
+            period.EndDate > max ? period.EndDate : max, this.availabilityPeriods[0].EndDate);
+
+          this.minDate = new Date(earliestStartDate).toISOString().split('T')[0];
+          this.maxDate = new Date(latestEndDate).toISOString().split('T')[0];
+        }
       },
       (error: any) => {
         console.error('Error fetching accommodations:', error);
@@ -66,13 +95,29 @@ export class AccommodationPageComponent implements OnInit {
     );
   }
 
-  reservePeriod(periodid: any,start: any, end:any,): void {
-      this.reservationData = {
-        AvailabilityPeriodId: periodid,
-        StartDate: start,
-        EndDate: end,
-        GuestId: this.currentUserID,
-      };
+  reservePeriod(periodid: any, start: any, end: any): void {
+    // ZLU NE TREBALO
+    // this.parsedStartDate = new Date(start);
+    // const timezoneOffset = this.parsedStartDate.getTimezoneOffset();
+    // const adjustedStartDate = new Date(this.parsedStartDate.getTime() - timezoneOffset * 60 * 1000);
+
+    // this.selectedStartDate = this.datePipe.transform(adjustedStartDate , 'yyyy-MM-ddTHH:mm:ssZ');
+
+
+    // this.parsedEndDate = new Date(end);
+    // const timezoneOffseta = this.parsedStartDate.getTimezoneOffset();
+    // const adjustedStartDatee = new Date(this.parsedEndDate.getTime() - timezoneOffseta * 60 * 1000);
+    // this.selectedEndDate = this.datePipe.transform(adjustedStartDatee, 'yyyy-MM-ddTHH:mm:ssZ');
+    console.log(start)
+
+    this.parsedStartDate = start + "T00:00:00Z"
+    this.parsedEndDate = end + "T00:00:00Z"
+
+    this.reservationData.AvailabilityPeriodId = periodid;
+    this.reservationData.AccommodationId = this.accommID;
+    this.reservationData.StartDate = this.parsedStartDate;
+    this.reservationData.EndDate = this.parsedEndDate;
+    this.reservationData.GuestId = this.currentUserID;
 
     this.reservationService.postReservation(this.reservationData)
       .subscribe(

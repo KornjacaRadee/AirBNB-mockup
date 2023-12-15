@@ -4,7 +4,16 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="76e2c8b2-7cb5-4351-8e2a-7c313d6c49ba" name="Changes" comment="" />
+    <list default="true" id="76e2c8b2-7cb5-4351-8e2a-7c313d6c49ba" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/reservation_service/domain/reservationsRepo.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/reservation_service/domain/reservationsRepo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/reservation_service/handlers/reservationsHandler.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/reservation_service/handlers/reservationsHandler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/reservation_service/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/reservation_service/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/accommodation-page/accommodation-page.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/accommodation-page/accommodation-page.component.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/accommodation-page/accommodation-page.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/accommodation-page/accommodation-page.component.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/app.module.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/app.module.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/create-period/create-period.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/create-period/create-period.component.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -35,7 +44,7 @@
     "RunOnceActivity.go.modules.automatic.dependencies.download": "true",
     "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "feature/userAccomFix",
+    "git-widget-placeholder": "feature/frontAll",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
     "last_opened_file_path": "C:/Users/mmiki/OneDrive/Documents/GitHub/AirBNB/AirBNB-mockup",

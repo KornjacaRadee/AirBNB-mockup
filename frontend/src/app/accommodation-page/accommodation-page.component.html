@@ -11,20 +11,27 @@
     </div>
   </div>
   <div class="right">
-    <!-- Availability Section -->
     <div class="availability-section animated fadeInRight">
       <h3>Availability</h3>
       <div *ngFor="let period of availabilityPeriods" class="availability-period">
-        <div class="">
-          <p style="font-weight: bold;">Start</p>
-        <p>{{ period.StartDate }}</p>
-      </div>
-      <div class="">
-        <p style="font-weight: bold;">End</p>
-        <p> {{ period.EndDate }}</p>
-      </div>
-      <p style="font-weight: bold;"> Price {{ period.Price }}</p>
-        <button type="button" class="btn btn-primary" (click)="reservePeriod(period.Id, period.StartDate,period.EndDate)">Reserve Period</button>
+        <div class="date-interval">
+          <div class="form-group">
+            <label for="startDate">Start Date</label>
+            <input type="date" class="form-control" id="startDate"  [min]="minDate" [max]="maxDate"  [(ngModel)]="selectedStartDate">
+          </div>
+          <div class="form-group">
+            <label for="endDate">End Date</label>
+            <input type="date" class="form-control" id="endDate"  [min]="minDate" [max]="maxDate" [(ngModel)]="selectedEndDate">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="guests">Number of Guests</label>
+          <input type="number" class="form-control" id="guests" [(ngModel)]="reservationData.GuestNum" min="1">
+        </div>
+        <p style="font-weight: bold;">Price {{ period.Price }}</p>
+        <button type="button" class="btn btn-primary" (click)="reservePeriod(period.Id, selectedStartDate, selectedEndDate)">
+          Reserve Period
+        </button>
       </div>
     </div>
   </div>

@@ -23,6 +23,7 @@ import { ApiService } from './services/api.service';
 import { RouterModule } from '@angular/router';
 import { AccomodationService } from './services/accomodation/accomodation.service';
 import { ReservationService } from './services/reservation/reservation.service';
+import { DatePipe } from '@angular/common';
 
 import { RECAPTCHA_SETTINGS, RecaptchaFormsModule, RecaptchaModule, RecaptchaSettings } from 'ng-recaptcha';
 import { environment } from 'src/environments/environment';
@@ -33,6 +34,7 @@ import { CreateAccommodationComponent } from './create-accommodation/create-acco
 import { ProfileComponent } from './profile/profile.component';
 import { AccommodationPageComponent } from './accommodation-page/accommodation-page.component';
 import { ProfilesService } from './services/profile/profiles.service';
+import { CreatePeriodComponent } from './create-period/create-period.component';
 
 @NgModule({
   declarations: [
@@ -45,7 +47,8 @@ import { ProfilesService } from './services/profile/profiles.service';
     NavbarComponent,
     CreateAccommodationComponent,
     ProfileComponent,
-    AccommodationPageComponent
+    AccommodationPageComponent,
+    CreatePeriodComponent
   ],
   imports: [
     BrowserModule,
@@ -78,6 +81,7 @@ import { ProfilesService } from './services/profile/profiles.service';
         siteKey: environment.recaptcha.siteKey,
       } as RecaptchaSettings,
     },
+    DatePipe,
     AuthService,
     ApiService,
     AccomodationService,

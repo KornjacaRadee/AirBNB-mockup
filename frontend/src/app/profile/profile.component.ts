@@ -38,7 +38,7 @@ export class ProfileComponent implements OnInit{
     this.accommodationService.getAccomodations().subscribe(
       (data: any[]) => {
         this.accomms = data;
-        data.filter(accommodation => accommodation.owner.id === this.id);
+        this.accomms = data.filter(accommodation => accommodation.owner.id === this.id);
       },
       (error: any) => {
         console.error('Error fetching accommodations:', error);

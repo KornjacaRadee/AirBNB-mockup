@@ -22,6 +22,10 @@ export class ReservationService {
     return this.http.get<any[]>(this.configService._getAvailability + id +"/availability");
 
   }
+  postAvailability(availability: any): Observable<any[]> {
+    return this.http.post<any[]>(this.configService._reservations_url + "/accomm/availability", availability);
+
+  }
   postReservation(availability: any): Observable<any[]> {
     return this.http.post<any[]>(this.configService._createReservation, availability);
 
