@@ -45,36 +45,28 @@ func (a *AccommodationsHandler) GetAllAccommodations(rw http.ResponseWriter, h *
 	}
 }
 
-//func (a *AccommodationsHandler) PostAccommodation(rw http.ResponseWriter, h *http.Request) {
-//	tokenString := h.Header.Get("Authorization")
-//	if tokenString == "" {
-//		http.Error(rw, "Missing Authorization header", http.StatusUnauthorized)
-//		return
-//	}
-//
-//	// Remove 'Bearer ' prefix if present
-//	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
-//	role, err := getRoleFromToken(tokenString)
-//	if err != nil {
-//		http.Error(rw, fmt.Sprintf("Error extracting user role: %v", err), http.StatusUnauthorized)
-//		return
-//	}
-//
-//	// Check if the user has the required role
-//	if role != "host" {
-//		http.Error(rw, "Unauthorized: Insufficient privileges", http.StatusUnauthorized)
-//		return
-//	}
-//
-//	accommodation := h.Context().Value(KeyProduct{}).(*domain.Accommodation)
-//	erra := a.repo.Insert(accommodation)
-//	if erra != nil {
-//		http.Error(rw, "Unable to post accommodation", http.StatusBadRequest)
-//		a.logger.Fatal(err)
-//		return
-//	}
-//	rw.WriteHeader(http.StatusCreated)
-//}
+func (a *AccommodationsHandler) GetAccommodation(rw http.ResponseWriter, h *http.Request) {
+
+	vars := mux.Vars(h)
+	id := vars["id"]
+
+	accommodation, err := a.repo.GetByID(id)
+	if err != nil {
+		a.logger.Print("Database exception: ", err)
+	}
+
+	if accommodation.Id.Hex() != id {
+		http.Error(rw, "Accommodation not found", 404)
+		return
+	}
+
+	err = accommodation.ToJSON(rw)
+	if err != nil {
+		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
+		a.logger.Fatal("Unable to convert to json :", err)
+		return
+	}
+}
 
 func (a *AccommodationsHandler) PostAccommodation(rw http.ResponseWriter, h *http.Request) {
 	tokenString := h.Header.Get("Authorization")
@@ -195,13 +187,15 @@ func (a *AccommodationsHandler) DeleteAccommodation(rw http.ResponseWriter, h *h
 		return
 	}
 
-	if accommodation.Owner.Id.String() != userID {
+	idUser, _ := primitive.ObjectIDFromHex(userID)
+
+	if accommodation.Owner.Id != idUser {
 		http.Error(rw, "Unauthorized: User is not the owner of the accommodation", http.StatusUnauthorized)
 		return
 	}
 
 	a.repo.Delete(id)
-	rw.WriteHeader(http.StatusNoContent)
+	rw.WriteHeader(http.StatusOK)
 }
 
 func (a *AccommodationsHandler) GetUserAcommodations(rw http.ResponseWriter, h *http.Request) {

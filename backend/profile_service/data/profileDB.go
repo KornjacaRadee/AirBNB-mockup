@@ -3,19 +3,18 @@ package data
 import (
 	"context"
 	"errors"
-	"time"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"log"
 )
 
 func CreateProfile(client *mongo.Client, profile *Profile) error {
 	profileCollection := client.Database("profileDB").Collection("profiles")
 
-	currentTime := time.Now()
-	profile.Created_On = currentTime.Format(time.RFC3339)
-	profile.Updated_On = currentTime.Format(time.RFC3339)
+	//currentTime := time.Now()
+	//profile.Created_On = currentTime.Format(time.RFC3339)
+	//profile.Updated_On = currentTime.Format(time.RFC3339)
 
 	result, err := profileCollection.InsertOne(context.TODO(), profile)
 	if err != nil {
@@ -62,7 +61,7 @@ func GetProfileByID(client *mongo.Client, profileID primitive.ObjectID) (*Profil
 func UpdateProfile(client *mongo.Client, profileID primitive.ObjectID, updatedProfile *Profile) error {
 	profileCollection := client.Database("profileDB").Collection("profiles")
 
-	updatedProfile.Updated_On = time.Now().Format(time.RFC3339)
+	//updatedProfile.Updated_On = time.Now().Format(time.RFC3339)
 
 	result, err := profileCollection.ReplaceOne(context.TODO(), bson.M{"_id": profileID}, updatedProfile)
 	if err != nil {
@@ -89,4 +88,22 @@ func DeleteProfile(client *mongo.Client, profileID primitive.ObjectID) error {
 	}
 
 	return nil
+}
+
+func GetProfileByEmail(client *mongo.Client, email string) (*Profile, error) {
+	profileCollection := client.Database("profileDB").Collection("profiles")
+
+	// Create a filter for the email
+	filter := bson.D{{"email", email}}
+
+	// Find the user in the database
+	var profile Profile
+	err := profileCollection.FindOne(context.TODO(), filter).Decode(&profile)
+	if err != nil {
+		// Handle the error (e.g., user not found)
+		log.Printf("Error getting user by email: %v", err)
+		return nil, err
+	}
+
+	return &profile, nil
 }

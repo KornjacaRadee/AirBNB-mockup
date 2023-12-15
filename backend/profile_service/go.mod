@@ -1,6 +1,6 @@
 module github.com/promeneili1/AirBNB-mockup
 
-go 1.21.4
+go 1.21
 
 require (
 	github.com/gorilla/handlers v1.5.2

@@ -8,6 +8,8 @@ import { PasswordRecoveryComponent } from './password-recovery/password-recovery
 import { NewPasswrodComponent } from './new-passwrod/new-passwrod.component';
 import { NavbarComponent } from './navbar/navbar.component';
 import { CreateAccommodationComponent } from './create-accommodation/create-accommodation.component';
+import { AccommodationPageComponent } from './accommodation-page/accommodation-page.component';
+import { CreatePeriodComponent } from './create-period/create-period.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 
@@ -49,6 +51,14 @@ const routes: Routes = [
     path: 'create-accommodation',
     component: CreateAccommodationComponent,
   },
+  {
+    path: 'accommodation-page',
+    component: AccommodationPageComponent,
+  },
+  {
+  path: 'create-period',
+  component: CreatePeriodComponent,
+}
 ];
 
 @NgModule({
