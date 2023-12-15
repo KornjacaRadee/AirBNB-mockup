@@ -40,11 +40,9 @@ export class CreatePeriodComponent implements OnInit {
     this.reservationService.postAvailability(availabilityPeriod).subscribe(
       (response) => {
         console.log('Availability period created successfully:', response);
-        // Handle success, e.g., show a success message
       },
       (error) => {
         console.error('Error creating availability period:', error);
-        // Handle error, e.g., show an error message
       }
     );
   }

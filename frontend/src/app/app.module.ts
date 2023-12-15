@@ -23,6 +23,7 @@ import { ApiService } from './services/api.service';
 import { RouterModule } from '@angular/router';
 import { AccomodationService } from './services/accomodation/accomodation.service';
 import { ReservationService } from './services/reservation/reservation.service';
+import { DatePipe } from '@angular/common';
 
 import { RECAPTCHA_SETTINGS, RecaptchaFormsModule, RecaptchaModule, RecaptchaSettings } from 'ng-recaptcha';
 import { environment } from 'src/environments/environment';
@@ -80,6 +81,7 @@ import { CreatePeriodComponent } from './create-period/create-period.component';
         siteKey: environment.recaptcha.siteKey,
       } as RecaptchaSettings,
     },
+    DatePipe,
     AuthService,
     ApiService,
     AccomodationService,
