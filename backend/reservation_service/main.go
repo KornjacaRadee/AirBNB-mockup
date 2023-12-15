@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/sony/gobreaker"
 	"log"
 	"net/http"
 	"os"
@@ -40,8 +41,38 @@ func main() {
 	defer store.CloseSession()
 
 	//Initialize clients for other services
-	accommodation := client.NewAccommodationClient(os.Getenv("ACCOMMODATION_SERVICE_URI"))
 
+	accommodationClient := &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConns:        10,
+			MaxIdleConnsPerHost: 10,
+			MaxConnsPerHost:     10,
+		},
+	}
+
+	accommodationBreaker := gobreaker.NewCircuitBreaker(
+		gobreaker.Settings{
+			Name:        "accommodation",
+			MaxRequests: 1,
+			Timeout:     10 * time.Second,
+			Interval:    0,
+			ReadyToTrip: func(counts gobreaker.Counts) bool {
+				return counts.ConsecutiveFailures > 2
+			},
+			OnStateChange: func(name string, from, to gobreaker.State) {
+				logger.Printf("CB '%s' changed from '%s' to '%s'\n", name, from, to)
+			},
+			IsSuccessful: func(err error) bool {
+				if err == nil {
+					return true
+				}
+				errResp, ok := err.(domain.ErrResp)
+				return ok && errResp.StatusCode >= 400 && errResp.StatusCode < 500
+			},
+		},
+	)
+
+	accommodation := client.NewAccommodationClient(accommodationClient, os.Getenv("ACCOMMODATION_SERVICE_URI"), accommodationBreaker)
 	//Initialize the handler and inject said logger
 	reservationHandler := handlers.NewReservationsHandler(logger, store, accommodation)
 
