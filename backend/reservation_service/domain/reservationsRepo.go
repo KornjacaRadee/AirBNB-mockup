@@ -81,6 +81,16 @@ func (rr *ReservationsRepo) CreateTables() {
 	if err != nil {
 		rr.logger.Println(err)
 	}
+
+	err = rr.session.Query(
+		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s 
+					(guest_id text, availability_period_id UUID, reservation_id UUID, start_date TIMESTAMP, end_date TIMESTAMP, accommodation_id text,  guest_num int, price int,
+					PRIMARY KEY ((guest_id), start_date, end_date, reservation_id)) 
+					WITH CLUSTERING ORDER BY (start_date ASC, end_date ASC, reservation_id ASC)`,
+			"reservations_by_guest")).Exec()
+	if err != nil {
+		rr.logger.Println(err)
+	}
 }
 
 func (rr *ReservationsRepo) GetAvailabilityPeriodsByAccommodation(id string) (AvailabilityPeriodsByAccommodation, error) {
@@ -185,6 +195,44 @@ func (rr *ReservationsRepo) GetReservationsByAvailabilityPeriod(id string) (Rese
 	return reservations, nil
 }
 
+func (rr *ReservationsRepo) GetReservationsByUserId(id string) (ReservationsByAvailabilityPeriod, error) {
+	scanner := rr.session.Query(`SELECT availability_period_id, reservation_id, start_date, end_date, accommodation_id, guest_id, guest_num, price FROM reservations_by_guest WHERE guest_id = ?`,
+		id).Iter().Scanner()
+
+	var reservations ReservationsByAvailabilityPeriod
+	for scanner.Next() {
+		var reservation ReservationByAvailabilityPeriod
+		var guestIdHex string
+		var accommIdHex string
+		err := scanner.Scan(&reservation.AvailabilityPeriodId, &reservation.Id, &reservation.StartDate, &reservation.EndDate, &accommIdHex, &guestIdHex, &reservation.GuestNum, &reservation.Price)
+		if err != nil {
+			rr.logger.Println(err)
+			return nil, err
+		}
+
+		accommId, err := primitive.ObjectIDFromHex(accommIdHex)
+		if err != nil {
+			rr.logger.Println(err)
+			return nil, err
+		}
+		reservation.AccommodationId = accommId
+
+		guestId, err := primitive.ObjectIDFromHex(guestIdHex)
+		if err != nil {
+			rr.logger.Println(err)
+			return nil, err
+		}
+		reservation.GuestId = guestId
+
+		reservations = append(reservations, &reservation)
+	}
+	if err := scanner.Err(); err != nil {
+		rr.logger.Println(err)
+		return nil, err
+	}
+	return reservations, nil
+}
+
 func (rr *ReservationsRepo) InsertReservationByAvailabilityPeriod(reservation *ReservationByAvailabilityPeriod) error {
 	checkReservationDates, err := rr.checkReservationDates(reservation)
 	if err != nil {
@@ -208,12 +256,20 @@ func (rr *ReservationsRepo) InsertReservationByAvailabilityPeriod(reservation *R
 		rr.logger.Println(err)
 		return err
 	}
-
+	id, _ := gocql.RandomUUID()
 	price := rr.calculatePrice(reservation.StartDate, reservation.EndDate, availabilityPeriod.IsPricePerGuest, availabilityPeriod.Price, reservation.GuestNum)
 	err = rr.session.Query(
 		`INSERT INTO reservations_by_availability_period (availability_period_id, reservation_id, start_date, end_date, accommodation_id, guest_id, guest_num, price) 
-		VALUES (?, UUID(), ?, ?, ?, ?, ?, ?)`,
-		reservation.AvailabilityPeriodId, reservation.StartDate, reservation.EndDate, reservation.AccommodationId.Hex(), reservation.GuestId.Hex(), reservation.GuestNum, price).Exec()
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		reservation.AvailabilityPeriodId, id, reservation.StartDate, reservation.EndDate, reservation.AccommodationId.Hex(), reservation.GuestId.Hex(), reservation.GuestNum, price).Exec()
+	if err != nil {
+		rr.logger.Println(err)
+		return err
+	}
+	err = rr.session.Query(
+		`INSERT INTO reservations_by_guest (availability_period_id, reservation_id, start_date, end_date, accommodation_id, guest_id, guest_num, price) 
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		reservation.AvailabilityPeriodId, id, reservation.StartDate, reservation.EndDate, reservation.AccommodationId.Hex(), reservation.GuestId.Hex(), reservation.GuestNum, price).Exec()
 	if err != nil {
 		rr.logger.Println(err)
 		return err

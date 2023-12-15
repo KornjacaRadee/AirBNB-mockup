@@ -63,6 +63,27 @@ func (r *ReservationsHandler) GetReservationsByAvailabilityPeriod(rw http.Respon
 	}
 }
 
+func (r *ReservationsHandler) GetReservationsByGuestId(rw http.ResponseWriter, h *http.Request) {
+	vars := mux.Vars(h)
+	guestId := vars["id"]
+
+	reservationsByAvailabilityPeriod, err := r.repo.GetReservationsByUserId(guestId)
+	if err != nil {
+		r.logger.Print("Database exception: ", err)
+	}
+
+	if reservationsByAvailabilityPeriod == nil {
+		return
+	}
+
+	err = reservationsByAvailabilityPeriod.ToJSON(rw)
+	if err != nil {
+		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
+		r.logger.Fatal("Unable to convert to json :", err)
+		return
+	}
+}
+
 func (r *ReservationsHandler) InsertAvailabilityPeriodByAccommodation(rw http.ResponseWriter, h *http.Request) {
 	availabilityPeriodsByAccommodation := h.Context().Value(KeyProduct{}).(*domain.AvailabilityPeriodByAccommodation)
 	accommodationCheck, err := r.accommodationClient.CheckIfAccommodationExists(availabilityPeriodsByAccommodation.AccommodationId)
