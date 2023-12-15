@@ -5,6 +5,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AccomodationService } from '../services/accomodation/accomodation.service';
 import { ProfilesService } from '../services/profile/profiles.service';
 import { CommonModule } from '@angular/common';
+import { ReservationService } from '../services/reservation/reservation.service';
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
@@ -14,12 +15,15 @@ export class ProfileComponent implements OnInit{
   user: any;
   id: string = "";
   accomms: any[] = [];
+  reservations: any = []
   showAccommodations = false;
+  showReservations = false;
+
   profile:any;
 
 
 
-  constructor(private profileService: ProfilesService,private authService: AuthService,private accommodationService: AccomodationService,private router: Router) { }
+  constructor(private reservationService:ReservationService, private profileService: ProfilesService,private authService: AuthService,private accommodationService: AccomodationService,private router: Router) { }
 
   ngOnInit(): void {
 
@@ -30,6 +34,7 @@ export class ProfileComponent implements OnInit{
     //this.getUserAccommodations()
     this.tempLoadAccoms();
     this.loadUserDetails();
+    this. getUserReservations();
     console.log(this.accomms);
 
 
@@ -62,12 +67,34 @@ export class ProfileComponent implements OnInit{
     );
   }
 
+
+  getUserReservations(): void {
+    this.reservationService.getUserReservations(this.id).subscribe(
+      (data: any[]) => {
+        console.log(data)
+        this.reservations = data;
+      },
+      (error: any) => {
+        console.error('Error fetching accommodations:', error);
+      }
+    );
+  }
+
   logout(): void {
     this.authService.logout();
   }
 
   editProfile(){
     return ""
+  }
+
+  isHost(): boolean{
+    if(this.authService.getUserRole() == "host"){
+
+      return true
+    }else{
+      return false
+    }
   }
 
   deleteProfile(){
@@ -106,6 +133,10 @@ export class ProfileComponent implements OnInit{
   }
   toggleAccommodations() {
     this.showAccommodations = !this.showAccommodations;
+  }
+
+  toggleReservations() {
+    this.showReservations = !this.showReservations;
   }
 
   loadProfileDetails() {

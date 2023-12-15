@@ -15,7 +15,8 @@
     <div class="profile-actions">
       <button class="btn btn-danger" (click)="deleteProfile()">Delete Account</button>
       <button class="btn btn-warning">Edit Account</button>
-      <button class="btn btn-primary" (click)="toggleAccommodations()">Show Accommodations</button>
+      <button *ngIf="isHost()" class="btn btn-primary" (click)="toggleAccommodations()">Show Accommodations</button>
+      <button *ngIf="!isHost()"class="btn btn-primary" (click)="toggleReservations()">Show Reservations</button>
     </div>
   </div>
 
@@ -36,7 +37,17 @@
     </div>
   </div>
 
+  <div *ngIf="showReservations" class="cards-wrapper">
+    <div *ngFor="let reservation of reservations" class="card" style="width: 18rem;">
+      <div class="card-body">
+        <h5 class="card-title"> <span>Start:  </span>{{ reservation.StartDate }}</h5>
+        <p class="card-text"><span>End:  </span> {{ reservation.EndDate }}</p>
+        <a class="btn btn-primary">Delete</a>
+      </div>
+
+    </div>
   </div>
 
-  <!-- profile-accommodations.component.html -->
+  </div>
+
 
