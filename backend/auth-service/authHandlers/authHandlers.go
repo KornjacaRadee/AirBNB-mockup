@@ -55,11 +55,12 @@ func HandleRegister(dbClient *mongo.Client, pc client.ProfileClient) http.Handle
 		newUser.Password = hashedPassword
 
 		// Register the user
+		newUser.ID = primitive.NewObjectID()
 		if err := data.RegisterUser(dbClient, &newUser); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		ctx, cancel := context.WithTimeout(r.Context(), 5000*time.Millisecond)
+		ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 		defer cancel()
 
 		// Call the profile service and handle fallback logic
@@ -67,14 +68,18 @@ func HandleRegister(dbClient *mongo.Client, pc client.ProfileClient) http.Handle
 		if err != nil {
 			log.Printf("Error sending user data to the profile service: %v", err)
 
-			http.Error(w, "Error sending user data to the profile service. Registering user without profile data.", http.StatusServiceUnavailable)
-			writeResp(err, http.StatusServiceUnavailable, w)
-		}
+			log.Printf("Deleting user with ID: %v", newUser.ID)
+			// Delete the registered user if the profile service call fails
+			if deleteErr := data.DeleteUser(dbClient, newUser.ID); deleteErr != nil {
+				log.Printf("Error deleting user: %v", deleteErr)
+			} else {
+				log.Println("User deleted due to profile service failure")
+			}
 
-		//if err := pc.SendUserData(newUser); err != nil {
-		//	http.Error(w, "Error sending user data to the profile service", http.StatusInternalServerError)
-		//	return
-		//}
+			http.Error(w, "Service not available", http.StatusServiceUnavailable)
+			writeResp(err, http.StatusServiceUnavailable, w)
+			return
+		}
 
 		w.WriteHeader(http.StatusCreated)
 	}
