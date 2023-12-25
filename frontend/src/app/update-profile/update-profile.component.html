@@ -1,0 +1,33 @@
+<div>
+  <h2>Edit Profile</h2>
+  <form>
+    <label>
+      Address:
+      <input type="text" name="address" [(ngModel)]="profile.address" />
+    </label>
+    <br />
+    <label>
+      Name:
+      <input type="text" name="name" [(ngModel)]="profile.name" />
+    </label>
+    <br />
+    <br />
+    <label>
+      Last Name:
+      <input type="text" name="last_name" [(ngModel)]="profile.last_name" />
+    </label>
+    <br />
+    <br />
+    <label>
+      Email:
+      <input type="email" name="email" [(ngModel)]="profile.email" />
+    </label>
+    <br />
+    <label>
+      Username:
+      <input type="text" name="username" [(ngModel)]="profile.username" />
+    </label>
+    <br />
+  </form>
+  <button type="button" (click)="saveProfile()">Save</button>
+</div>

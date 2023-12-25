@@ -21,8 +21,6 @@ export class HomeComponent {
   filteredAccommodations: any[] = [];
   searchSuccess = false;
 
-
-
   constructor(private accommodationService: AccomodationService) {}
 
   ngOnInit(): void {

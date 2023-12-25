@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ConfigService } from '../config.service';
 import { ApiService } from '../api.service';
-import { HttpClient,HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 
@@ -20,19 +20,26 @@ export class AccomodationService {
     return this.http.get<any[]>(this.configService._accomodations_url + '/all');
   }
 
-  createAccommodation(headers: HttpHeaders, accommodation: any): Observable<any[]> {
+  createAccommodation(
+    headers: HttpHeaders,
+    accommodation: any
+  ): Observable<any[]> {
     const options = { headers };
-    return this.http.post<any[]>(this.configService._accomodations_url + '/new', accommodation, options);
+    return this.http.post<any[]>(
+      this.configService._accomodations_url + '/new',
+      accommodation,
+      options
+    );
   }
   getUserAccommodations(headers: HttpHeaders): Observable<any[]> {
     const options = { headers };
     return this.http.get<any[]>(this.configService._userAccoms_url, options);
-
   }
 
   getAccommodation(id: string): Observable<any[]> {
-    return this.http.get<any[]>(this.configService._accomodations_url+ "/" + id);
-
+    return this.http.get<any[]>(
+      this.configService._accomodations_url + '/' + id
+    );
   }
 
   searchAccomodations(

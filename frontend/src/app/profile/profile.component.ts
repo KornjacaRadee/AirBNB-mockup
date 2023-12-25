@@ -9,41 +9,44 @@ import { ReservationService } from '../services/reservation/reservation.service'
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.css']
+  styleUrls: ['./profile.component.css'],
 })
-export class ProfileComponent implements OnInit{
+export class ProfileComponent implements OnInit {
   user: any;
-  id: string = "";
+  id: string = '';
   accomms: any[] = [];
-  reservations: any = []
+  reservations: any = [];
   showAccommodations = false;
   showReservations = false;
 
-  profile:any;
+  profile: any;
 
-
-
-  constructor(private reservationService:ReservationService, private profileService: ProfilesService,private authService: AuthService,private accommodationService: AccomodationService,private router: Router) { }
+  constructor(
+    private reservationService: ReservationService,
+    private profileService: ProfilesService,
+    private authService: AuthService,
+    private accommodationService: AccomodationService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-
-    if(!this.authService.isAuthenticated()){
+    if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/login']);
     }
     this.accomms = [];
     //this.getUserAccommodations()
     this.tempLoadAccoms();
     this.loadUserDetails();
-    this. getUserReservations();
+    this.getUserReservations();
     console.log(this.accomms);
-
-
   }
-  tempLoadAccoms(): void{
+  tempLoadAccoms(): void {
     this.accommodationService.getAccomodations().subscribe(
       (data: any[]) => {
         this.accomms = data;
-        this.accomms = data.filter(accommodation => accommodation.owner.id === this.id);
+        this.accomms = data.filter(
+          (accommodation) => accommodation.owner.id === this.id
+        );
       },
       (error: any) => {
         console.error('Error fetching accommodations:', error);
@@ -58,7 +61,7 @@ export class ProfileComponent implements OnInit{
 
     this.accommodationService.getUserAccommodations(headers).subscribe(
       (data: any[]) => {
-        console.log(data)
+        console.log(data);
         this.accomms = data;
       },
       (error: any) => {
@@ -67,11 +70,10 @@ export class ProfileComponent implements OnInit{
     );
   }
 
-
   getUserReservations(): void {
     this.reservationService.getUserReservations(this.id).subscribe(
       (data: any[]) => {
-        console.log(data)
+        console.log(data);
         this.reservations = data;
       },
       (error: any) => {
@@ -84,20 +86,15 @@ export class ProfileComponent implements OnInit{
     this.authService.logout();
   }
 
-  editProfile(){
-    return ""
-  }
-
-  isHost(): boolean{
-    if(this.authService.getUserRole() == "host"){
-
-      return true
-    }else{
-      return false
+  isHost(): boolean {
+    if (this.authService.getUserRole() == 'host') {
+      return true;
+    } else {
+      return false;
     }
   }
 
-  deleteProfile(){
+  deleteProfile() {
     const token = this.authService.getAuthToken();
 
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
@@ -105,20 +102,15 @@ export class ProfileComponent implements OnInit{
     this.authService.deleteUser(headers).subscribe(
       (response) => {
         this.authService.logout();
-
       },
       (error) => {
         // Handle error, e.g., show an error message
         console.error('Failed to delete user', error);
       }
     );
+  }
 
-
-}
-
-
-
-  loadUserDetails()  {
+  loadUserDetails() {
     this.id = this.authService.getUserId();
     this.authService.getUserById(this.id).subscribe(
       (response) => {
@@ -144,13 +136,11 @@ export class ProfileComponent implements OnInit{
       (response) => {
         // Map the response to the 'user' property
         this.profile = response;
-        console.log(this.profile)
+        console.log(this.profile);
       },
       (error) => {
         console.error('Error fetching user details', error);
       }
     );
   }
-
-
 }
