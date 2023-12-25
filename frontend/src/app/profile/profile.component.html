@@ -1,53 +1,94 @@
 <div class="wrapper">
   <div class="container profile-container">
     <div class="profile-header">
-      <img src="/assets/pfp.jpg" alt="Profile Picture" class="profile-pic">
-      <h1 class="text-primary">{{profile.name }} <span> {{profile.last_name}}</span></h1>
+      <img src="/assets/pfp.jpg" alt="Profile Picture" class="profile-pic" />
+      <h1 class="text-primary">
+        {{ profile.name }} <span> {{ profile.last_name }}</span>
+      </h1>
     </div>
     <div class="profile-info">
-      <p><strong>Address:</strong> {{profile.address}}</p>
-      <p><strong>Email:</strong> {{profile.email}}</p>
-      <p><strong>Username:</strong> {{profile.username}}</p>
-      <p><strong>Role:</strong> {{user.role}}</p>
-
-
+      <p><strong>Name:</strong> {{ profile.name }}</p>
+      <p><strong>Last Name:</strong> {{ profile.last_name }}</p>
+      <p><strong>Address:</strong> {{ profile.address }}</p>
+      <p><strong>Email:</strong> {{ profile.email }}</p>
+      <p><strong>Username:</strong> {{ profile.username }}</p>
+      <p><strong>Role:</strong> {{ user.role }}</p>
     </div>
     <div class="profile-actions">
-      <button class="btn btn-danger" (click)="deleteProfile()">Delete Account</button>
-      <button class="btn btn-warning">Edit Account</button>
-      <button *ngIf="isHost()" class="btn btn-primary" (click)="toggleAccommodations()">Show Accommodations</button>
-      <button *ngIf="!isHost()"class="btn btn-primary" (click)="toggleReservations()">Show Reservations</button>
+      <button class="btn btn-danger" (click)="deleteProfile()">
+        Delete Account
+      </button>
+      <!-- <a
+        [queryParams]="{ email: profile.email }"
+        [routerLink]="[profile.email]"
+      >
+        <button class="btn btn-warning" >
+          Edit Account
+        </button>
+      </a> -->
+      <button class="btn btn-warning">
+        <a
+          [routerLink]="'/update-profile'"
+          [queryParams]="{ email: profile.email }"
+          >Edit</a
+        >
+      </button>
+      <button
+        *ngIf="isHost()"
+        class="btn btn-primary"
+        (click)="toggleAccommodations()"
+      >
+        Show Accommodations
+      </button>
+      <button
+        *ngIf="!isHost()"
+        class="btn btn-primary"
+        (click)="toggleReservations()"
+      >
+        Show Reservations
+      </button>
     </div>
   </div>
 
-
-
-
   <div *ngIf="showAccommodations" class="cards-wrapper">
-    <div *ngFor="let accommodation of accomms" class="card" style="width: 18rem;">
-      <img class="card-img-top" src="/assets/accommex.png" alt="Card image cap">
+    <div
+      *ngFor="let accommodation of accomms"
+      class="card"
+      style="width: 18rem"
+    >
+      <img
+        class="card-img-top"
+        src="/assets/accommex.png"
+        alt="Card image cap"
+      />
       <div class="card-body">
         <h5 class="card-title">{{ accommodation.name }}</h5>
         <p class="card-text">{{ accommodation.location }}</p>
         <a href="#" class="btn btn-primary">Edit</a>
-        <a [routerLink]="'/create-period'" [queryParams]="{ id: accommodation.id }" class="btn btn-primary">Add Period</a>
+        <a
+          [routerLink]="'/create-period'"
+          [queryParams]="{ id: accommodation.id }"
+          class="btn btn-primary"
+          >Add Period</a
+        >
         <!-- <a href="#" class="btn btn-danger" (click)="handleDelete(accommodation.id)">Delete</a> -->
       </div>
-
     </div>
   </div>
 
   <div *ngIf="showReservations" class="cards-wrapper">
-    <div *ngFor="let reservation of reservations" class="card" style="width: 18rem;">
+    <div
+      *ngFor="let reservation of reservations"
+      class="card"
+      style="width: 18rem"
+    >
       <div class="card-body">
-        <h5 class="card-title"> <span>Start:  </span>{{ reservation.StartDate }}</h5>
-        <p class="card-text"><span>End:  </span> {{ reservation.EndDate }}</p>
+        <h5 class="card-title">
+          <span>Start: </span>{{ reservation.StartDate }}
+        </h5>
+        <p class="card-text"><span>End: </span> {{ reservation.EndDate }}</p>
         <a class="btn btn-primary">Delete</a>
       </div>
-
     </div>
   </div>
-
-  </div>
-
-
+</div>

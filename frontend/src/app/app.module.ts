@@ -25,7 +25,12 @@ import { AccomodationService } from './services/accomodation/accomodation.servic
 import { ReservationService } from './services/reservation/reservation.service';
 import { DatePipe } from '@angular/common';
 
-import { RECAPTCHA_SETTINGS, RecaptchaFormsModule, RecaptchaModule, RecaptchaSettings } from 'ng-recaptcha';
+import {
+  RECAPTCHA_SETTINGS,
+  RecaptchaFormsModule,
+  RecaptchaModule,
+  RecaptchaSettings,
+} from 'ng-recaptcha';
 import { environment } from 'src/environments/environment';
 import { PasswordRecoveryComponent } from './password-recovery/password-recovery.component';
 import { NewPasswrodComponent } from './new-passwrod/new-passwrod.component';
@@ -35,6 +40,7 @@ import { ProfileComponent } from './profile/profile.component';
 import { AccommodationPageComponent } from './accommodation-page/accommodation-page.component';
 import { ProfilesService } from './services/profile/profiles.service';
 import { CreatePeriodComponent } from './create-period/create-period.component';
+import { UpdateProfileComponent } from './update-profile/update-profile.component';
 
 @NgModule({
   declarations: [
@@ -48,7 +54,8 @@ import { CreatePeriodComponent } from './create-period/create-period.component';
     CreateAccommodationComponent,
     ProfileComponent,
     AccommodationPageComponent,
-    CreatePeriodComponent
+    CreatePeriodComponent,
+    UpdateProfileComponent,
   ],
   imports: [
     BrowserModule,
@@ -72,9 +79,7 @@ import { CreatePeriodComponent } from './create-period/create-period.component';
     RecaptchaFormsModule,
   ],
 
-
   providers: [
-
     {
       provide: RECAPTCHA_SETTINGS,
       useValue: {
@@ -86,7 +91,7 @@ import { CreatePeriodComponent } from './create-period/create-period.component';
     ApiService,
     AccomodationService,
     ReservationService,
-    ProfilesService
+    ProfilesService,
   ],
 
   bootstrap: [AppComponent],

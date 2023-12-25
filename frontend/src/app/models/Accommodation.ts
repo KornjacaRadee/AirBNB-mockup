@@ -9,6 +9,8 @@ export class Accommodation {
   location: string;
   minGuestNum: number;
   maxGuestNum: number;
+  startDate: Date;
+  endDate: Date;
   amenities: string[];
 
   constructor(
@@ -18,6 +20,8 @@ export class Accommodation {
     location: string,
     minGuestNum: number,
     maxGuestNum: number,
+    startDate: Date,
+    endDate: Date,
     amenities: string[]
   ) {
     this.id = id;
@@ -26,6 +30,8 @@ export class Accommodation {
     this.location = location;
     this.minGuestNum = minGuestNum;
     this.maxGuestNum = maxGuestNum;
+    this.startDate = startDate;
+    this.endDate = endDate;
     this.amenities = amenities;
   }
 }

@@ -1,4 +1,4 @@
-.wrapper{
+.wrapper {
   width: 100vw;
   height: 100vh;
   display: flex;
@@ -126,7 +126,6 @@
   transform: scale(1.05);
 }
 
-
 .accommodation-card {
   display: flex;
   flex-direction: column;
@@ -157,7 +156,7 @@
   font-weight: 600; /* Semi-Bold */
   color: #007bff; /* Blue color for price */
 }
-.cards-wrapper{
+.cards-wrapper {
   display: flex;
   flex-direction: row;
   margin-top: 200px;
