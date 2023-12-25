@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"accommodation_service/domain"
+	"accommodation_service/storage"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -17,13 +19,13 @@ type KeyProduct struct{}
 
 type AccommodationsHandler struct {
 	logger *log.Logger
-	// NoSQL: injecting accommodation repository
-	repo *domain.AccommodationRepo
+	repo   *domain.AccommodationRepo
+	images *storage.FileStorage
 }
 
 // NewAccommodationsHandler Injecting the logger makes this code much more testable.
-func NewAccommodationsHandler(l *log.Logger, r *domain.AccommodationRepo) *AccommodationsHandler {
-	return &AccommodationsHandler{l, r}
+func NewAccommodationsHandler(l *log.Logger, r *domain.AccommodationRepo, i *storage.FileStorage) *AccommodationsHandler {
+	return &AccommodationsHandler{l, r, i}
 }
 
 func (a *AccommodationsHandler) GetAllAccommodations(rw http.ResponseWriter, h *http.Request) {
@@ -109,6 +111,48 @@ func (a *AccommodationsHandler) PostAccommodation(rw http.ResponseWriter, h *htt
 	}
 
 	rw.WriteHeader(http.StatusCreated)
+}
+
+func (a *AccommodationsHandler) CreateAccommodationImages(rw http.ResponseWriter, r *http.Request) {
+	var images storage.Images
+	if err := json.NewDecoder(r.Body).Decode(&images); err != nil {
+		http.Error(rw, "Failed to decode request body", http.StatusBadRequest)
+		return
+	}
+
+	for _, image := range images {
+		a.images.WriteFileBytes(image.Data, image.AccommodationId+"-image-"+image.Id)
+	}
+
+	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusCreated)
+}
+
+func (ah *AccommodationsHandler) GetAccommodationImages(rw http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	accID := vars["id"]
+
+	var images []*storage.Image
+
+	for i := 0; i < 10; i++ {
+		filename := fmt.Sprintf("%s-image-%d", accID, i)
+		data, err := ah.images.ReadFileBytes(filename, false)
+		if err != nil {
+			break
+		}
+		image := &storage.Image{
+			Id:   strconv.Itoa(i),
+			Data: data,
+		}
+		images = append(images, image)
+	}
+
+	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(rw).Encode(images); err != nil {
+		ah.logger.Println("Failed to encode images: ", err)
+		http.Error(rw, "Failed to encode images", http.StatusInternalServerError)
+	}
 }
 
 func (a *AccommodationsHandler) PatchAccommodation(rw http.ResponseWriter, h *http.Request) {

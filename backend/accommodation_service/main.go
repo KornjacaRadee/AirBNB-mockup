@@ -3,6 +3,7 @@ package main
 import (
 	"accommodation_service/domain"
 	handlers "accommodation_service/handlers"
+	"accommodation_service/storage"
 	"context"
 	"log"
 	"net/http"
@@ -28,6 +29,7 @@ func main() {
 	//Initialize the logger we are going to use, with prefix and datetime for every log
 	logger := log.New(os.Stdout, "[product-api] ", log.LstdFlags)
 	storeLogger := log.New(os.Stdout, "[accommodation-store] ", log.LstdFlags)
+	imageStorageLogger := log.New(os.Stdout, "[accommodation-image_storage] ", log.LstdFlags)
 
 	// NoSQL: Initialize Accommodation Repository store
 	store, err := domain.New(timeoutContext, storeLogger)
@@ -39,8 +41,18 @@ func main() {
 	// NoSQL: Checking if the connection was established
 	store.Ping()
 
+	// HDFS: Initializing hdfs storage for images
+	images, err := storage.New(imageStorageLogger)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	defer images.Close()
+
+	_ = images.CreateDirectories()
+
 	//Initialize the handler and inject logger
-	accommodationsHandler := handlers.NewAccommodationsHandler(logger, store)
+	accommodationsHandler := handlers.NewAccommodationsHandler(logger, store, images)
 
 	//Initialize the router and add a middleware for all the requests
 	router := mux.NewRouter()
@@ -53,6 +65,12 @@ func main() {
 	postRouter := router.Methods(http.MethodPost).Subrouter()
 	postRouter.HandleFunc("/new", accommodationsHandler.PostAccommodation)
 	postRouter.Use(accommodationsHandler.MiddlewareAccommodationDeserialization)
+
+	postAccommodationImagesRouter := router.Methods(http.MethodPost).Subrouter()
+	postAccommodationImagesRouter.HandleFunc("/accommodation/images", accommodationsHandler.CreateAccommodationImages)
+
+	getAccommodationImagesRouter := router.Methods(http.MethodGet).Subrouter()
+	getAccommodationImagesRouter.HandleFunc("/accommodation/{id}/images", accommodationsHandler.GetAccommodationImages)
 
 	patchRouter := router.Methods(http.MethodPatch).Subrouter()
 	patchRouter.HandleFunc("/patch/{id}", accommodationsHandler.PatchAccommodation)

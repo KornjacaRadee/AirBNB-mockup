@@ -27,8 +27,13 @@ services:
     environment:
       - PORT=8080
       - MONGO_DB_URI=mongodb://root:pass@accommodation_db:27017
+      - HDFS_URI=namenode:9000
     depends_on:
       accommodation_db:
+        condition: service_healthy
+      namenode:
+        condition: service_healthy
+      datanode1:
         condition: service_healthy
     networks:
       - network
@@ -51,6 +56,33 @@ services:
       retries: 10
     volumes:
       - accommodation_db:/data/db
+    networks:
+      - network
+
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    ports:
+      - 9870:9870
+      - 9000:9000
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=stayinn
+    env_file:
+      - ./hdfs.env
+    networks:
+      - network
+
+  datanode1:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode1
+    volumes:
+      - hadoop_datanode1:/hadoop/dfs/data
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    env_file:
+      - ./hdfs.env
     networks:
       - network
 
@@ -192,6 +224,8 @@ services:
 
 volumes:
   accommodation_db:
+  hadoop_namenode:
+  hadoop_datanode1:
   cass_store:
   auth_db:
   mong_express_data:
