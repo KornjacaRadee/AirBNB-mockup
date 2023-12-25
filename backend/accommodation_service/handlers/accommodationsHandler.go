@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"accommodation_service/cache"
 	"accommodation_service/domain"
 	"accommodation_service/storage"
 	"context"
@@ -9,6 +10,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -18,14 +20,15 @@ import (
 type KeyProduct struct{}
 
 type AccommodationsHandler struct {
-	logger *log.Logger
-	repo   *domain.AccommodationRepo
-	images *storage.FileStorage
+	logger     *log.Logger
+	repo       *domain.AccommodationRepo
+	imageCache *cache.ImageCache
+	images     *storage.FileStorage
 }
 
 // NewAccommodationsHandler Injecting the logger makes this code much more testable.
-func NewAccommodationsHandler(l *log.Logger, r *domain.AccommodationRepo, i *storage.FileStorage) *AccommodationsHandler {
-	return &AccommodationsHandler{l, r, i}
+func NewAccommodationsHandler(l *log.Logger, r *domain.AccommodationRepo, ic *cache.ImageCache, i *storage.FileStorage) *AccommodationsHandler {
+	return &AccommodationsHandler{l, r, ic, i}
 }
 
 func (a *AccommodationsHandler) GetAllAccommodations(rw http.ResponseWriter, h *http.Request) {
@@ -98,7 +101,7 @@ func (a *AccommodationsHandler) PostAccommodation(rw http.ResponseWriter, h *htt
 		return
 	}
 
-	// Create a new accommodation with the extracted user ID as the owner
+	// Create new accommodation with the extracted user ID as the owner
 	accommodation := h.Context().Value(KeyProduct{}).(*domain.Accommodation)
 	accommodation.Owner.Id, _ = primitive.ObjectIDFromHex(userID)
 
@@ -114,7 +117,8 @@ func (a *AccommodationsHandler) PostAccommodation(rw http.ResponseWriter, h *htt
 }
 
 func (a *AccommodationsHandler) CreateAccommodationImages(rw http.ResponseWriter, r *http.Request) {
-	var images storage.Images
+	var images cache.Images
+	var accID string
 	if err := json.NewDecoder(r.Body).Decode(&images); err != nil {
 		http.Error(rw, "Failed to decode request body", http.StatusBadRequest)
 		return
@@ -122,37 +126,53 @@ func (a *AccommodationsHandler) CreateAccommodationImages(rw http.ResponseWriter
 
 	for _, image := range images {
 		a.images.WriteFileBytes(image.Data, image.AccommodationId+"-image-"+image.Id)
+		accID = image.AccommodationId
 	}
+	a.imageCache.PostAll(accID, images)
 
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusCreated)
 }
 
-func (ah *AccommodationsHandler) GetAccommodationImages(rw http.ResponseWriter, r *http.Request) {
+func (a *AccommodationsHandler) GetAccommodationImages(rw http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	accID := vars["id"]
 
-	var images []*storage.Image
+	var images cache.Images
 
 	for i := 0; i < 10; i++ {
 		filename := fmt.Sprintf("%s-image-%d", accID, i)
-		data, err := ah.images.ReadFileBytes(filename, false)
+		data, err := a.images.ReadFileBytes(filename, false)
 		if err != nil {
 			break
 		}
-		image := &storage.Image{
-			Id:   strconv.Itoa(i),
-			Data: data,
+		image := &cache.Image{
+			Id:              strconv.Itoa(i),
+			AccommodationId: accID,
+			Data:            data,
 		}
 		images = append(images, image)
+	}
+
+	if len(images) > 0 {
+		err := a.imageCache.PostAll(accID, images)
+		if err != nil {
+			a.logger.Println("Unable to write to cache:", err)
+		}
 	}
 
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(rw).Encode(images); err != nil {
-		ah.logger.Println("Failed to encode images: ", err)
+		a.logger.Println("Failed to encode images: ", err)
 		http.Error(rw, "Failed to encode images", http.StatusInternalServerError)
 	}
+}
+
+func (s *AccommodationsHandler) WalkRoot(rw http.ResponseWriter, h *http.Request) {
+	pathsArray := s.images.WalkDirectories()
+	paths := strings.Join(pathsArray, "\n")
+	io.WriteString(rw, paths)
 }
 
 func (a *AccommodationsHandler) PatchAccommodation(rw http.ResponseWriter, h *http.Request) {
@@ -182,15 +202,6 @@ func (a *AccommodationsHandler) PatchAccommodation(rw http.ResponseWriter, h *ht
 	a.repo.Update(id, accommodation)
 	rw.WriteHeader(http.StatusOK)
 }
-
-//func (a *AccommodationsHandler) DeleteAccommodation(rw http.ResponseWriter, h *http.Request) {
-//
-//	vars := mux.Vars(h)
-//	id := vars["id"]
-//
-//	a.repo.Delete(id)
-//	rw.WriteHeader(http.StatusNoContent)
-//}
 
 func (a *AccommodationsHandler) DeleteAccommodation(rw http.ResponseWriter, h *http.Request) {
 	tokenString := h.Header.Get("Authorization")

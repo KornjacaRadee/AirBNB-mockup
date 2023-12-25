@@ -1,7 +1,6 @@
 version: "3.1"
 
 services:
-
   api_gateway:
     container_name: api_gateway
     hostname: api_gateway
@@ -27,9 +26,13 @@ services:
     environment:
       - PORT=8080
       - MONGO_DB_URI=mongodb://root:pass@accommodation_db:27017
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
       - HDFS_URI=namenode:9000
     depends_on:
       accommodation_db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       namenode:
         condition: service_healthy
@@ -56,6 +59,23 @@ services:
       retries: 10
     volumes:
       - accommodation_db:/data/db
+    networks:
+      - network
+
+  redis:
+    container_name: "redis"
+    image: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: "redis-server --save 20 1 --loglevel warning"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redis_data:/data
     networks:
       - network
 
@@ -175,7 +195,6 @@ services:
     depends_on:
       db_profile:
         condition: service_healthy
-
     networks:
       - network
 
@@ -221,9 +240,9 @@ services:
     networks:
       - network
 
-
 volumes:
   accommodation_db:
+  redis_data:
   hadoop_namenode:
   hadoop_datanode1:
   cass_store:

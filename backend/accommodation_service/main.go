@@ -1,6 +1,7 @@
 package main
 
 import (
+	"accommodation_service/cache"
 	"accommodation_service/domain"
 	handlers "accommodation_service/handlers"
 	"accommodation_service/storage"
@@ -30,6 +31,7 @@ func main() {
 	logger := log.New(os.Stdout, "[product-api] ", log.LstdFlags)
 	storeLogger := log.New(os.Stdout, "[accommodation-store] ", log.LstdFlags)
 	imageStorageLogger := log.New(os.Stdout, "[accommodation-image_storage] ", log.LstdFlags)
+	redisLogger := log.New(os.Stdout, "[accommodation-cache] ", log.LstdFlags)
 
 	// NoSQL: Initialize Accommodation Repository store
 	store, err := domain.New(timeoutContext, storeLogger)
@@ -47,12 +49,16 @@ func main() {
 		logger.Fatal(err)
 	}
 
+	// Redis: Initializing redis for image caching
+	imageCache := cache.New(redisLogger)
+	imageCache.Ping()
+
 	defer images.Close()
 
 	_ = images.CreateDirectories()
 
 	//Initialize the handler and inject logger
-	accommodationsHandler := handlers.NewAccommodationsHandler(logger, store, images)
+	accommodationsHandler := handlers.NewAccommodationsHandler(logger, store, imageCache, images)
 
 	//Initialize the router and add a middleware for all the requests
 	router := mux.NewRouter()
@@ -60,6 +66,7 @@ func main() {
 
 	getRouter := router.Methods(http.MethodGet).Subrouter()
 	getRouter.HandleFunc("/all", accommodationsHandler.GetAllAccommodations)
+	getRouter.HandleFunc("/accommodation/walk", accommodationsHandler.WalkRoot)
 	getRouter.HandleFunc("/{id}", accommodationsHandler.GetAccommodation)
 
 	postRouter := router.Methods(http.MethodPost).Subrouter()
