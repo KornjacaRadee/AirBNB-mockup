@@ -6,6 +6,7 @@ import { AccomodationService } from '../services/accomodation/accomodation.servi
 import { ReservationService } from '../services/reservation/reservation.service';
 import { DatePipe } from '@angular/common';
 import { formatDate } from '@angular/common';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-accommodation-page',
@@ -33,6 +34,7 @@ export class AccommodationPageComponent implements OnInit {
   };
 
   constructor(private reservationService: ReservationService,
+    private toastr: ToastrService,
     private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
@@ -68,6 +70,7 @@ export class AccommodationPageComponent implements OnInit {
         this.accommodation = data;
       },
       (error: any) => {
+        this.toastr.error('Error fetching accommodation!');
         console.error('Error fetching accommodations:', error);
       }
     );
@@ -90,24 +93,13 @@ export class AccommodationPageComponent implements OnInit {
         }
       },
       (error: any) => {
+        this.toastr.error('Error fetching availability:');
         console.error('Error fetching accommodations:', error);
       }
     );
   }
 
   reservePeriod(periodid: any, start: any, end: any): void {
-    // ZLU NE TREBALO
-    // this.parsedStartDate = new Date(start);
-    // const timezoneOffset = this.parsedStartDate.getTimezoneOffset();
-    // const adjustedStartDate = new Date(this.parsedStartDate.getTime() - timezoneOffset * 60 * 1000);
-
-    // this.selectedStartDate = this.datePipe.transform(adjustedStartDate , 'yyyy-MM-ddTHH:mm:ssZ');
-
-
-    // this.parsedEndDate = new Date(end);
-    // const timezoneOffseta = this.parsedStartDate.getTimezoneOffset();
-    // const adjustedStartDatee = new Date(this.parsedEndDate.getTime() - timezoneOffseta * 60 * 1000);
-    // this.selectedEndDate = this.datePipe.transform(adjustedStartDatee, 'yyyy-MM-ddTHH:mm:ssZ');
     console.log(start)
 
     this.parsedStartDate = start + "T00:00:00Z"
@@ -122,12 +114,13 @@ export class AccommodationPageComponent implements OnInit {
     this.reservationService.postReservation(this.reservationData)
       .subscribe(
         (response) => {
+          this.toastr.success('Reservation successful');
           console.log('Reservation successful:', response);
-          // Handle success, e.g., show a success message
         },
         (error) => {
+          this.toastr.error('Reservation failed');
           console.error('Reservation failed:', error);
-          // Handle error, e.g., show an error message
+
         }
       );
   }

@@ -25,6 +25,7 @@
     "bootstrap-icons": "^1.11.2",
     "cors": "^2.8.5",
     "jwt-decode": "^4.0.0",
+    "ng-angular-popup": "^0.5.2",
     "ng-recaptcha": "^13.1.0",
     "ngx-toastr": "^18.0.0",
     "primeflex": "^3.3.1",
