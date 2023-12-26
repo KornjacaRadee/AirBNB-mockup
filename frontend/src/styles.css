@@ -1,6 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
 /* styles.css */
 @import '~bootstrap/dist/css/bootstrap.min.css';
+@import 'ngx-toastr/toastr';
+
 
 html,
 body {

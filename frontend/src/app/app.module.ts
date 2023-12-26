@@ -24,6 +24,7 @@ import { RouterModule } from '@angular/router';
 import { AccomodationService } from './services/accomodation/accomodation.service';
 import { ReservationService } from './services/reservation/reservation.service';
 import { DatePipe } from '@angular/common';
+import { NgToastModule } from 'ng-angular-popup';
 
 import {
   RECAPTCHA_SETTINGS,
@@ -58,6 +59,9 @@ import { UpdateProfileComponent } from './update-profile/update-profile.componen
     UpdateProfileComponent,
   ],
   imports: [
+    BrowserAnimationsModule, // required animations module
+    ToastrModule.forRoot(),
+    NgToastModule,
     BrowserModule,
     FormsModule,
     HttpClientModule,

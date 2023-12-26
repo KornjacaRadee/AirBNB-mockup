@@ -42,6 +42,11 @@ export class AccomodationService {
     );
   }
 
+  deleteAccommodation(id: string,headers: HttpHeaders): Observable<any[]> {
+    const options = { headers };
+    return this.http.delete<any[]>(this.configService._accomodations_url + '/delete/' + id, options);
+  }
+
   searchAccomodations(
     searchTerm: string,
     minGuests: number,

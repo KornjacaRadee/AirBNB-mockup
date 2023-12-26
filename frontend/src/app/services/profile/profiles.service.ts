@@ -34,7 +34,7 @@ export class ProfilesService {
     updatedProfile: Profile
   ): Observable<Profile> {
     return this.http.put<Profile>(
-      `${this.configService._profiles_url}/updateByEmail/${email}`,
+      `${this.configService._profiles_url}/update/${email}`,
       updatedProfile
     );
   }

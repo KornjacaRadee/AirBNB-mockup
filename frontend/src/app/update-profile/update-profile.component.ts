@@ -2,6 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProfilesService } from '../services/profile/profiles.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-update-profile',
@@ -18,6 +19,7 @@ export class UpdateProfileComponent implements OnInit {
   };
 
   constructor(
+    private toastr: ToastrService,
     private route: ActivatedRoute,
     private router: Router,
     private profileService: ProfilesService
@@ -45,12 +47,14 @@ export class UpdateProfileComponent implements OnInit {
 
   saveProfile(): void {
     this.profileService
-      .updateProfileByEmail(this.email, this.profile)
+      .updateProfileByEmail(this.profile.id, this.profile)
       .subscribe(
         () => {
-          this.router.navigate(['/profiles']);
+          this.router.navigate(['/profile']);
+          this.toastr.success('Profile saved successfully');
         },
         (error: any) => {
+          this.toastr.error('Error editing profile! Try again. :)');
           console.error('Error:', error);
         }
       );

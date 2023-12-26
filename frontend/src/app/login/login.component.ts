@@ -3,6 +3,7 @@ import { NgForm } from '@angular/forms';
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-login',
@@ -14,7 +15,7 @@ export class LoginComponent implements OnInit {
   token: string|undefined;
   errorMessage: string | undefined;
 
-  constructor(private authService: AuthService, private router: Router) {
+  constructor(private toastr: ToastrService,private authService: AuthService, private router: Router) {
     this.token = undefined;
   }
 
@@ -31,8 +32,12 @@ export class LoginComponent implements OnInit {
       },
       (response) => {
         console.error('Login failed', response.error);
-        this.errorMessage = response.error;
-        // Dodaj akcije koje ćeš preduzeti u slučaju greške
+        if (response.error && response.error.includes('502')) {
+          this.errorMessage = 'Service not available';
+          this.toastr.error('Service not available');
+        } else {
+          this.errorMessage = response.error;
+        }
       }
     );
   }
