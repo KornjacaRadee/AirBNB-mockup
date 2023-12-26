@@ -212,14 +212,13 @@ services:
       test:
         [
           "CMD-SHELL",
-          "echo RETURN 1 | cypher-shell -a bolt://neo4j:7687 -u neo4j -p pass || exit 1",
+          "echo RETURN 1 | cypher-shell -a bolt://neo4j:7687 -u neo4j -p velibor123 || exit 1",
         ]
       interval: 5s
       timeout: 5s
       retries: 10
     environment:
-      - NEO4J_AUTH=neo4j/pass
-      - NEO4J_dbms_security_auth__minimum__password__length=4
+      - NEO4J_AUTH=neo4j/velibor123
     volumes:
       - neo4j_db:/data/db
 

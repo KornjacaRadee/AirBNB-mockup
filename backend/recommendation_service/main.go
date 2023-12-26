@@ -8,7 +8,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	//"recommendation-service/domain"
+	"recommendation_service/domain"
+
 	"time"
 )
 
@@ -26,15 +27,15 @@ func main() {
 
 	//Initialize the logger we are going to use, with prefix and datetime for every log
 	logger := log.New(os.Stdout, "[recommendation-api] ", log.LstdFlags)
-	//storeLogger := log.New(os.Stdout, "[recommendation-store] ", log.LstdFlags)
+	storeLogger := log.New(os.Stdout, "[recommendation-store] ", log.LstdFlags)
 
 	// NoSQL: Initialize Movie Repository store
-	//store, err := domain.New(storeLogger)
-	//if err != nil {
-	//	logger.Fatal(err)
-	//}
-	//defer store.CloseDriverConnection(timeoutContext)
-	//store.CheckConnection()
+	store, err := domain.New(storeLogger)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	defer store.CloseDriverConnection(timeoutContext)
+	store.CheckConnection()
 
 	//Initialize the handler and inject said logger
 
