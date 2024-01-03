@@ -6,47 +6,74 @@ import { AccomodationService } from '../services/accomodation/accomodation.servi
 import { ProfilesService } from '../services/profile/profiles.service';
 import { CommonModule } from '@angular/common';
 import { ReservationService } from '../services/reservation/reservation.service';
+import { NgToastService } from 'ng-angular-popup';
+import { ToastrService } from 'ngx-toastr';
+
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.css']
+  styleUrls: ['./profile.component.css'],
 })
-export class ProfileComponent implements OnInit{
+export class ProfileComponent implements OnInit {
   user: any;
-  id: string = "";
+  id: string = '';
   accomms: any[] = [];
-  reservations: any = []
+  reservations: any[] = [];
   showAccommodations = false;
   showReservations = false;
 
-  profile:any;
+  profile: any;
 
-
-
-  constructor(private reservationService:ReservationService, private profileService: ProfilesService,private authService: AuthService,private accommodationService: AccomodationService,private router: Router) { }
+  constructor(
+    private toastr: ToastrService,
+    private toast: NgToastService,
+    private reservationService: ReservationService,
+    private profileService: ProfilesService,
+    private authService: AuthService,
+    private accommodationService: AccomodationService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-
-    if(!this.authService.isAuthenticated()){
+    if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/login']);
     }
     this.accomms = [];
     //this.getUserAccommodations()
-    this.tempLoadAccoms();
     this.loadUserDetails();
-    this. getUserReservations();
     console.log(this.accomms);
-
-
   }
-  tempLoadAccoms(): void{
+  tempLoadAccoms(): void {
     this.accommodationService.getAccomodations().subscribe(
       (data: any[]) => {
         this.accomms = data;
-        this.accomms = data.filter(accommodation => accommodation.owner.id === this.id);
+        this.accomms = data.filter(
+          (accommodation) => accommodation.owner.id === this.id
+
+        );
+        console.log(this.accomms);
+        if(this.accomms.length == 0){
+          this.toastr.error('User has no accommodations');
+        }
       },
       (error: any) => {
+        this.toastr.error('Error loading accommodations');
         console.error('Error fetching accommodations:', error);
+      }
+    );
+  }
+  deleteAccomm(id: string): void{
+    const token = this.authService.getAuthToken();
+
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    this.accommodationService.deleteAccommodation(id,headers).subscribe(
+      (response) => {
+        this.tempLoadAccoms();
+        this.toastr.success("Successfully deleted accommodation");
+      },
+      (error: any) => {
+        this.toastr.error('Error deleting accommodation');
+        console.error('Error deleting:', error);
       }
     );
   }
@@ -58,23 +85,28 @@ export class ProfileComponent implements OnInit{
 
     this.accommodationService.getUserAccommodations(headers).subscribe(
       (data: any[]) => {
-        console.log(data)
+        console.log(data);
         this.accomms = data;
       },
       (error: any) => {
+        this.toastr.error('User has no accommodations');
         console.error('Error fetching accommodations:', error);
       }
     );
   }
 
-
   getUserReservations(): void {
     this.reservationService.getUserReservations(this.id).subscribe(
       (data: any[]) => {
-        console.log(data)
+        console.log(data);
         this.reservations = data;
+        console.log(this.reservations)
+        if(this.reservations == null){
+          this.toastr.error('User has no reservations');
+        }
       },
       (error: any) => {
+        this.toastr.error('User has no reservations');
         console.error('Error fetching accommodations:', error);
       }
     );
@@ -84,41 +116,33 @@ export class ProfileComponent implements OnInit{
     this.authService.logout();
   }
 
-  editProfile(){
-    return ""
-  }
-
-  isHost(): boolean{
-    if(this.authService.getUserRole() == "host"){
-
-      return true
-    }else{
-      return false
+  isHost(): boolean {
+    if (this.authService.getUserRole() == 'host') {
+      return true;
+    } else {
+      return false;
     }
   }
 
-  deleteProfile(){
+  deleteProfile() {
     const token = this.authService.getAuthToken();
 
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
 
     this.authService.deleteUser(headers).subscribe(
       (response) => {
+        this.toastr.success('Profile and account deleted');
         this.authService.logout();
-
       },
       (error) => {
         // Handle error, e.g., show an error message
+        this.toastr.error('Failed to delete user');
         console.error('Failed to delete user', error);
       }
     );
+  }
 
-
-}
-
-
-
-  loadUserDetails()  {
+  loadUserDetails() {
     this.id = this.authService.getUserId();
     this.authService.getUserById(this.id).subscribe(
       (response) => {
@@ -132,10 +156,12 @@ export class ProfileComponent implements OnInit{
     );
   }
   toggleAccommodations() {
+    this.tempLoadAccoms();
     this.showAccommodations = !this.showAccommodations;
   }
 
   toggleReservations() {
+    this.getUserReservations();
     this.showReservations = !this.showReservations;
   }
 
@@ -144,13 +170,11 @@ export class ProfileComponent implements OnInit{
       (response) => {
         // Map the response to the 'user' property
         this.profile = response;
-        console.log(this.profile)
+        console.log(this.profile);
       },
       (error) => {
         console.error('Error fetching user details', error);
       }
     );
   }
-
-
 }

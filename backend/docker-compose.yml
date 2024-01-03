@@ -1,7 +1,6 @@
 version: "3.1"
 
 services:
-
   api_gateway:
     container_name: api_gateway
     hostname: api_gateway
@@ -27,8 +26,17 @@ services:
     environment:
       - PORT=8080
       - MONGO_DB_URI=mongodb://root:pass@accommodation_db:27017
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - HDFS_URI=namenode:9000
     depends_on:
       accommodation_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      namenode:
+        condition: service_healthy
+      datanode1:
         condition: service_healthy
     networks:
       - network
@@ -51,6 +59,50 @@ services:
       retries: 10
     volumes:
       - accommodation_db:/data/db
+    networks:
+      - network
+
+  redis:
+    container_name: "redis"
+    image: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: "redis-server --save 20 1 --loglevel warning"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redis_data:/data
+    networks:
+      - network
+
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    ports:
+      - 9870:9870
+      - 9000:9000
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=stayinn
+    env_file:
+      - ./hdfs.env
+    networks:
+      - network
+
+  datanode1:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode1
+    volumes:
+      - hadoop_datanode1:/hadoop/dfs/data
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    env_file:
+      - ./hdfs.env
     networks:
       - network
 
@@ -143,7 +195,6 @@ services:
     depends_on:
       db_profile:
         condition: service_healthy
-
     networks:
       - network
 
@@ -189,9 +240,11 @@ services:
     networks:
       - network
 
-
 volumes:
   accommodation_db:
+  redis_data:
+  hadoop_namenode:
+  hadoop_datanode1:
   cass_store:
   auth_db:
   mong_express_data:

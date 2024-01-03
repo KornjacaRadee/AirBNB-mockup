@@ -12,6 +12,7 @@ import { AccommodationPageComponent } from './accommodation-page/accommodation-p
 import { CreatePeriodComponent } from './create-period/create-period.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
+import { UpdateProfileComponent } from './update-profile/update-profile.component';
 
 const routes: Routes = [
   {
@@ -56,13 +57,17 @@ const routes: Routes = [
     component: AccommodationPageComponent,
   },
   {
-  path: 'create-period',
-  component: CreatePeriodComponent,
-}
+    path: 'create-period',
+    component: CreatePeriodComponent,
+  },
+  {
+    path: 'update-profile',
+    component: UpdateProfileComponent,
+  },
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes),BrowserModule,CommonModule],
+  imports: [RouterModule.forRoot(routes), BrowserModule, CommonModule],
   exports: [RouterModule],
 })
 export class AppRoutingModule {}

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { ReservationService } from '../services/reservation/reservation.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-create-period',
@@ -22,7 +23,7 @@ export class CreatePeriodComponent implements OnInit {
 
     });
   }
-  constructor(private http: HttpClient,private router: Router,private route: ActivatedRoute, private reservationService: ReservationService) {}
+  constructor( private toastr: ToastrService,private http: HttpClient,private router: Router,private route: ActivatedRoute, private reservationService: ReservationService) {}
 
   createAvailabilityPeriod() {
     const startDatea = new Date(this.startDate);
@@ -39,9 +40,11 @@ export class CreatePeriodComponent implements OnInit {
 
     this.reservationService.postAvailability(availabilityPeriod).subscribe(
       (response) => {
+        this.toastr.success('Period created successfully');
         console.log('Availability period created successfully:', response);
       },
       (error) => {
+        this.toastr.error('Error creating period');
         console.error('Error creating availability period:', error);
       }
     );

@@ -1,69 +1,85 @@
 <div class="wrapper">
-<div class="container">
-  <mat-form-field  class="search-bar">
-    <input matInput placeholder="Location" [(ngModel)]="searchTerm" />
-    <div class="guest-inputs">
-      <input
-        matInput
-        type="number"
-        placeholder="Min Guests"
-        [(ngModel)]="minGuests"
-      />
-      <span class="separator">-</span>
-      <input
-        matInput
-        type="number"
-        placeholder="Max Guests"
-        [(ngModel)]="maxGuests"
-      />
-    </div>
-    <button mat-button matSuffix (click)="onSearchButtonClicked()">
-      <mat-icon>search</mat-icon>
-    </button>
-  </mat-form-field>
-  <div class="accommodations-container">
-    <ng-container *ngIf="searchSuccess; else noResults">
-      <div
-        *ngFor="let accommodation of filteredAccommodations"
-        class="accommodation-card"
-      >
-        <mat-card class="mat-mdc-card">
-          <div class="top-part">
-            <mat-card-header>
-              <div mat-card-avatar class="accommodation-image"></div>
-              <mat-card-title class="mat-mdc-card-title">{{
-                accommodation.name
-              }}</mat-card-title>
-            </mat-card-header>
-          </div>
-          <mat-card-content class="mat-mdc-card-content">
-            <p><strong>Owner Email:</strong> {{ accommodation.owner.email }}</p>
-            <p><strong>Location:</strong> {{ accommodation.location }}</p>
-            <p><strong>Min Guests:</strong> {{ accommodation.minGuestNum }}</p>
-            <p><strong>Max Guests:</strong> {{ accommodation.maxGuestNum }}</p>
-            <p>
-              <strong>Amenities:</strong>
-              {{ accommodation.amenities.join(", ") }}
-            </p>
-          </mat-card-content>
-          <mat-card-actions class="mat-mdc-card-actions"></mat-card-actions>
-        </mat-card>
+  <div class="container">
+    <mat-form-field class="search-bar">
+      <input matInput placeholder="Location" [(ngModel)]="searchTerm" />
+      <div class="guest-inputs">
+        <input
+          matInput
+          type="number"
+          placeholder="Min Guests"
+          [(ngModel)]="minGuests"
+        />
+        <span class="separator">-</span>
+        <input
+          matInput
+          type="number"
+          placeholder="Max Guests"
+          [(ngModel)]="maxGuests"
+        />
       </div>
-    </ng-container>
-    <ng-template #noResults>
-    </ng-template>
+      <button mat-button matSuffix (click)="onSearchButtonClicked()">
+        <mat-icon>search</mat-icon>
+      </button>
+    </mat-form-field>
+    <div class="accommodations-container">
+      <ng-container *ngIf="searchSuccess; else noResults">
+        <div
+          *ngFor="let accommodation of filteredAccommodations"
+          class="accommodation-card"
+        >
+          <mat-card class="mat-mdc-card">
+            <div class="top-part">
+              <mat-card-header>
+                <div mat-card-avatar class="accommodation-image"></div>
+                <mat-card-title class="mat-mdc-card-title">{{
+                  accommodation.name
+                }}</mat-card-title>
+              </mat-card-header>
+            </div>
+            <mat-card-content class="mat-mdc-card-content">
+              <p>
+                <strong>Owner Email:</strong> {{ accommodation.owner.email }}
+              </p>
+              <p><strong>Location:</strong> {{ accommodation.location }}</p>
+              <p>
+                <strong>Min Guests:</strong> {{ accommodation.minGuestNum }}
+              </p>
+              <p>
+                <strong>Max Guests:</strong> {{ accommodation.maxGuestNum }}
+              </p>
+              <p>
+                <strong>Amenities:</strong>
+                {{ accommodation.amenities.join(", ") }}
+              </p>
+            </mat-card-content>
+            <mat-card-actions class="mat-mdc-card-actions"></mat-card-actions>
+          </mat-card>
+        </div>
+      </ng-container>
+      <ng-template #noResults> </ng-template>
+    </div>
   </div>
-</div>
-<div class="cards-wrapper">
-  <div *ngFor="let accommodation of accommodations" class="card" style="width: 18rem;">
-    <img class="card-img-top" src="/assets/accommex.png" alt="Card image cap">
-    <div class="card-body">
-      <h5 class="card-title">{{ accommodation.name }}</h5>
-      <p class="card-text">{{ accommodation.location }}</p>
-      <a [routerLink]="'/accommodation-page'" [queryParams]="{ id: accommodation.id }" class="btn btn-primary">View More</a>
+  <div class="cards-wrapper">
+    <div
+      *ngFor="let accommodation of accommodations"
+      class="card"
+      style="width: 18rem"
+    >
+      <img
+        class="card-img-top"
+        src="/assets/accommex.png"
+        alt="Card image cap"
+      />
+      <div class="card-body">
+        <h5 class="card-title">{{ accommodation.name }}</h5>
+        <p class="card-text">{{ accommodation.location }}</p>
+        <a
+          [routerLink]="'/accommodation-page'"
+          [queryParams]="{ id: accommodation.id }"
+          class="btn btn-primary"
+          >View More</a
+        >
+      </div>
     </div>
   </div>
 </div>
-</div>
-
-

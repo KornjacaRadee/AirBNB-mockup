@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-register',
@@ -15,6 +16,7 @@ export class RegisterComponent {
   registrationForm!: FormGroup;
 
   constructor(
+    private toastr: ToastrService,
     private authService: AuthService,
     private router: Router,
     private formBuilder: FormBuilder
@@ -45,6 +47,7 @@ export class RegisterComponent {
       this.authService.register(this.registrationForm.value).subscribe(
         (response) => {
           console.log('Registration successful', response);
+          this.toastr.success('Registration successful, you can log in now.');
           this.router.navigate(['/login']);
           // Add additional actions on successful registration
         },
@@ -52,6 +55,7 @@ export class RegisterComponent {
           console.error('Registration failed', response.error);
           if (response.error && response.error.includes('502')) {
             this.errorMessage = 'Service not available';
+            this.toastr.error('Service not available');
           } else {
             this.errorMessage = response.error;
           }
