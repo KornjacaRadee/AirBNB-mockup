@@ -336,6 +336,26 @@ func (a *AccommodationsHandler) MiddlewareContentTypeSet(next http.Handler) http
 	})
 }
 
+func (a *AccommodationsHandler) MiddlewareCacheAllHit(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, h *http.Request) {
+		vars := mux.Vars(h)
+		accID := vars["id"]
+
+		images, err := a.imageCache.GetAll(accID)
+		if err != nil {
+			a.logger.Println("Cache not found:", err)
+			next.ServeHTTP(rw, h)
+		} else {
+			err = images.ToJSON(rw)
+			if err != nil {
+				http.Error(rw, "Unable to convert image to JSON", http.StatusInternalServerError)
+				a.logger.Fatal("Unable to convert image to JSON: ", err)
+				return
+			}
+		}
+	})
+}
+
 //CHECKER
 
 const jwtSecret = "g3HtH5KZNq3KcWglpIc3eOBHcrxChcY/7bTKG8a5cHtjn2GjTqUaMbxR3DBIr+44"
@@ -374,6 +394,7 @@ func getRoleFromToken(tokenString string) (string, error) {
 
 	return role, nil
 }
+
 func getUserIdFromToken(tokenString string) (string, error) {
 	// Parse the token
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
