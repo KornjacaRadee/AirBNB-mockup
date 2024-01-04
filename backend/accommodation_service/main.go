@@ -78,6 +78,7 @@ func main() {
 
 	getAccommodationImagesRouter := router.Methods(http.MethodGet).Subrouter()
 	getAccommodationImagesRouter.HandleFunc("/accommodation/{id}/images", accommodationsHandler.GetAccommodationImages)
+	getAccommodationImagesRouter.Use(accommodationsHandler.MiddlewareCacheAllHit)
 
 	patchRouter := router.Methods(http.MethodPatch).Subrouter()
 	patchRouter.HandleFunc("/patch/{id}", accommodationsHandler.PatchAccommodation)

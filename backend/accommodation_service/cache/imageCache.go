@@ -10,11 +10,6 @@ import (
 	"github.com/go-redis/redis"
 )
 
-const (
-	defaultExpiration = 30 * time.Second
-	longExpiration    = 120 * time.Second
-)
-
 type ImageCache struct {
 	cli    *redis.Client
 	logger *log.Logger
@@ -51,7 +46,7 @@ func (ic *ImageCache) Post(image *Image) error {
 		return err
 	}
 
-	err = ic.cli.Set(key, value, defaultExpiration).Err()
+	err = ic.cli.Set(key, value, 30*time.Second).Err()
 
 	return err
 }
@@ -103,7 +98,7 @@ func (ic *ImageCache) PostAll(accID string, images Images) error {
 		return err
 	}
 
-	err = ic.cli.Set(key, value, longExpiration).Err()
+	err = ic.cli.Set(key, value, 120*time.Second).Err()
 
 	return err
 }
