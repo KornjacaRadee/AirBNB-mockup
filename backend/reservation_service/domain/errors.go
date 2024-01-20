@@ -50,7 +50,7 @@ type ErrClientSideTimeout struct {
 }
 
 func (e ErrClientSideTimeout) Error() string {
-	return fmt.Sprintf("client-side timeout [max = %s] for request: HTTP %s\t%s", e.MaxTimeout, e.Method, e.URL)
+	return fmt.Sprintf("clients-side timeout [max = %s] for request: HTTP %s\t%s", e.MaxTimeout, e.Method, e.URL)
 }
 
 type ErrRespTmp struct {

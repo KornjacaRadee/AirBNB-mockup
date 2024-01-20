@@ -15,7 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// NoSQL: AccommodationRepo struct encapsulating Mongo api client
+// NoSQL: AccommodationRepo struct encapsulating Mongo api clients
 type AccommodationRepo struct {
 	cli    *mongo.Client
 	logger *log.Logger

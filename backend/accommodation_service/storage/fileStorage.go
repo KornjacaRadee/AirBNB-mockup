@@ -5,11 +5,9 @@ import (
 	"io"
 	"log"
 	"os"
-
-	"github.com/colinmarc/hdfs/v2"
 )
 
-// NoSQL: FileStorage struct encapsulating HDFS client
+// NoSQL: FileStorage struct encapsulating HDFS clients
 type FileStorage struct {
 	client *hdfs.Client
 	logger *log.Logger
@@ -25,7 +23,7 @@ func New(logger *log.Logger) (*FileStorage, error) {
 		return nil, err
 	}
 
-	// Return storage handler with logger and HDFS client
+	// Return storage handler with logger and HDFS clients
 	return &FileStorage{
 		client: client,
 		logger: logger,

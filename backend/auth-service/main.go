@@ -20,7 +20,7 @@ import (
 // da probam samo komit jedan
 
 func main() {
-	// Set client options
+	// Set clients options
 	// TREBA MI OVO DA TESTIRAM PA MARE SKIDAJ POSLE
 
 	dburi := os.Getenv("MONGO_DB_URI")

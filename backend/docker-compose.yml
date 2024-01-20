@@ -192,6 +192,7 @@ services:
     environment:
       - PORT=8084
       - MONGO_DB_URI=mongodb://root:pass@auth_db:27017
+      - ACCOMMODATION_SERVICE_URI=http://accommodation_service:8080
     depends_on:
       db_profile:
         condition: service_healthy

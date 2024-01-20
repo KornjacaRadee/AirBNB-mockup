@@ -4,17 +4,19 @@ package main
 
 import (
 	"context"
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
+	"github.com/promeneili1/AirBNB-mockup/clients"
+	"github.com/promeneili1/AirBNB-mockup/domain"
+	"github.com/promeneili1/AirBNB-mockup/profileHandler"
+	"github.com/sony/gobreaker"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
-
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
-	"github.com/promeneili1/AirBNB-mockup/profileHandler"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
@@ -33,6 +35,38 @@ func main() {
 	if len(port) == 0 {
 		port = "8084"
 	}
+
+	accommodationsClient := &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConns:        10,
+			MaxIdleConnsPerHost: 10,
+			MaxConnsPerHost:     10,
+		},
+	}
+	accommodationsBreaker := gobreaker.NewCircuitBreaker(
+		gobreaker.Settings{
+			Name:        "accommodations",
+			MaxRequests: 1,
+			Timeout:     10 * time.Second,
+			Interval:    0,
+			ReadyToTrip: func(counts gobreaker.Counts) bool {
+				return counts.ConsecutiveFailures > 2
+			},
+			OnStateChange: func(name string, from, to gobreaker.State) {
+				logger.Printf("CB '%s' changed from '%s' to '%s'\n", name, from, to)
+			},
+			IsSuccessful: func(err error) bool {
+				if err == nil {
+					return true
+				}
+				errResp, ok := err.(domain.ErrResp)
+				return ok && errResp.StatusCode >= 400 && errResp.StatusCode < 500
+			},
+		},
+	)
+
+	//Initialize clients for other services
+	accommodations := clients.NewAccommodationsClient(accommodationsClient, os.Getenv("ACCOMMODATIONS_SERVICE_URI"), accommodationsBreaker)
 
 	r := mux.NewRouter()
 	registerProfileRoutes(r, client) // Registrovanje ruta za profile

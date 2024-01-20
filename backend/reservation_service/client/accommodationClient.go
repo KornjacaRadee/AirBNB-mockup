@@ -54,7 +54,7 @@ func (ac AccommodationClient) CheckIfAccommodationExists(ctx context.Context, id
 	return true, nil
 
 	/////////////////////////////////////////////////////////
-	//requestURL := client.address + "/" + id.Hex()
+	//requestURL := clients.address + "/" + id.Hex()
 	//httpReq, err := http.NewRequest(http.MethodGet, requestURL, nil)
 	//
 	//if err != nil {

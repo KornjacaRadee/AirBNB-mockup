@@ -14,8 +14,8 @@ import (
 	"strings"
 )
 
-/*func RegisterUser(client *mongo.Client, user *User) error {
-	userCollection := client.Database("mongodb").Collection("users")
+/*func RegisterUser(clients *mongo.Client, user *User) error {
+	userCollection := clients.Database("mongodb").Collection("users")
 
 	// Create unique index on email field
 	indexModel := mongo.IndexModel{
