@@ -235,3 +235,23 @@ func (ar *AccommodationRepo) GetAccommodationsByUserID(userID string) (Accommoda
 
 	return accommodations, nil
 }
+func (ar *AccommodationRepo) DeleteAccommodationsByUserID(userID string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	accommodationsCollection := ar.getCollection()
+
+	objID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		ar.logger.Println(err)
+		return err
+	}
+
+	filter := bson.M{"owner._id": objID}
+	result, err := accommodationsCollection.DeleteMany(ctx, filter)
+	if err != nil {
+		ar.logger.Println(err)
+		return err
+	}
+	ar.logger.Printf("Accommodations deleted for user: %v\n", result.DeletedCount)
+	return nil
+}

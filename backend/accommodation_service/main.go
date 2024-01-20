@@ -87,6 +87,9 @@ func main() {
 	deleteRouter := router.Methods(http.MethodDelete).Subrouter()
 	deleteRouter.HandleFunc("/delete/{id}", accommodationsHandler.DeleteAccommodation)
 
+	deleteAccommodationsByUserIDRouter := router.Methods(http.MethodDelete).Subrouter()
+	deleteAccommodationsByUserIDRouter.HandleFunc("/deleteByUser/{userID}", accommodationsHandler.DeleteAccommodationsByUserID)
+
 	// Add the search endpoint
 	router.HandleFunc("/search", accommodationsHandler.SearchAccommodations).Methods("POST")
 

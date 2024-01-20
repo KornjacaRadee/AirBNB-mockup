@@ -429,3 +429,17 @@ func getUserIdFromToken(tokenString string) (string, error) {
 
 	return userID, nil
 }
+
+func (a *AccommodationsHandler) DeleteAccommodationsByUserID(rw http.ResponseWriter, h *http.Request) {
+	vars := mux.Vars(h)
+	userID := vars["userID"]
+
+	err := a.repo.DeleteAccommodationsByUserID(userID)
+	if err != nil {
+		http.Error(rw, "Error deleting accommodations by user ID", http.StatusInternalServerError)
+		a.logger.Fatal(err)
+		return
+	}
+
+	rw.WriteHeader(http.StatusOK)
+}
