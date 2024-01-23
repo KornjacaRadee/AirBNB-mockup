@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"github.com/sony/gobreaker"
 	"log"
 	"net/http"
+	"notification_service/client"
 	"notification_service/domain"
 	handlers "notification_service/handlers"
 	"os"
@@ -39,8 +41,41 @@ func main() {
 	// NoSQL: Checking if the connection was established
 	store.Ping()
 
+	profileClient := &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConns:        10,
+			MaxIdleConnsPerHost: 10,
+			MaxConnsPerHost:     10,
+		},
+	}
+
+	profileBreaker := gobreaker.NewCircuitBreaker(
+		gobreaker.Settings{
+			Name:        "profile",
+			MaxRequests: 1,
+			Timeout:     10 * time.Second,
+			Interval:    0,
+			ReadyToTrip: func(counts gobreaker.Counts) bool {
+				return counts.ConsecutiveFailures > 2
+			},
+			OnStateChange: func(name string, from, to gobreaker.State) {
+				logger.Printf("CB '%s' changed from '%s' to '%s'\n", name, from, to)
+			},
+			IsSuccessful: func(err error) bool {
+				if err == nil {
+					return true
+				}
+				errResp, ok := err.(domain.ErrResp)
+				return ok && errResp.StatusCode >= 400 && errResp.StatusCode < 500
+			},
+		},
+	)
+
+	profileServiceURI := os.Getenv("PROFILE_SERVICE_URI")
+	profile := client.NewProfileClient(profileClient, profileServiceURI, profileBreaker)
+
 	//Initialize the handler and inject logger
-	notificationsHandler := handlers.NewNotificationsHandler(logger, store)
+	notificationsHandler := handlers.NewNotificationsHandler(logger, store, profile)
 
 	//Initialize the router and add a middleware for all the requests
 	router := mux.NewRouter()

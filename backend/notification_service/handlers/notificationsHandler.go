@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"net/http"
+	"notification_service/client"
 	"notification_service/domain"
 	"strings"
 )
@@ -16,13 +17,14 @@ import (
 type KeyProduct struct{}
 
 type NotificationsHandler struct {
-	logger *log.Logger
-	repo   *domain.NotificationRepo
+	logger        *log.Logger
+	repo          *domain.NotificationRepo
+	profileClient client.ProfileClient
 }
 
 // NewNotificationsHandler Injecting the logger makes this code much more testable.
-func NewNotificationsHandler(l *log.Logger, r *domain.NotificationRepo) *NotificationsHandler {
-	return &NotificationsHandler{l, r}
+func NewNotificationsHandler(l *log.Logger, r *domain.NotificationRepo, pc client.ProfileClient) *NotificationsHandler {
+	return &NotificationsHandler{l, r, pc}
 }
 
 func (a *NotificationsHandler) GetAllNotifications(rw http.ResponseWriter, h *http.Request) {
@@ -151,6 +153,15 @@ func (a *NotificationsHandler) GetUserNotifications(rw http.ResponseWriter, h *h
 		http.Error(rw, fmt.Sprintf("Error getting notifications: %v", err), http.StatusInternalServerError)
 		return
 	}
+
+	user, err := a.profileClient.GetAllInformationsByUserID(h.Context(), userID)
+	if err != nil {
+		a.logger.Println("Failed to get HostID from username:", err)
+		http.Error(rw, "Failed to get HostID from username", http.StatusBadRequest)
+		return
+	}
+
+	a.logger.Println(user.Email)
 
 	// Return the notifications as JSON
 	rw.Header().Set("Content-Type", "application/json")

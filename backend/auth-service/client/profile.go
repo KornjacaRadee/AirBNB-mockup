@@ -42,22 +42,6 @@ func (c *ProfileClient) SendUserData(ctx context.Context, user data.User) (inter
 		timeout = time.Until(deadline)
 	}
 
-	//bodyReader := bytes.NewReader(reqBytes)
-	//requestURL := c.address + "/new"
-	//httpReq, err := http.NewRequest(http.MethodPost, requestURL, bodyReader)
-	//
-	//if err != nil {
-	//	log.Println(err)
-	//	return nil, errors.New("error sending user data")
-	//}
-	//res, err := http.DefaultClient.Do(httpReq)
-	//
-	//if err != nil || res.StatusCode != http.StatusCreated {
-	//	log.Println(err)
-	//	log.Println(res.StatusCode)
-	//	return nil, errors.New("error sending user data")
-	//}
-
 	cbResp, err := c.cb.Execute(func() (interface{}, error) {
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.address+"/new", bytes.NewBuffer(reqBytes))
 		if err != nil {
@@ -82,6 +66,7 @@ func (c *ProfileClient) SendUserData(ctx context.Context, user data.User) (inter
 
 func convertUser(user data.User) UserData {
 	userData := UserData{
+		ID:        user.ID,
 		Name:      user.First_Name,
 		Last_Name: user.Last_Name,
 		Username:  user.Username,
