@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"reservation_service/client"
 	"reservation_service/domain"
+	"time"
 )
 
 type KeyProduct struct{}
@@ -15,10 +16,11 @@ type ReservationsHandler struct {
 	logger              *log.Logger
 	repo                *domain.ReservationsRepo
 	accommodationClient client.AccommodationClient
+	notificationClient  client.NotificationClient
 }
 
-func NewReservationsHandler(l *log.Logger, r *domain.ReservationsRepo, ac client.AccommodationClient) *ReservationsHandler {
-	return &ReservationsHandler{l, r, ac}
+func NewReservationsHandler(l *log.Logger, r *domain.ReservationsRepo, ac client.AccommodationClient, nc client.NotificationClient) *ReservationsHandler {
+	return &ReservationsHandler{l, r, ac, nc}
 }
 
 func (r *ReservationsHandler) GetAvailabilityPeriodsByAccommodation(rw http.ResponseWriter, h *http.Request) {
@@ -86,9 +88,14 @@ func (r *ReservationsHandler) GetReservationsByGuestId(rw http.ResponseWriter, h
 
 func (r *ReservationsHandler) InsertAvailabilityPeriodByAccommodation(rw http.ResponseWriter, h *http.Request) {
 	availabilityPeriodsByAccommodation := h.Context().Value(KeyProduct{}).(*domain.AvailabilityPeriodByAccommodation)
-	accommodationCheck, err := r.accommodationClient.CheckIfAccommodationExists(h.Context(), availabilityPeriodsByAccommodation.AccommodationId)
+	accommodation, err := r.accommodationClient.GetAccommodation(h.Context(), availabilityPeriodsByAccommodation.AccommodationId)
+	if err != nil {
+		r.logger.Print("Cant get accommodation: ", err)
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-	if err != nil || !accommodationCheck {
+	if err != nil || accommodation == nil {
 		r.logger.Print("Accommodation does not exist")
 		http.Error(rw, "Accommodation does not exist", http.StatusBadRequest)
 		return
@@ -111,6 +118,27 @@ func (r *ReservationsHandler) InsertReservationByAvailabilityPeriod(rw http.Resp
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	accommodation, err := r.accommodationClient.GetAccommodation(h.Context(), reservationByAvailabilityPeriod.AccommodationId)
+	if err != nil {
+		r.logger.Print("Cant get accommodation: ", err)
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	notification := client.NotificationData{
+		Host: client.User{Id: accommodation.Owner.Id},
+		Text: "Your accommodation " + accommodation.Name + " has been reserved (by " + reservationByAvailabilityPeriod.GuestId.Hex() + ")",
+		Time: time.Now(),
+	}
+	// Call the profile service and handle fallback logic
+	_, err = r.notificationClient.SendReservationNotification(h.Context(), notification)
+	if err != nil {
+		log.Printf("Error creating notification: %v", err)
+		http.Error(rw, "Notification service not available, but reservation created", http.StatusCreated)
+		return
+	}
+
 	rw.WriteHeader(http.StatusCreated)
 }
 

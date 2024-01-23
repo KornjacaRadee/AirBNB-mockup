@@ -119,6 +119,8 @@ services:
       - PORT=8081
       - CASS_DB=reservation_db:9042
       - ACCOMMODATION_SERVICE_URI=http://accommodation_service:8080
+      - NOTIFICATION_SERVICE_URI=http://notification_service:8085
+
     depends_on:
       reservation_db:
         condition: service_healthy

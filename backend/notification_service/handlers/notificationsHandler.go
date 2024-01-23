@@ -154,13 +154,13 @@ func (a *NotificationsHandler) GetUserNotifications(rw http.ResponseWriter, h *h
 		return
 	}
 
+	//TEMPORARY CHECK TO SEE IF CLIENT WORKS
 	user, err := a.profileClient.GetAllInformationsByUserID(h.Context(), userID)
 	if err != nil {
-		a.logger.Println("Failed to get HostID from username:", err)
-		http.Error(rw, "Failed to get HostID from username", http.StatusBadRequest)
+		a.logger.Println("Failed to get user info:", err)
+		http.Error(rw, "Failed to get user info", http.StatusBadRequest)
 		return
 	}
-
 	a.logger.Println(user.Email)
 
 	// Return the notifications as JSON

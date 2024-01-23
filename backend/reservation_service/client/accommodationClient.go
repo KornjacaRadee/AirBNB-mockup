@@ -2,6 +2,8 @@ package client
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"github.com/sony/gobreaker"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
@@ -23,8 +25,7 @@ func NewAccommodationClient(client *http.Client, address string, cb *gobreaker.C
 	}
 }
 
-func (ac AccommodationClient) CheckIfAccommodationExists(ctx context.Context, id primitive.ObjectID) (bool, error) {
-
+func (ac AccommodationClient) GetAccommodation(ctx context.Context, id primitive.ObjectID) (*AccommodationData, error) {
 	var timeout time.Duration
 	deadline, reqHasDeadline := ctx.Deadline()
 	if reqHasDeadline {
@@ -36,38 +37,35 @@ func (ac AccommodationClient) CheckIfAccommodationExists(ctx context.Context, id
 		if err != nil {
 			return nil, err
 		}
-		return ac.client.Do(req)
+		resp, err := ac.client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return nil, domain.ErrResp{
+				URL:        resp.Request.URL.String(),
+				Method:     resp.Request.Method,
+				StatusCode: resp.StatusCode,
+			}
+		}
+
+		var accomm AccommodationData
+		if err := json.NewDecoder(resp.Body).Decode(&accomm); err != nil {
+			return nil, err
+		}
+
+		return accomm, nil
 	})
 	if err != nil {
-		return false, handleHttpReqErr(err, ac.address+"/"+id.Hex(), http.MethodGet, timeout)
+		return nil, handleHttpReqErr(err, ac.address+"/"+id.Hex(), http.MethodGet, timeout)
 	}
 
-	resp := cbResp.(*http.Response)
-	if resp.StatusCode != http.StatusOK {
-		return false, domain.ErrResp{
-			URL:        resp.Request.URL.String(),
-			Method:     resp.Request.Method,
-			StatusCode: resp.StatusCode,
-		}
+	accomm, ok := cbResp.(AccommodationData)
+	if !ok {
+		return nil, errors.New("invalid response type")
 	}
 
-	return true, nil
-
-	/////////////////////////////////////////////////////////
-	//requestURL := client.address + "/" + id.Hex()
-	//httpReq, err := http.NewRequest(http.MethodGet, requestURL, nil)
-	//
-	//if err != nil {
-	//	log.Println(err)
-	//	return false, err
-	//}
-	//
-	//res, err := http.DefaultClient.Do(httpReq)
-	//
-	//if err != nil || res.StatusCode != http.StatusOK {
-	//	log.Println(err)
-	//	log.Println(res.StatusCode)
-	//	return false, err
-	//}
-	//return true, nil
+	return &accomm, nil
 }
