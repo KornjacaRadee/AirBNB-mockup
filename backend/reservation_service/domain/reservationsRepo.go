@@ -75,8 +75,8 @@ func (rr *ReservationsRepo) CreateTables() {
 	err = rr.session.Query(
 		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s 
 					(availability_period_id UUID, reservation_id UUID, start_date TIMESTAMP, end_date TIMESTAMP, accommodation_id text, guest_id text,  guest_num int, price int,
-					PRIMARY KEY ((availability_period_id), start_date, end_date, reservation_id)) 
-					WITH CLUSTERING ORDER BY (start_date ASC, end_date ASC, reservation_id ASC)`,
+					PRIMARY KEY ((availability_period_id), reservation_id)) 
+					WITH CLUSTERING ORDER BY (reservation_id ASC)`,
 			"reservations_by_availability_period")).Exec()
 	if err != nil {
 		rr.logger.Println(err)
@@ -85,8 +85,8 @@ func (rr *ReservationsRepo) CreateTables() {
 	err = rr.session.Query(
 		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s 
 					(guest_id text, availability_period_id UUID, reservation_id UUID, start_date TIMESTAMP, end_date TIMESTAMP, accommodation_id text,  guest_num int, price int,
-					PRIMARY KEY ((guest_id), start_date, end_date, reservation_id)) 
-					WITH CLUSTERING ORDER BY (start_date ASC, end_date ASC, reservation_id ASC)`,
+					PRIMARY KEY ((guest_id), reservation_id)) 
+					WITH CLUSTERING ORDER BY (reservation_id ASC)`,
 			"reservations_by_guest")).Exec()
 	if err != nil {
 		rr.logger.Println(err)
@@ -233,6 +233,37 @@ func (rr *ReservationsRepo) GetReservationsByUserId(id string) (ReservationsByAv
 	return reservations, nil
 }
 
+func (rr *ReservationsRepo) GetReservationByIdAndGuestId(id string, guestId string) (*ReservationByAvailabilityPeriod, error) {
+	query := rr.session.Query(`SELECT availability_period_id, reservation_id, start_date, end_date, accommodation_id, guest_id, guest_num, price 
+											FROM reservations_by_guest WHERE reservation_id = ? AND guest_id = ?  LIMIT 1`, id, guestId)
+
+	var reservation ReservationByAvailabilityPeriod
+	var accommodationIdHex string
+	var guestIdHex string
+
+	err := query.Scan(&reservation.AvailabilityPeriodId, &reservation.Id, &reservation.StartDate, &reservation.EndDate, &accommodationIdHex, &guestIdHex,
+		&reservation.GuestNum, &reservation.Price)
+	if err != nil {
+		rr.logger.Println(err)
+		return nil, err
+	}
+
+	accommodationId, err := primitive.ObjectIDFromHex(accommodationIdHex)
+	if err != nil {
+		rr.logger.Println(err)
+		return nil, err
+	}
+	resGuestId, err := primitive.ObjectIDFromHex(guestIdHex)
+	if err != nil {
+		rr.logger.Println(err)
+		return nil, err
+	}
+	reservation.AccommodationId = accommodationId
+	reservation.GuestId = resGuestId
+
+	return &reservation, nil
+}
+
 func (rr *ReservationsRepo) InsertReservationByAvailabilityPeriod(reservation *ReservationByAvailabilityPeriod) error {
 	checkReservationDates, err := rr.checkReservationDates(reservation)
 	if err != nil {
@@ -299,6 +330,29 @@ func (rr *ReservationsRepo) checkReservationDates(reservation *ReservationByAvai
 
 	// If there are no rows, it means no overlap, so return true
 	return true, nil
+}
+
+func (rr *ReservationsRepo) DeleteReservationByIdAndGuestId(id, guestId string) (*ReservationByAvailabilityPeriod, error) {
+	reservation, err := rr.GetReservationByIdAndGuestId(id, guestId)
+	if err != nil {
+		rr.logger.Println(err)
+		return nil, err
+	}
+
+	if time.Now().After(reservation.StartDate) {
+		return nil, errors.New("cannot delete reservation after start date has passed")
+	}
+
+	if err := rr.session.Query(`DELETE FROM reservations_by_availability_period WHERE reservation_id = ? AND availability_period_id = ?`, id, reservation.AvailabilityPeriodId).Exec(); err != nil {
+		rr.logger.Println(err)
+		return nil, err
+	}
+
+	if err := rr.session.Query(`DELETE FROM reservations_by_guest WHERE reservation_id = ? AND guest_id = ?`, id, reservation.GuestId.Hex()).Exec(); err != nil {
+		rr.logger.Println(err)
+		return nil, err
+	}
+	return reservation, nil
 }
 
 func (rr *ReservationsRepo) calculatePrice(startDate time.Time, endDate time.Time, isPricePerGuest bool, price int, numberOfGuest int) int {
