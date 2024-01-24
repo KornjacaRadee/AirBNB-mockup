@@ -1,35 +1,32 @@
 package client
 
 import (
-	"auth-service/data"
-	"auth-service/domain"
 	"bytes"
 	"context"
 	"encoding/json"
 	"github.com/sony/gobreaker"
 	"log"
 	"net/http"
+	"reservation_service/domain"
 	"time"
 )
 
-type ProfileClient struct {
+type NotificationClient struct {
 	client  *http.Client
 	address string
 	cb      *gobreaker.CircuitBreaker
 }
 
-func NewProfileClient(client *http.Client, address string, cb *gobreaker.CircuitBreaker) ProfileClient {
-	return ProfileClient{
+func NewNotificationClient(client *http.Client, address string, cb *gobreaker.CircuitBreaker) NotificationClient {
+	return NotificationClient{
 		client:  client,
 		address: address,
 		cb:      cb,
 	}
 }
 
-func (c *ProfileClient) SendUserData(ctx context.Context, user data.User) (interface{}, error) {
-	req := convertUser(user)
-
-	reqBytes, err := json.Marshal(req)
+func (c *NotificationClient) SendReservationNotification(ctx context.Context, notification NotificationData) (interface{}, error) {
+	reqBytes, err := json.Marshal(notification)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -61,17 +58,4 @@ func (c *ProfileClient) SendUserData(ctx context.Context, user data.User) (inter
 	}
 
 	return true, nil
-}
-
-func convertUser(user data.User) UserData {
-	userData := UserData{
-		ID:        user.ID,
-		Name:      user.First_Name,
-		Last_Name: user.Last_Name,
-		Username:  user.Username,
-		Email:     user.Email,
-		Address:   user.Address,
-		Role:      user.Role,
-	}
-	return userData
 }

@@ -119,6 +119,8 @@ services:
       - PORT=8081
       - CASS_DB=reservation_db:9042
       - ACCOMMODATION_SERVICE_URI=http://accommodation_service:8080
+      - NOTIFICATION_SERVICE_URI=http://notification_service:8085
+
     depends_on:
       reservation_db:
         condition: service_healthy
@@ -219,12 +221,53 @@ services:
     networks:
       - network
 
+  notification_service:
+    build:
+      context: notification_service/
+      dockerfile: Dockerfile
+    restart: always
+    container_name: "notification_service"
+    hostname: "notification_service"
+    ports:
+      - 8085:8085
+    environment:
+      - PORT=8085
+      - MONGO_DB_URI=mongodb://root:pass@notification_db:27017
+      - PROFILE_SERVICE_URI=http://profile_service:8084
+    depends_on:
+      notification_db:
+        condition: service_healthy
+    networks:
+      - network
+
+  notification_db:
+    hostname: "notification_db"
+    container_name: "notification_db"
+    image: mongo
+    restart: always
+    ports:
+      - "27021:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: pass
+      MONGO_INITDB_DATABASE: notificationDB
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok'
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    volumes:
+      - notification_db:/data/db
+    networks:
+      - network
+
+
   mongo-express:
     image: mongo-express
     restart: always
     environment:
       # hostname of mongo databse
-      - ME_CONFIG_MONGODB_SERVER=accommodation_db,reservation_db, auth_db
+      - ME_CONFIG_MONGODB_SERVER=accommodation_db,reservation_db, auth_db, notification_db
       - ME_CONFIG_MONGODB_ADMINUSERNAME=root
       - ME_CONFIG_MONGODB_ADMINPASSWORD=pass
       - ME_CONFIG_BASICAUTH_USERNAME=admin
@@ -233,6 +276,7 @@ services:
       - accommodation_db
       - reservation_db
       - auth_db
+      - notification_db
     ports:
       - "8083:8083"
     volumes:
@@ -249,6 +293,7 @@ volumes:
   auth_db:
   mong_express_data:
   profile_db:
+  notification_db:
 
 networks:
   network:
