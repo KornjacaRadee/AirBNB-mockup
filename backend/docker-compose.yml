@@ -118,9 +118,8 @@ services:
     environment:
       - PORT=8081
       - CASS_DB=reservation_db:9042
-      - ACCOMMODATION_SERVICE_URI=http://accommodation_service:8080
-      - NOTIFICATION_SERVICE_URI=http://notification_service:8085
-
+      - ACCOMMODATION_SERVICE_URI=${ACCOMMODATION_SERVICE_URI}
+      - NOTIFICATION_SERVICE_URI=${NOTIFICATION_SERVICE_URI}
     depends_on:
       reservation_db:
         condition: service_healthy
@@ -155,7 +154,7 @@ services:
     environment:
       - PORT=8082
       - MONGO_DB_URI=mongodb://root:pass@auth_db:27017
-      - PROFILE_SERVICE_URI=http://profile_service:8084
+      - PROFILE_SERVICE_URI=${PROFILE_SERVICE_URI}
     depends_on:
       auth_db:
         condition: service_healthy
@@ -233,7 +232,9 @@ services:
     environment:
       - PORT=8085
       - MONGO_DB_URI=mongodb://root:pass@notification_db:27017
-      - PROFILE_SERVICE_URI=http://profile_service:8084
+      - PROFILE_SERVICE_URI=${PROFILE_SERVICE_URI}
+      - MAIL_ADDRESS=${MAIL_ADDRESS}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
     depends_on:
       notification_db:
         condition: service_healthy

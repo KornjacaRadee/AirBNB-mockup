@@ -73,10 +73,24 @@ func (a *NotificationsHandler) PostNotification(rw http.ResponseWriter, h *http.
 	notification := h.Context().Value(KeyProduct{}).(*domain.Notification)
 
 	// Insert the notification
-	erra := a.repo.Insert(notification)
-	if erra != nil {
+	err := a.repo.Insert(notification)
+	if err != nil {
 		http.Error(rw, "Unable to post notification", http.StatusBadRequest)
-		a.logger.Fatal(erra)
+		a.logger.Fatal(err)
+		return
+	}
+
+	user, err := a.profileClient.GetAllInformationsByUserID(h.Context(), notification.Host.Id.Hex())
+	if err != nil {
+		http.Error(rw, "Unable to get user", http.StatusBadRequest)
+		a.logger.Fatal(err)
+		return
+	}
+
+	_, err = SendEmail(user.Email, notification.Text)
+	if err != nil {
+		http.Error(rw, "Error sending email", http.StatusBadRequest)
+		a.logger.Fatal(err)
 		return
 	}
 
