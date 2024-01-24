@@ -129,6 +129,9 @@ func main() {
 	postReservationRouter.HandleFunc("/availability/reservations", reservationHandler.InsertReservationByAvailabilityPeriod)
 	postReservationRouter.Use(reservationHandler.MiddlewareReservationDeserialization)
 
+	deleteRouter := router.Methods(http.MethodDelete).Subrouter()
+	deleteRouter.HandleFunc("/reservation/delete/{id}", reservationHandler.DeleteReservationByAvailabilityPeriod)
+
 	cors := gorillaHandlers.CORS(gorillaHandlers.AllowedOrigins([]string{"*"}))
 
 	//Initialize the server
@@ -136,8 +139,8 @@ func main() {
 		Addr:         ":" + port,
 		Handler:      cors(router),
 		IdleTimeout:  120 * time.Second,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 
 	logger.Println("Server listening on port", port)
