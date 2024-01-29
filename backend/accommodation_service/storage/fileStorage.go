@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"github.com/colinmarc/hdfs/v2"
 	"io"
 	"log"
 	"os"
