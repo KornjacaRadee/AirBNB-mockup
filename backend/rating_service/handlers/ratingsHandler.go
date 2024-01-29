@@ -154,6 +154,18 @@ func (r *RatingsHandler) InsertHostRating(rw http.ResponseWriter, h *http.Reques
 			rw.WriteHeader(http.StatusBadRequest)
 			return
 		}
+		notification := client.NotificationData{
+			Host: client.User{Id: rating.HostId},
+			Text: "Your have been rated (by " + rating.GuestId.Hex() + ")",
+			Time: time.Now(),
+		}
+		// Call the notification service and handle fallback logic
+		_, err = r.notificationClient.SendReservationNotification(h.Context(), notification)
+		if err != nil {
+			log.Printf("Error creating notification: %v", err)
+			http.Error(rw, "Notification service not available, but rating created", http.StatusCreated)
+			return
+		}
 		rw.WriteHeader(http.StatusCreated)
 	} else {
 		http.Error(rw, "Guest didn't stay with the host in the past so he can't rate him", http.StatusBadRequest)
@@ -183,6 +195,18 @@ func (r *RatingsHandler) InsertAccommodationRating(rw http.ResponseWriter, h *ht
 		if err != nil {
 			r.logger.Print("Database exception: ", err)
 			rw.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		notification := client.NotificationData{
+			Host: client.User{Id: rating.HostId},
+			Text: "Your accommodation has been rated (by " + rating.GuestId.Hex() + ")",
+			Time: time.Now(),
+		}
+		// Call the notification service and handle fallback logic
+		_, err = r.notificationClient.SendReservationNotification(h.Context(), notification)
+		if err != nil {
+			log.Printf("Error creating notification: %v", err)
+			http.Error(rw, "Notification service not available, but rating created", http.StatusCreated)
 			return
 		}
 		rw.WriteHeader(http.StatusCreated)
