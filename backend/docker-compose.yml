@@ -274,7 +274,7 @@ services:
     environment:
       - PORT=8086
       - CASS_DB=rating_db:9042
-      - ACCOMMODATION_SERVICE_URI=${ACCOMMODATION_SERVICE_URI}
+      - RESERVATION_SERVICE_URI=${RESERVATION_SERVICE_URI}
       - NOTIFICATION_SERVICE_URI=${NOTIFICATION_SERVICE_URI}
     depends_on:
       rating_db:

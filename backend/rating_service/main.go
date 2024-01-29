@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"github.com/sony/gobreaker"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"rating_service/client"
 	"rating_service/domain"
 	"rating_service/handlers"
 	"time"
@@ -40,24 +42,88 @@ func main() {
 
 	//Initialize clients for other services
 
+	reservationClient := &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConns:        10,
+			MaxIdleConnsPerHost: 10,
+			MaxConnsPerHost:     10,
+		},
+	}
+
+	reservationBreaker := gobreaker.NewCircuitBreaker(
+		gobreaker.Settings{
+			Name:        "reservation",
+			MaxRequests: 1,
+			Timeout:     10 * time.Second,
+			Interval:    0,
+			ReadyToTrip: func(counts gobreaker.Counts) bool {
+				return counts.ConsecutiveFailures > 2
+			},
+			OnStateChange: func(name string, from, to gobreaker.State) {
+				logger.Printf("CB '%s' changed from '%s' to '%s'\n", name, from, to)
+			},
+			IsSuccessful: func(err error) bool {
+				if err == nil {
+					return true
+				}
+				errResp, ok := err.(domain.ErrResp)
+				return ok && errResp.StatusCode >= 400 && errResp.StatusCode < 500
+			},
+		},
+	)
+
+	notificationClient := &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConns:        10,
+			MaxIdleConnsPerHost: 10,
+			MaxConnsPerHost:     10,
+		},
+	}
+
+	notificationBreaker := gobreaker.NewCircuitBreaker(
+		gobreaker.Settings{
+			Name:        "notification",
+			MaxRequests: 1,
+			Timeout:     10 * time.Second,
+			Interval:    0,
+			ReadyToTrip: func(counts gobreaker.Counts) bool {
+				return counts.ConsecutiveFailures > 2
+			},
+			OnStateChange: func(name string, from, to gobreaker.State) {
+				logger.Printf("CB '%s' changed from '%s' to '%s'\n", name, from, to)
+			},
+			IsSuccessful: func(err error) bool {
+				if err == nil {
+					return true
+				}
+				errResp, ok := err.(domain.ErrResp)
+				return ok && errResp.StatusCode >= 400 && errResp.StatusCode < 500
+			},
+		},
+	)
+
+	reservation := client.NewReservationClient(reservationClient, os.Getenv("RESERVATION_SERVICE_URI"), reservationBreaker)
+
+	notification := client.NewNotificationClient(notificationClient, os.Getenv("NOTIFICATION_SERVICE_URI"), notificationBreaker)
+
 	//Initialize the handler and inject said logger
-	ratingHandler := handlers.NewRatingsHandler(logger, store)
+	ratingHandler := handlers.NewRatingsHandler(logger, store, reservation, notification)
 
 	//Initialize the router and add a middleware for all the requests
 	router := mux.NewRouter()
 	router.Use(ratingHandler.MiddlewareContentTypeSet)
 
 	getHostRatingsRouter := router.Methods(http.MethodGet).Subrouter()
-	getHostRatingsRouter.HandleFunc("/host/{id}/host-ratings", ratingHandler.GetHostReservationsByHost)
+	getHostRatingsRouter.HandleFunc("/host/{id}/host-ratings", ratingHandler.GetHostRatingsByHost)
 
-	getHostRatingsRouter.HandleFunc("/guest/{id}/host-ratings", ratingHandler.GetHostReservationsByGuest)
+	getHostRatingsRouter.HandleFunc("/guest/{id}/host-ratings", ratingHandler.GetHostRatingsByGuest)
 
 	getAccommodationRatingsRouter := router.Methods(http.MethodGet).Subrouter()
-	getAccommodationRatingsRouter.HandleFunc("/accommodation/{id}/accommodation-ratings", ratingHandler.GetAccommodationReservationsByAccommodation)
+	getAccommodationRatingsRouter.HandleFunc("/accommodation/{id}/accommodation-ratings", ratingHandler.GetAccommodationRatingsByAccommodation)
 
-	getAccommodationRatingsRouter.HandleFunc("/host/{id}/accommodation-ratings", ratingHandler.GetAccommodationReservationsByHost)
+	getAccommodationRatingsRouter.HandleFunc("/host/{id}/accommodation-ratings", ratingHandler.GetAccommodationRatingsByHost)
 
-	getAccommodationRatingsRouter.HandleFunc("/guest/{id}/accommodation-ratings", ratingHandler.GetAccommodationReservationsByGuest)
+	getAccommodationRatingsRouter.HandleFunc("/guest/{id}/accommodation-ratings", ratingHandler.GetAccommodationRatingsByGuest)
 
 	postHostRatingRouter := router.Methods(http.MethodPost).Subrouter()
 	postHostRatingRouter.HandleFunc("/host-rating", ratingHandler.InsertHostRating)

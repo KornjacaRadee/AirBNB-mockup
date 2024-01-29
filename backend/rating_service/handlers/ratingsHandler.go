@@ -7,21 +7,25 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"rating_service/client"
 	"rating_service/domain"
+	"time"
 )
 
 type KeyProduct struct{}
 
 type RatingsHandler struct {
-	logger *log.Logger
-	repo   *domain.RatingsRepo
+	logger             *log.Logger
+	repo               *domain.RatingsRepo
+	reservationClient  client.ReservationClient
+	notificationClient client.NotificationClient
 }
 
-func NewRatingsHandler(l *log.Logger, r *domain.RatingsRepo) *RatingsHandler {
-	return &RatingsHandler{l, r}
+func NewRatingsHandler(l *log.Logger, r *domain.RatingsRepo, rc client.ReservationClient, nc client.NotificationClient) *RatingsHandler {
+	return &RatingsHandler{l, r, rc, nc}
 }
 
-func (r *RatingsHandler) GetHostReservationsByHost(rw http.ResponseWriter, h *http.Request) {
+func (r *RatingsHandler) GetHostRatingsByHost(rw http.ResponseWriter, h *http.Request) {
 	vars := mux.Vars(h)
 	hostId := vars["id"]
 
@@ -42,7 +46,7 @@ func (r *RatingsHandler) GetHostReservationsByHost(rw http.ResponseWriter, h *ht
 	}
 }
 
-func (r *RatingsHandler) GetHostReservationsByGuest(rw http.ResponseWriter, h *http.Request) {
+func (r *RatingsHandler) GetHostRatingsByGuest(rw http.ResponseWriter, h *http.Request) {
 	vars := mux.Vars(h)
 	guestId := vars["id"]
 
@@ -63,7 +67,7 @@ func (r *RatingsHandler) GetHostReservationsByGuest(rw http.ResponseWriter, h *h
 	}
 }
 
-func (r *RatingsHandler) GetAccommodationReservationsByAccommodation(rw http.ResponseWriter, h *http.Request) {
+func (r *RatingsHandler) GetAccommodationRatingsByAccommodation(rw http.ResponseWriter, h *http.Request) {
 	vars := mux.Vars(h)
 	accommodationId := vars["id"]
 
@@ -84,7 +88,7 @@ func (r *RatingsHandler) GetAccommodationReservationsByAccommodation(rw http.Res
 	}
 }
 
-func (r *RatingsHandler) GetAccommodationReservationsByGuest(rw http.ResponseWriter, h *http.Request) {
+func (r *RatingsHandler) GetAccommodationRatingsByGuest(rw http.ResponseWriter, h *http.Request) {
 	vars := mux.Vars(h)
 	guestId := vars["id"]
 
@@ -105,7 +109,7 @@ func (r *RatingsHandler) GetAccommodationReservationsByGuest(rw http.ResponseWri
 	}
 }
 
-func (r *RatingsHandler) GetAccommodationReservationsByHost(rw http.ResponseWriter, h *http.Request) {
+func (r *RatingsHandler) GetAccommodationRatingsByHost(rw http.ResponseWriter, h *http.Request) {
 	vars := mux.Vars(h)
 	hostId := vars["id"]
 
@@ -128,26 +132,64 @@ func (r *RatingsHandler) GetAccommodationReservationsByHost(rw http.ResponseWrit
 
 func (r *RatingsHandler) InsertHostRating(rw http.ResponseWriter, h *http.Request) {
 	rating := h.Context().Value(KeyProduct{}).(*domain.HostRating)
-
-	err := r.repo.InsertHostRating(rating)
+	reservations, err := r.reservationClient.GetReservationsByGuestId(h.Context(), rating.GuestId)
 	if err != nil {
-		r.logger.Print("Database exception: ", err)
+		r.logger.Print("Cant get reservations: ", err)
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	rw.WriteHeader(http.StatusCreated)
+
+	guestsStayedWithHostInPast := false
+
+	for _, reservation := range reservations {
+		if reservation.HostId.Hex() == rating.HostId.Hex() && time.Now().After(reservation.EndDate) {
+			guestsStayedWithHostInPast = true
+		}
+	}
+
+	if guestsStayedWithHostInPast {
+		err = r.repo.InsertHostRating(rating)
+		if err != nil {
+			r.logger.Print("Database exception: ", err)
+			rw.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		rw.WriteHeader(http.StatusCreated)
+	} else {
+		http.Error(rw, "Guest didn't stay with the host in the past so he can't rate him", http.StatusBadRequest)
+	}
 }
 
 func (r *RatingsHandler) InsertAccommodationRating(rw http.ResponseWriter, h *http.Request) {
 	rating := h.Context().Value(KeyProduct{}).(*domain.AccommodationRating)
 
-	err := r.repo.InsertAccommodationRating(rating)
+	reservations, err := r.reservationClient.GetReservationsByGuestId(h.Context(), rating.GuestId)
 	if err != nil {
-		r.logger.Print("Database exception: ", err)
+		r.logger.Print("Cant get reservations: ", err)
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	rw.WriteHeader(http.StatusCreated)
+
+	guestsStayedInAccommodationInPast := false
+
+	for _, reservation := range reservations {
+		if reservation.AccommodationId.Hex() == rating.AccommodationId.Hex() && time.Now().After(reservation.EndDate) {
+			guestsStayedInAccommodationInPast = true
+		}
+	}
+
+	if guestsStayedInAccommodationInPast {
+		err = r.repo.InsertAccommodationRating(rating)
+		if err != nil {
+			r.logger.Print("Database exception: ", err)
+			rw.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		rw.WriteHeader(http.StatusCreated)
+	} else {
+		http.Error(rw, "Guest didn't stay in the accommodation in the past so he can't rate it", http.StatusBadRequest)
+	}
+
 }
 
 func (a *RatingsHandler) MiddlewareHostRatingDeserialization(next http.Handler) http.Handler {
