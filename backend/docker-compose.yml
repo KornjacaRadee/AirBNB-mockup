@@ -138,7 +138,7 @@ services:
       timeout: 5s
       retries: 15
     volumes:
-      - cass_store:/var/lib/cassandra/data
+      - reservation_db:/var/lib/cassandra/data
     networks:
       - network
 
@@ -262,6 +262,41 @@ services:
     networks:
       - network
 
+  rating_service:
+    build:
+      context: rating_service/
+      dockerfile: Dockerfile
+    restart: always
+    container_name: "rating_service"
+    hostname: "rating_service"
+    ports:
+      - 8086:8086
+    environment:
+      - PORT=8086
+      - CASS_DB=rating_db:9042
+      - RESERVATION_SERVICE_URI=${RESERVATION_SERVICE_URI}
+      - NOTIFICATION_SERVICE_URI=${NOTIFICATION_SERVICE_URI}
+    depends_on:
+      rating_db:
+        condition: service_healthy
+    networks:
+      - network
+
+  rating_db:
+    image: cassandra
+    restart: always
+    ports:
+      - "9043:9042"
+    # Docker healtcheck - checks if database is "alive"
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh -e 'describe cluster'"]
+      interval: 15s
+      timeout: 5s
+      retries: 15
+    volumes:
+      - rating_db:/var/lib/cassandra/data
+    networks:
+      - network
 
   mongo-express:
     image: mongo-express
@@ -290,11 +325,12 @@ volumes:
   redis_data:
   hadoop_namenode:
   hadoop_datanode1:
-  cass_store:
+  reservation_db:
   auth_db:
   mong_express_data:
   profile_db:
   notification_db:
+  rating_db:
 
 networks:
   network:
