@@ -84,6 +84,16 @@ func (rr *RatingsRepo) CreateTables() {
 
 	err = rr.session.Query(
 		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s 
+					(host_id text, guest_id text, rating_id UUID, 
+					PRIMARY KEY ((guest_id), host_id)) 
+					WITH CLUSTERING ORDER BY (host_id ASC)`,
+			"host_ratings_by_guest_and_host")).Exec()
+	if err != nil {
+		rr.logger.Println(err)
+	}
+
+	err = rr.session.Query(
+		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s 
 					(host_id text, guest_id text, accommodation_id text, rating_id UUID, 
 					time TIMESTAMP, rating int,
 					PRIMARY KEY ((accommodation_id), rating_id)) 
@@ -111,6 +121,16 @@ func (rr *RatingsRepo) CreateTables() {
 					PRIMARY KEY ((guest_id), rating_id)) 
 					WITH CLUSTERING ORDER BY (rating_id ASC)`,
 			"accommodation_ratings_by_guest")).Exec()
+	if err != nil {
+		rr.logger.Println(err)
+	}
+
+	err = rr.session.Query(
+		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s 
+					(guest_id text, accommodation_id text, rating_id UUID, 
+					PRIMARY KEY ((guest_id), accommodation_id)) 
+					WITH CLUSTERING ORDER BY (accommodation_id ASC)`,
+			"accommodation_ratings_by_guest_and_accommodation")).Exec()
 	if err != nil {
 		rr.logger.Println(err)
 	}
@@ -276,6 +296,14 @@ func (rr *RatingsRepo) InsertHostRating(rating *HostRating) error {
 		rr.logger.Println(err)
 		return err
 	}
+	err = rr.session.Query(
+		`INSERT INTO host_ratings_by_guest_and_host (host_id, guest_id, rating_id) 
+		VALUES (?, ?, ?)`,
+		rating.HostId.Hex(), rating.GuestId.Hex(), id).Exec()
+	if err != nil {
+		rr.logger.Println(err)
+		return err
+	}
 	return nil
 }
 
@@ -435,7 +463,7 @@ func (rr *RatingsRepo) InsertAccommodationRating(rating *AccommodationRating) er
 	}
 	err = rr.session.Query(
 		`INSERT INTO accommodation_ratings_by_host (host_id, guest_id, accommodation_id, rating_id, time, rating) 
-		VALUES (?, ?, ?, ?, ?)`,
+		VALUES (?, ?, ?, ?, ?, ?)`,
 		rating.HostId.Hex(), rating.GuestId.Hex(), rating.AccommodationId.Hex(), id, rating.Time, rating.Rating).Exec()
 	if err != nil {
 		rr.logger.Println(err)
@@ -443,11 +471,204 @@ func (rr *RatingsRepo) InsertAccommodationRating(rating *AccommodationRating) er
 	}
 	err = rr.session.Query(
 		`INSERT INTO accommodation_ratings_by_guest (host_id, guest_id, accommodation_id, rating_id, time, rating) 
-		VALUES (?, ?, ?, ?, ?)`,
+		VALUES (?, ?, ?, ?, ?, ?)`,
 		rating.HostId.Hex(), rating.GuestId.Hex(), rating.AccommodationId.Hex(), id, rating.Time, rating.Rating).Exec()
 	if err != nil {
 		rr.logger.Println(err)
 		return err
 	}
+	err = rr.session.Query(
+		`INSERT INTO accommodation_ratings_by_guest_and_accommodation (guest_id, accommodation_id, rating_id) 
+		VALUES (?, ?, ?)`,
+		rating.GuestId.Hex(), rating.AccommodationId.Hex(), id).Exec()
+	if err != nil {
+		rr.logger.Println(err)
+		return err
+	}
 	return nil
+}
+
+func (rr *RatingsRepo) GetAccommodationRatingByIdAndGuest(id string, guestId string) (*AccommodationRating, error) {
+	query := rr.session.Query(`SELECT host_id, guest_id, accommodation_id, rating_id, time, rating 
+										FROM accommodation_ratings_by_guest WHERE guest_id = ? AND rating_id = ? LIMIT 1`, guestId, id)
+
+	var rating AccommodationRating
+	var hostIdHex string
+	var guestIdHex string
+	var accommodationIdHex string
+
+	err := query.Scan(&hostIdHex, &guestIdHex, &accommodationIdHex, &rating.Id, &rating.Time, &rating.Rating)
+	if err != nil {
+		rr.logger.Println(err)
+		return nil, err
+	}
+
+	newHostId, err := primitive.ObjectIDFromHex(hostIdHex)
+	if err != nil {
+		rr.logger.Println(err)
+		return nil, err
+	}
+	rating.HostId = newHostId
+
+	newGuestId, err := primitive.ObjectIDFromHex(guestIdHex)
+	if err != nil {
+		rr.logger.Println(err)
+		return nil, err
+	}
+	rating.GuestId = newGuestId
+
+	newAccommodationId, err := primitive.ObjectIDFromHex(accommodationIdHex)
+	if err != nil {
+		rr.logger.Println(err)
+		return nil, err
+	}
+	rating.AccommodationId = newAccommodationId
+
+	return &rating, nil
+}
+
+func (rr *RatingsRepo) DeleteHostRatingByIdAndGuestId(id, guestId string) error {
+	rating, err := rr.GetHostRatingByIdAndGuest(id, guestId)
+	if err != nil {
+		rr.logger.Println(err)
+		return err
+	}
+
+	if err := rr.session.Query(`DELETE FROM host_ratings_by_guest WHERE rating_id = ? AND guest_id = ?`, id, rating.GuestId.Hex()).Exec(); err != nil {
+		rr.logger.Println(err)
+		return err
+	}
+
+	if err := rr.session.Query(`DELETE FROM host_ratings_by_host WHERE rating_id = ? AND host_id = ?`, id, rating.HostId.Hex()).Exec(); err != nil {
+		rr.logger.Println(err)
+		return err
+	}
+
+	if err := rr.session.Query(`DELETE FROM host_ratings_by_guest_and_host WHERE guest_id = ? AND host_id = ?`, rating.GuestId.Hex(), rating.HostId.Hex()).Exec(); err != nil {
+		rr.logger.Println(err)
+		return err
+	}
+	return nil
+}
+
+func (rr *RatingsRepo) DeleteAccommodationRatingByIdAndGuestId(id, guestId string) error {
+	rating, err := rr.GetAccommodationRatingByIdAndGuest(id, guestId)
+	if err != nil {
+		rr.logger.Println(err)
+		return err
+	}
+
+	if err := rr.session.Query(`DELETE FROM accommodation_ratings_by_guest WHERE rating_id = ? AND guest_id = ?`, id, rating.GuestId.Hex()).Exec(); err != nil {
+		rr.logger.Println(err)
+		return err
+	}
+
+	if err := rr.session.Query(`DELETE FROM accommodation_ratings_by_host WHERE rating_id = ? AND host_id = ?`, id, rating.HostId.Hex()).Exec(); err != nil {
+		rr.logger.Println(err)
+		return err
+	}
+
+	if err := rr.session.Query(`DELETE FROM accommodation_ratings_by_accommodation WHERE rating_id = ? AND accommodation_id = ?`, id, rating.AccommodationId.Hex()).Exec(); err != nil {
+		rr.logger.Println(err)
+		return err
+	}
+
+	if err := rr.session.Query(`DELETE FROM accommodation_ratings_by_guest_and_accommodation WHERE guest_id = ? AND accommodation_id = ?`, rating.GuestId.Hex(), rating.AccommodationId.Hex()).Exec(); err != nil {
+		rr.logger.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func (rr *RatingsRepo) UpdateHostRatingByIdAndGuestId(id string, guestId string, newRating int) error {
+	existingRating, err := rr.GetHostRatingByIdAndGuest(id, guestId)
+	if err != nil {
+		rr.logger.Println(err)
+		return err
+	}
+
+	existingRating.Rating = newRating
+
+	err = rr.session.Query(
+		`UPDATE host_ratings_by_guest SET rating = ? WHERE rating_id = ? AND guest_id = ?`,
+		existingRating.Rating, id, existingRating.GuestId.Hex()).Exec()
+	if err != nil {
+		rr.logger.Println(err)
+		return err
+	}
+
+	err = rr.session.Query(
+		`UPDATE host_ratings_by_host SET rating = ? WHERE rating_id = ? AND host_id = ?`,
+		existingRating.Rating, id, existingRating.HostId.Hex()).Exec()
+	if err != nil {
+		rr.logger.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func (rr *RatingsRepo) UpdateAccommodationRatingByIdAndGuestId(id string, guestId string, newRating int) error {
+	existingRating, err := rr.GetAccommodationRatingByIdAndGuest(id, guestId)
+	if err != nil {
+		rr.logger.Println(err)
+		return err
+	}
+
+	existingRating.Rating = newRating
+
+	err = rr.session.Query(
+		`UPDATE accommodation_ratings_by_guest SET rating = ? WHERE rating_id = ? AND guest_id = ?`,
+		existingRating.Rating, id, existingRating.GuestId.Hex()).Exec()
+	if err != nil {
+		rr.logger.Println(err)
+		return err
+	}
+
+	err = rr.session.Query(
+		`UPDATE accommodation_ratings_by_host SET rating = ? WHERE rating_id = ? AND host_id = ?`,
+		existingRating.Rating, id, existingRating.HostId.Hex()).Exec()
+	if err != nil {
+		rr.logger.Println(err)
+		return err
+	}
+
+	err = rr.session.Query(
+		`UPDATE accommodation_ratings_by_accommodation SET rating = ? WHERE rating_id = ? AND accommodation_id = ?`,
+		existingRating.Rating, id, existingRating.AccommodationId.Hex()).Exec()
+	if err != nil {
+		rr.logger.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func (rr *RatingsRepo) CheckIfGuestRatedHost(guestId, hostId string) (*gocql.UUID, error) {
+	query := rr.session.Query(`SELECT rating_id
+										FROM host_ratings_by_guest_and_host WHERE guest_id = ? AND host_id = ? LIMIT 1`, guestId, hostId)
+
+	var ratingId gocql.UUID
+
+	err := query.Scan(&ratingId)
+	if err != nil {
+		rr.logger.Println(err)
+		return nil, err
+	}
+	return &ratingId, nil
+}
+
+func (rr *RatingsRepo) CheckIfGuestRatedAccommodation(guestId, accommodationId string) (*gocql.UUID, error) {
+	query := rr.session.Query(`SELECT rating_id
+										FROM accommodation_ratings_by_guest_and_accommodation WHERE guest_id = ? AND accommodation_id = ? LIMIT 1`, guestId, accommodationId)
+
+	var ratingId gocql.UUID
+
+	err := query.Scan(&ratingId)
+	if err != nil {
+		rr.logger.Println(err)
+		return nil, err
+	}
+	return &ratingId, nil
 }

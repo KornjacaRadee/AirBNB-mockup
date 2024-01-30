@@ -133,6 +133,11 @@ func main() {
 	postAccommodationRatingRouter.HandleFunc("/accommodation-rating", ratingHandler.InsertAccommodationRating)
 	postAccommodationRatingRouter.Use(ratingHandler.MiddlewareAccommodationRatingDeserialization)
 
+	deleteRouter := router.Methods(http.MethodDelete).Subrouter()
+	deleteRouter.HandleFunc("/host-ratings/delete/{id}", ratingHandler.DeleteHostRating)
+
+	deleteRouter.HandleFunc("/accommodation-ratings/delete/{id}", ratingHandler.DeleteAccommodationRating)
+
 	cors := gorillaHandlers.CORS(gorillaHandlers.AllowedOrigins([]string{"*"}))
 
 	//Initialize the server

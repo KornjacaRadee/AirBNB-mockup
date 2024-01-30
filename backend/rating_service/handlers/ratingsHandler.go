@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"rating_service/client"
 	"rating_service/domain"
+	"strings"
 	"time"
 )
 
@@ -148,25 +149,39 @@ func (r *RatingsHandler) InsertHostRating(rw http.ResponseWriter, h *http.Reques
 	}
 
 	if guestsStayedWithHostInPast {
-		err = r.repo.InsertHostRating(rating)
-		if err != nil {
-			r.logger.Print("Database exception: ", err)
-			rw.WriteHeader(http.StatusBadRequest)
+		ratingId, err := r.repo.CheckIfGuestRatedHost(rating.GuestId.Hex(), rating.HostId.Hex())
+		if ratingId == nil {
+			err = r.repo.InsertHostRating(rating)
+			if err != nil {
+				r.logger.Print("Database exception: ", err)
+				rw.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			notification := client.NotificationData{
+				Host: client.User{Id: rating.HostId},
+				Text: "Your have been rated (by " + rating.GuestId.Hex() + ")",
+				Time: time.Now(),
+			}
+			// Call the notification service and handle fallback logic
+			_, err = r.notificationClient.SendReservationNotification(h.Context(), notification)
+			if err != nil {
+				log.Printf("Error creating notification: %v", err)
+				http.Error(rw, "Notification service not available, but rating created", http.StatusCreated)
+				return
+			}
+			rw.WriteHeader(http.StatusCreated)
+			return
+		} else {
+			err = r.repo.UpdateHostRatingByIdAndGuestId(ratingId.String(), rating.GuestId.Hex(), rating.Rating)
+			if err != nil {
+				r.logger.Print("Database exception: ", err)
+				rw.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			rw.WriteHeader(http.StatusOK)
 			return
 		}
-		notification := client.NotificationData{
-			Host: client.User{Id: rating.HostId},
-			Text: "Your have been rated (by " + rating.GuestId.Hex() + ")",
-			Time: time.Now(),
-		}
-		// Call the notification service and handle fallback logic
-		_, err = r.notificationClient.SendReservationNotification(h.Context(), notification)
-		if err != nil {
-			log.Printf("Error creating notification: %v", err)
-			http.Error(rw, "Notification service not available, but rating created", http.StatusCreated)
-			return
-		}
-		rw.WriteHeader(http.StatusCreated)
+
 	} else {
 		http.Error(rw, "Guest didn't stay with the host in the past so he can't rate him", http.StatusBadRequest)
 	}
@@ -191,29 +206,96 @@ func (r *RatingsHandler) InsertAccommodationRating(rw http.ResponseWriter, h *ht
 	}
 
 	if guestsStayedInAccommodationInPast {
-		err = r.repo.InsertAccommodationRating(rating)
-		if err != nil {
-			r.logger.Print("Database exception: ", err)
-			rw.WriteHeader(http.StatusBadRequest)
+		ratingId, err := r.repo.CheckIfGuestRatedAccommodation(rating.GuestId.Hex(), rating.AccommodationId.Hex())
+		if ratingId == nil {
+			err = r.repo.InsertAccommodationRating(rating)
+			if err != nil {
+				r.logger.Print("Database exception: ", err)
+				rw.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			notification := client.NotificationData{
+				Host: client.User{Id: rating.HostId},
+				Text: "Your accommodation has been rated (by " + rating.GuestId.Hex() + ")",
+				Time: time.Now(),
+			}
+			// Call the notification service and handle fallback logic
+			_, err = r.notificationClient.SendReservationNotification(h.Context(), notification)
+			if err != nil {
+				log.Printf("Error creating notification: %v", err)
+				http.Error(rw, "Notification service not available, but rating created", http.StatusCreated)
+				return
+			}
+			rw.WriteHeader(http.StatusCreated)
+		} else {
+			err = r.repo.UpdateAccommodationRatingByIdAndGuestId(ratingId.String(), rating.GuestId.Hex(), rating.Rating)
+			if err != nil {
+				r.logger.Print("Database exception: ", err)
+				rw.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			rw.WriteHeader(http.StatusOK)
 			return
 		}
-		notification := client.NotificationData{
-			Host: client.User{Id: rating.HostId},
-			Text: "Your accommodation has been rated (by " + rating.GuestId.Hex() + ")",
-			Time: time.Now(),
-		}
-		// Call the notification service and handle fallback logic
-		_, err = r.notificationClient.SendReservationNotification(h.Context(), notification)
-		if err != nil {
-			log.Printf("Error creating notification: %v", err)
-			http.Error(rw, "Notification service not available, but rating created", http.StatusCreated)
-			return
-		}
-		rw.WriteHeader(http.StatusCreated)
+
 	} else {
 		http.Error(rw, "Guest didn't stay in the accommodation in the past so he can't rate it", http.StatusBadRequest)
 	}
 
+}
+
+func (r *RatingsHandler) DeleteHostRating(rw http.ResponseWriter, h *http.Request) {
+	tokenString := h.Header.Get("Authorization")
+	if tokenString == "" {
+		http.Error(rw, "Missing Authorization header", http.StatusUnauthorized)
+		return
+	}
+
+	// Remove 'Bearer ' prefix if present
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	userID, err := getUserIdFromToken(tokenString)
+	if err != nil {
+		http.Error(rw, fmt.Sprintf("Error extracting user ID: %v", err), http.StatusUnauthorized)
+		return
+	}
+	vars := mux.Vars(h)
+	ratingID := vars["id"]
+
+	err = r.repo.DeleteHostRatingByIdAndGuestId(ratingID, userID)
+	if err != nil {
+		r.logger.Print("Database exception: ", err)
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	rw.WriteHeader(http.StatusOK)
+}
+
+func (r *RatingsHandler) DeleteAccommodationRating(rw http.ResponseWriter, h *http.Request) {
+	tokenString := h.Header.Get("Authorization")
+	if tokenString == "" {
+		http.Error(rw, "Missing Authorization header", http.StatusUnauthorized)
+		return
+	}
+
+	// Remove 'Bearer ' prefix if present
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	userID, err := getUserIdFromToken(tokenString)
+	if err != nil {
+		http.Error(rw, fmt.Sprintf("Error extracting user ID: %v", err), http.StatusUnauthorized)
+		return
+	}
+	vars := mux.Vars(h)
+	ratingID := vars["id"]
+
+	err = r.repo.DeleteAccommodationRatingByIdAndGuestId(ratingID, userID)
+	if err != nil {
+		r.logger.Print("Database exception: ", err)
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	rw.WriteHeader(http.StatusOK)
 }
 
 func (a *RatingsHandler) MiddlewareHostRatingDeserialization(next http.Handler) http.Handler {

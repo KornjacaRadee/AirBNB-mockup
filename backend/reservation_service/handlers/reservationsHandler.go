@@ -185,11 +185,11 @@ func (r *ReservationsHandler) DeleteReservationByAvailabilityPeriod(rw http.Resp
 	_, err = r.notificationClient.SendReservationNotification(h.Context(), notification)
 	if err != nil {
 		log.Printf("Error creating notification: %v", err)
-		http.Error(rw, "Notification service not available, but reservation created", http.StatusCreated)
+		http.Error(rw, "Notification service not available, but reservation deleted", http.StatusOK)
 		return
 	}
 
-	rw.WriteHeader(http.StatusCreated)
+	rw.WriteHeader(http.StatusOK)
 }
 
 func (a *ReservationsHandler) MiddlewareAvailabilityPeriodDeserialization(next http.Handler) http.Handler {
