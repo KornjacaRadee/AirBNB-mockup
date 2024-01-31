@@ -11,19 +11,40 @@ type Logger struct {
 	*log.Logger
 }
 
+//func NewLogger(path string) *Logger {
+//	baseLogger := log.New()
+//	baseLogger.SetLevel(log.DebugLevel)
+//	baseLogger.SetFormatter(&log.JSONFormatter{})
+//	logFile := &lumberjack.Logger{
+//		Filename:   path,
+//		MaxSize:    1, // megabytes
+//		MaxBackups: 3,
+//		MaxAge:     28,   //days
+//		Compress:   true, // disabled by default
+//	}
+//	multiWriter := io.MultiWriter(os.Stdout, logFile)
+//	baseLogger.SetOutput(multiWriter)
+//	return &Logger{
+//		Logger: baseLogger,
+//	}
+//}
+
 func NewLogger(path string) *Logger {
 	baseLogger := log.New()
 	baseLogger.SetLevel(log.DebugLevel)
 	baseLogger.SetFormatter(&log.JSONFormatter{})
+
 	logFile := &lumberjack.Logger{
 		Filename:   path,
 		MaxSize:    1, // megabytes
 		MaxBackups: 3,
-		MaxAge:     28,   //days
+		MaxAge:     28,   // days
 		Compress:   true, // disabled by default
 	}
-	multiWriter := io.MultiWriter(os.Stdout, logFile)
-	baseLogger.SetOutput(multiWriter)
+
+	// Use logrus hooks to write logs to multiple destinations
+	baseLogger.SetOutput(io.MultiWriter(os.Stdout, logFile))
+
 	return &Logger{
 		Logger: baseLogger,
 	}
