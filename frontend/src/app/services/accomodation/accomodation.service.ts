@@ -47,6 +47,16 @@ export class AccomodationService {
     return this.http.delete<any[]>(this.configService._accomodations_url + '/delete/' + id, options);
   }
 
+  addAccommodationPictures(pictures: any): Observable<any[]> {
+
+    return this.http.post<any[]>(this.configService._accomodations_url + '/accommodation/images', pictures);
+  }
+
+  getAccommodationPictures(id: any): Observable<any[]> {
+
+    return this.http.get<any[]>(this.configService._accomodations_url +'/accommodation/' + id + '/images');
+  }
+
   searchAccomodations(
     searchTerm: string,
     minGuests: number,
