@@ -25,6 +25,7 @@ import { AccomodationService } from './services/accomodation/accomodation.servic
 import { ReservationService } from './services/reservation/reservation.service';
 import { DatePipe } from '@angular/common';
 import { NgToastModule } from 'ng-angular-popup';
+import { GalleriaModule } from 'primeng/galleria';
 
 import {
   RECAPTCHA_SETTINGS,
@@ -42,6 +43,7 @@ import { AccommodationPageComponent } from './accommodation-page/accommodation-p
 import { ProfilesService } from './services/profile/profiles.service';
 import { CreatePeriodComponent } from './create-period/create-period.component';
 import { UpdateProfileComponent } from './update-profile/update-profile.component';
+import { AddPicutresAccommComponent } from './add-picutres-accomm/add-picutres-accomm.component';
 
 @NgModule({
   declarations: [
@@ -57,6 +59,7 @@ import { UpdateProfileComponent } from './update-profile/update-profile.componen
     AccommodationPageComponent,
     CreatePeriodComponent,
     UpdateProfileComponent,
+    AddPicutresAccommComponent,
   ],
   imports: [
     BrowserAnimationsModule, // required animations module
@@ -75,6 +78,7 @@ import { UpdateProfileComponent } from './update-profile/update-profile.componen
     MatFormFieldModule,
     MatListModule,
     MatCardModule,
+    GalleriaModule,
 
     ReactiveFormsModule,
     FormsModule,

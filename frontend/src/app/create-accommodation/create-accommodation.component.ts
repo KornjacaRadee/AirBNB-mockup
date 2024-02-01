@@ -27,7 +27,7 @@ export class CreateAccommodationComponent {
     private toast: NgToastService,
     private router: Router,
     private accommodationService: AccomodationService,
-    private authService: AuthService
+    private authService: AuthService,
   ) {}
 
   createAccommodation() {
@@ -39,7 +39,7 @@ export class CreateAccommodationComponent {
 
       this.accommodationService.createAccommodation(headers, this.accommodation).subscribe(
         (response) => {
-          this.toastr.success('Accommodation created successfully!');
+          this.toastr.success('Accommodation created successfully! Add pictures on your profile page! :D');
           console.log('Accommodation created successfully', response);
         },
         (error) => {
@@ -54,6 +54,9 @@ export class CreateAccommodationComponent {
       console.error('User is not authenticated');
     }
   }
+
+
+
   showSuccess() {
     this.toast.success({detail:"SUCCESS",summary:'Your Success Message',duration:5000});
   }
