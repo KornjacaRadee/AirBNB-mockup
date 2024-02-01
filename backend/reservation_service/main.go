@@ -72,9 +72,42 @@ func main() {
 		},
 	)
 
+	notificationClient := &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConns:        10,
+			MaxIdleConnsPerHost: 10,
+			MaxConnsPerHost:     10,
+		},
+	}
+
+	notificationBreaker := gobreaker.NewCircuitBreaker(
+		gobreaker.Settings{
+			Name:        "notification",
+			MaxRequests: 1,
+			Timeout:     10 * time.Second,
+			Interval:    0,
+			ReadyToTrip: func(counts gobreaker.Counts) bool {
+				return counts.ConsecutiveFailures > 2
+			},
+			OnStateChange: func(name string, from, to gobreaker.State) {
+				logger.Printf("CB '%s' changed from '%s' to '%s'\n", name, from, to)
+			},
+			IsSuccessful: func(err error) bool {
+				if err == nil {
+					return true
+				}
+				errResp, ok := err.(domain.ErrResp)
+				return ok && errResp.StatusCode >= 400 && errResp.StatusCode < 500
+			},
+		},
+	)
+
 	accommodation := client.NewAccommodationClient(accommodationClient, os.Getenv("ACCOMMODATION_SERVICE_URI"), accommodationBreaker)
+
+	notification := client.NewNotificationClient(notificationClient, os.Getenv("NOTIFICATION_SERVICE_URI"), notificationBreaker)
+
 	//Initialize the handler and inject said logger
-	reservationHandler := handlers.NewReservationsHandler(logger, store, accommodation)
+	reservationHandler := handlers.NewReservationsHandler(logger, store, accommodation, notification)
 
 	//Initialize the router and add a middleware for all the requests
 	router := mux.NewRouter()
@@ -96,6 +129,9 @@ func main() {
 	postReservationRouter.HandleFunc("/availability/reservations", reservationHandler.InsertReservationByAvailabilityPeriod)
 	postReservationRouter.Use(reservationHandler.MiddlewareReservationDeserialization)
 
+	deleteRouter := router.Methods(http.MethodDelete).Subrouter()
+	deleteRouter.HandleFunc("/reservation/delete/{id}", reservationHandler.DeleteReservationByAvailabilityPeriod)
+
 	cors := gorillaHandlers.CORS(gorillaHandlers.AllowedOrigins([]string{"*"}))
 
 	//Initialize the server
@@ -103,8 +139,8 @@ func main() {
 		Addr:         ":" + port,
 		Handler:      cors(router),
 		IdleTimeout:  120 * time.Second,
-		ReadTimeout:  1 * time.Second,
-		WriteTimeout: 1 * time.Second,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 
 	logger.Println("Server listening on port", port)

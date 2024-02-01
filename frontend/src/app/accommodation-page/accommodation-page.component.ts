@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit,  AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -6,14 +6,18 @@ import { AccomodationService } from '../services/accomodation/accomodation.servi
 import { ReservationService } from '../services/reservation/reservation.service';
 import { DatePipe } from '@angular/common';
 import { formatDate } from '@angular/common';
+
 import { ToastrService } from 'ngx-toastr';
+import { PrimeNGConfig } from 'primeng/api';
+import { GalleriaModule } from 'primeng/galleria';
+import { each } from 'jquery';
 
 @Component({
   selector: 'app-accommodation-page',
   templateUrl: './accommodation-page.component.html',
   styleUrls: ['./accommodation-page.component.css']
 })
-export class AccommodationPageComponent implements OnInit {
+export class AccommodationPageComponent implements OnInit,AfterViewInit  {
   selectedStartDate: string | null = "";
   selectedEndDate: string | null = "";
   parsedStartDate: any;
@@ -21,9 +25,13 @@ export class AccommodationPageComponent implements OnInit {
   minDate: string = "";
   maxDate: string = "";
   accommID = "";
+  pictures: any[] = [];
+  picsdata: any[] = [];
   accommodation: any | null;
+  $: any;
   availabilityPeriods: any[] = [];
   currentUserID: string = ""
+
   reservationData: any | null = {
     AvailabilityPeriodId: null,
     AccommodationId: null,
@@ -39,6 +47,7 @@ export class AccommodationPageComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private datePipe: DatePipe,
+    private config: PrimeNGConfig,
     private accommodationService: AccomodationService){}
   ngOnInit(): void {
     if(this.authService.getUserRole() == "host"){
@@ -52,9 +61,43 @@ export class AccommodationPageComponent implements OnInit {
       this.accommID = params['id'];
         this.loadAccommodation(this.accommID);
         this.loadAvailability(this.accommID)
+        this.loadPictures(this.accommID)
 
     });
   }
+  ngAfterViewInit(): void {
+    $(document).ready(() => {
+      $('.carousel').each(function () {
+        const $carousel = $(this);
+        const $items = $carousel.find('.carousel-item');
+        let currentIndex = 0;
+
+        // Show first slide
+        $items.eq(currentIndex).addClass('active');
+
+        // Next button click handler
+        $carousel.find('.carousel-control.next').click(function (e) {
+          e.preventDefault();
+          currentIndex = (currentIndex + 1) % $items.length;
+          updateCarousel();
+        });
+
+        // Previous button click handler
+        $carousel.find('.carousel-control.prev').click(function (e) {
+          e.preventDefault();
+          currentIndex = (currentIndex - 1 + $items.length) % $items.length;
+          updateCarousel();
+        });
+
+        // Update carousel function
+        function updateCarousel() {
+          $items.removeClass('active');
+          $items.eq(currentIndex).addClass('active');
+        }
+      });
+    });
+  }
+
 
   isHost(): boolean{
     if(this.authService.getUserRole() == "host"){
@@ -64,6 +107,22 @@ export class AccommodationPageComponent implements OnInit {
       return false
     }
   }
+
+  loadPictures(id: string){
+    this.accommodationService.getAccommodationPictures(id).subscribe(
+      (data: any[]) => {
+        this.pictures = data;
+        this.pictures.forEach(pic =>{
+          this.picsdata.push(pic.data)
+        })
+      },
+      (error: any) => {
+        this.toastr.error('Error fetching accommodation!');
+        console.error('Error fetching accommodations:', error);
+      }
+    );
+  }
+
   loadAccommodation(id: string){
     this.accommodationService.getAccommodation(id).subscribe(
       (data: any[]) => {
@@ -124,5 +183,6 @@ export class AccommodationPageComponent implements OnInit {
         }
       );
   }
+
 
 }

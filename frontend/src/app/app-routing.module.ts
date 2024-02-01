@@ -13,6 +13,7 @@ import { CreatePeriodComponent } from './create-period/create-period.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { UpdateProfileComponent } from './update-profile/update-profile.component';
+import { AddPicutresAccommComponent } from './add-picutres-accomm/add-picutres-accomm.component';
 
 const routes: Routes = [
   {
@@ -63,6 +64,10 @@ const routes: Routes = [
   {
     path: 'update-profile',
     component: UpdateProfileComponent,
+  },
+  {
+    path: 'add-pictures-accomm',
+    component: AddPicutresAccommComponent,
   },
 ];
 

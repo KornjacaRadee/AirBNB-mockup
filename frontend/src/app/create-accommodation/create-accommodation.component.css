@@ -74,3 +74,6 @@ button:hover {
     transform: translateY(0);
   }
 }
+.show-on-success{
+  display: none;
+}

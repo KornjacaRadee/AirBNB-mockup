@@ -2,6 +2,7 @@ package authHandlers
 
 import (
 	"auth-service/client"
+	"auth-service/config"
 	"auth-service/data"
 	"context"
 	"encoding/json"
@@ -9,16 +10,18 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
 )
+
+var logger = config.NewLogger("./logging/log.log")
 
 func HandleRegister(dbClient *mongo.Client, pc client.ProfileClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -66,14 +69,14 @@ func HandleRegister(dbClient *mongo.Client, pc client.ProfileClient) http.Handle
 		// Call the profile service and handle fallback logic
 		_, err = pc.SendUserData(ctx, newUser)
 		if err != nil {
-			log.Printf("Error sending user data to the profile service: %v", err)
+			logger.Errorf("Error sending user data to the profile service: %v", err)
 
-			log.Printf("Deleting user with ID: %v", newUser.ID)
+			logger.Errorf("Deleting user with ID: %v", newUser.ID)
 			// Delete the registered user if the profile service call fails
 			if deleteErr := data.DeleteUser(dbClient, newUser.ID); deleteErr != nil {
-				log.Printf("Error deleting user: %v", deleteErr)
+				logger.Errorf("Error deleting user: %v", deleteErr)
 			} else {
-				log.Println("User deleted due to profile service failure")
+				logger.Warnf("User deleted due to profile service failure")
 			}
 
 			http.Error(w, "Service not available", http.StatusServiceUnavailable)
@@ -118,7 +121,7 @@ func HandleLogin(dbClient *mongo.Client) http.HandlerFunc {
 			http.Error(w, "Error decoding JSON", http.StatusBadRequest)
 			return
 		}
-		log.Printf("Login request: email=%s, password=%s\n", credentials.Email, credentials.Password)
+		logger.Infof("Login request: email=%s, password=\n", credentials.Email, credentials.Password)
 
 		// Login the user
 		user, err := data.LoginUser(dbClient, credentials.Email, credentials.Password)
@@ -180,7 +183,7 @@ func HandleChangePassword(dbClient *mongo.Client) http.HandlerFunc {
 		// Extract user ID from JWT token
 		userIDFromToken, err := extractUserIDFromToken(r)
 		if err != nil {
-			log.Printf("Invalid token: %v", err)
+			logger.Errorf("Invalid token: %v", err)
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
 		}
@@ -195,11 +198,11 @@ func HandleChangePassword(dbClient *mongo.Client) http.HandlerFunc {
 		// Decode the JSON request body
 		rawRequestBody, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.Printf("Error reading raw request body: %v", err)
+			logger.Errorf("Error reading raw request body: %v", err)
 			http.Error(w, "Error reading raw request body", http.StatusInternalServerError)
 			return
 		}
-		log.Printf("Raw request body: %s", rawRequestBody)
+		logger.Infof("Raw request body: %s", rawRequestBody)
 
 		// Decode the JSON request body
 		var passwordChange struct {
@@ -207,7 +210,7 @@ func HandleChangePassword(dbClient *mongo.Client) http.HandlerFunc {
 			NewPassword string `json:"new_password"`
 		}
 		if err := json.Unmarshal(rawRequestBody, &passwordChange); err != nil {
-			log.Printf("Error decoding JSON: %v", err)
+			logger.Errorf("Error decoding JSON: %v", err)
 			http.Error(w, "Error decoding JSON", http.StatusBadRequest)
 			return
 		}
@@ -227,7 +230,7 @@ func HandleChangePassword(dbClient *mongo.Client) http.HandlerFunc {
 
 		// Update the user's password in the database
 		if err := data.UpdatePassword(dbClient, userID, passwordChange.NewPassword); err != nil {
-			log.Printf("Error updating password: %v", err)
+			logger.Errorf("Error updating password: %v", err)
 			http.Error(w, "Error updating password", http.StatusInternalServerError)
 			return
 		}
@@ -269,7 +272,7 @@ func HandleDeleteUser(dbClient *mongo.Client) http.HandlerFunc {
 		// Extract user ID from JWT token
 		userIDFromToken, err := extractUserIDFromToken(r)
 		if err != nil {
-			log.Printf("Invalid token: %v", err)
+			logger.Errorf("Invalid token: %v", err)
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
 		}
@@ -286,7 +289,7 @@ func HandleDeleteUser(dbClient *mongo.Client) http.HandlerFunc {
 
 		// Perform the deletion using the converted user ID
 		if err := data.DeleteUser(dbClient, objectIDFromToken); err != nil {
-			log.Printf("Error deleting user: %v", err)
+			logger.Errorf("Error deleting user: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -310,7 +313,7 @@ func HandlePasswordRecovery(dbClient *mongo.Client) http.HandlerFunc {
 		// Validate the email and get the user
 		user, err := data.GetUserByEmail(dbClient, request.Email)
 		if err != nil {
-			log.Printf("Error retrieving user: %v", err)
+			logger.Errorf("Error retrieving user: %v", err)
 			http.Error(w, "Error retrieving user", http.StatusInternalServerError)
 			return
 		}
@@ -325,7 +328,7 @@ func HandlePasswordRecovery(dbClient *mongo.Client) http.HandlerFunc {
 		recoveryToken, err := data.GenerateRecoveryToken(dbClient, user.ID)
 		if err != nil {
 			// Handle the error, for example:
-			log.Printf("Error generating recovery token: %v", err)
+			logger.Errorf("Error generating recovery token: %v", err)
 			http.Error(w, "Error generating recovery token", http.StatusInternalServerError)
 			return
 		}

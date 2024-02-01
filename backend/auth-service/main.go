@@ -3,14 +3,15 @@ package main
 import (
 	"auth-service/authHandlers"
 	"auth-service/client"
+	"auth-service/config"
 	"auth-service/domain"
 	"context"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 	"github.com/sony/gobreaker"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -36,7 +37,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	logger := log.New(os.Stdout, "[product-api] ", log.LstdFlags)
+	logger := config.NewLogger("./logging/log.log")
 
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
@@ -115,7 +116,7 @@ func main() {
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil {
-			logger.Fatal(err)
+			logger.Panicf("Panic on auth-service during listening")
 		}
 	}()
 
@@ -128,7 +129,7 @@ func main() {
 
 	//Try to shut down gracefully
 	if server.Shutdown(context.TODO()) != nil {
-		logger.Fatal("Cannot gracefully shutdown...")
+		logger.Fatalf("Cannot gracefully shutdown...")
 	}
 	logger.Println("Server stopped")
 }

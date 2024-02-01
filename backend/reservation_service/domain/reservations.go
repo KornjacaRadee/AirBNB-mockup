@@ -10,6 +10,7 @@ import (
 
 type AvailabilityPeriodByAccommodation struct {
 	AccommodationId primitive.ObjectID
+	HostId          primitive.ObjectID
 	Id              gocql.UUID
 	StartDate       time.Time
 	EndDate         time.Time
@@ -23,6 +24,7 @@ type ReservationByAvailabilityPeriod struct {
 	StartDate            time.Time
 	EndDate              time.Time
 	AccommodationId      primitive.ObjectID
+	HostId               primitive.ObjectID
 	GuestId              primitive.ObjectID
 	GuestNum             int
 	Price                int

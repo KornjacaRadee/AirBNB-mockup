@@ -11,5 +11,7 @@ FROM alpine
 COPY --from=build_container /app/server /usr/bin
 RUN mkdir blacklist
 COPY ./blacklist/blacklist.txt ./blacklist/
+RUN mkdir logging
+COPY ./logging/log.log ./logging/
 EXPOSE 8080
 ENTRYPOINT ["server"]
