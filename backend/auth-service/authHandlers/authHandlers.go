@@ -71,7 +71,7 @@ func HandleRegister(dbClient *mongo.Client, pc client.ProfileClient) http.Handle
 		if err != nil {
 			logger.Errorf("Error sending user data to the profile service: %v", err)
 
-			logger.Errorf("Deleting user with ID: %v", newUser.ID)
+			logger.Errorf("Deleting user with Email " + newUser.Email)
 			// Delete the registered user if the profile service call fails
 			if deleteErr := data.DeleteUser(dbClient, newUser.ID); deleteErr != nil {
 				logger.Errorf("Error deleting user: %v", deleteErr)
@@ -121,7 +121,7 @@ func HandleLogin(dbClient *mongo.Client) http.HandlerFunc {
 			http.Error(w, "Error decoding JSON", http.StatusBadRequest)
 			return
 		}
-		logger.Infof("Login request: email=%s, password=\n", credentials.Email, credentials.Password)
+		logger.Infof("Login request: email=" + credentials.Email)
 
 		// Login the user
 		user, err := data.LoginUser(dbClient, credentials.Email, credentials.Password)
@@ -313,7 +313,7 @@ func HandlePasswordRecovery(dbClient *mongo.Client) http.HandlerFunc {
 		// Validate the email and get the user
 		user, err := data.GetUserByEmail(dbClient, request.Email)
 		if err != nil {
-			logger.Errorf("Error retrieving user: %v", err)
+			logger.Errorf("Error retrieving user: %v"+request.Email, err)
 			http.Error(w, "Error retrieving user", http.StatusInternalServerError)
 			return
 		}
