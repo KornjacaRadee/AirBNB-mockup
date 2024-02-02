@@ -32,14 +32,10 @@ func main() {
 	storeLogger := log.New(os.Stdout, "[notification-store] ", log.LstdFlags)
 
 	// NoSQL: Initialize Accommodation Repository store
-	store, err := domain.New(timeoutContext, storeLogger)
+	store, err := domain.NewNotificationsRepo(storeLogger)
 	if err != nil {
 		logger.Fatal(err)
 	}
-	defer store.Disconnect(timeoutContext)
-
-	// NoSQL: Checking if the connection was established
-	store.Ping()
 
 	profileClient := &http.Client{
 		Transport: &http.Transport{
@@ -87,9 +83,6 @@ func main() {
 	postRouter := router.Methods(http.MethodPost).Subrouter()
 	postRouter.HandleFunc("/new", notificationsHandler.PostNotification)
 	postRouter.Use(notificationsHandler.MiddlewareNotificationDeserialization)
-
-	deleteRouter := router.Methods(http.MethodDelete).Subrouter()
-	deleteRouter.HandleFunc("/delete/{id}", notificationsHandler.DeleteNotification)
 
 	router.HandleFunc("/user-notifications", notificationsHandler.GetUserNotifications).Methods("GET")
 

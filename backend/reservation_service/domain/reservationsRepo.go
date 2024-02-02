@@ -91,6 +91,15 @@ func (rr *ReservationsRepo) CreateTables() {
 	if err != nil {
 		rr.logger.Println(err)
 	}
+
+	err = rr.session.Query(
+		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s 
+					(availability_period_id UUID, reservation_id UUID, start_date TIMESTAMP, end_date TIMESTAMP,
+					PRIMARY KEY ((availability_period_id), start_date, end_date, reservation_id))`,
+			"reservations_by_dates")).Exec()
+	if err != nil {
+		rr.logger.Println(err)
+	}
 }
 
 func (rr *ReservationsRepo) GetAvailabilityPeriodsByAccommodation(id string) (AvailabilityPeriodsByAccommodation, error) {
@@ -350,6 +359,15 @@ func (rr *ReservationsRepo) InsertReservationByAvailabilityPeriod(reservation *R
 		rr.logger.Println(err)
 		return err
 	}
+
+	err = rr.session.Query(
+		`INSERT INTO reservations_by_dates (availability_period_id, reservation_id, start_date, end_date) 
+		VALUES (?, ?, ?, ?)`,
+		reservation.AvailabilityPeriodId, id, reservation.StartDate, reservation.EndDate).Exec()
+	if err != nil {
+		rr.logger.Println(err)
+		return err
+	}
 	return nil
 }
 
@@ -358,9 +376,8 @@ func (rr *ReservationsRepo) checkReservationDates(reservation *ReservationByAvai
 
 	//check if reservation dates overlap with other reservation dates
 	iter := rr.session.Query(`
-        SELECT reservation_id FROM reservations_by_availability_period 
-        WHERE availability_period_id = ? AND start_date < ? AND end_date > ?
-        ALLOW FILTERING`,
+        SELECT reservation_id FROM reservations_by_dates 
+        WHERE availability_period_id = ? AND start_date < ? AND end_date > ? ALLOW FILTERING`,
 		reservation.AvailabilityPeriodId, reservation.EndDate, reservation.StartDate).Iter()
 
 	// Iterate over the result set to check if there are any rows
@@ -394,6 +411,12 @@ func (rr *ReservationsRepo) DeleteReservationByIdAndGuestId(id, guestId string) 
 	}
 
 	if err := rr.session.Query(`DELETE FROM reservations_by_guest WHERE reservation_id = ? AND guest_id = ?`, id, reservation.GuestId.Hex()).Exec(); err != nil {
+		rr.logger.Println(err)
+		return nil, err
+	}
+
+	if err := rr.session.Query(`DELETE FROM reservations_by_dates WHERE reservation_id = ? AND availability_period_id = ? AND
+                                        start_date = ? AND end_date = ?`, id, reservation.AvailabilityPeriodId, reservation.StartDate, reservation.EndDate).Exec(); err != nil {
 		rr.logger.Println(err)
 		return nil, err
 	}

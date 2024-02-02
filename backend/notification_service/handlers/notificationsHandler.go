@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"net/http"
 	"notification_service/client"
@@ -18,12 +16,12 @@ type KeyProduct struct{}
 
 type NotificationsHandler struct {
 	logger        *log.Logger
-	repo          *domain.NotificationRepo
+	repo          *domain.NotificationsRepo
 	profileClient client.ProfileClient
 }
 
 // NewNotificationsHandler Injecting the logger makes this code much more testable.
-func NewNotificationsHandler(l *log.Logger, r *domain.NotificationRepo, pc client.ProfileClient) *NotificationsHandler {
+func NewNotificationsHandler(l *log.Logger, r *domain.NotificationsRepo, pc client.ProfileClient) *NotificationsHandler {
 	return &NotificationsHandler{l, r, pc}
 }
 
@@ -39,29 +37,6 @@ func (a *NotificationsHandler) GetAllNotifications(rw http.ResponseWriter, h *ht
 	}
 
 	err = notifications.ToJSON(rw)
-	if err != nil {
-		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
-		a.logger.Fatal("Unable to convert to json :", err)
-		return
-	}
-}
-
-func (a *NotificationsHandler) GetNotification(rw http.ResponseWriter, h *http.Request) {
-
-	vars := mux.Vars(h)
-	id := vars["id"]
-
-	notification, err := a.repo.GetByID(id)
-	if err != nil {
-		a.logger.Print("Database exception: ", err)
-	}
-
-	if notification.Id.Hex() != id {
-		http.Error(rw, "Notification not found", 404)
-		return
-	}
-
-	err = notification.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
 		a.logger.Fatal("Unable to convert to json :", err)
@@ -95,56 +70,6 @@ func (a *NotificationsHandler) PostNotification(rw http.ResponseWriter, h *http.
 	}
 
 	rw.WriteHeader(http.StatusCreated)
-}
-
-func (a *NotificationsHandler) DeleteNotification(rw http.ResponseWriter, h *http.Request) {
-	tokenString := h.Header.Get("Authorization")
-	if tokenString == "" {
-		http.Error(rw, "Missing Authorization header", http.StatusUnauthorized)
-		return
-	}
-
-	// Remove 'Bearer ' prefix if present
-	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
-	role, err := getRoleFromToken(tokenString)
-	if err != nil {
-		http.Error(rw, fmt.Sprintf("Error extracting user role: %v", err), http.StatusUnauthorized)
-		return
-	}
-
-	// Extract user ID from the token
-	userID, err := getUserIdFromToken(tokenString)
-	if err != nil {
-		http.Error(rw, fmt.Sprintf("Error extracting user ID: %v", err), http.StatusUnauthorized)
-		return
-	}
-
-	vars := mux.Vars(h)
-	id := vars["id"]
-
-	// Check if the user has the required role or is the owner of the notification
-	if role != "host" {
-		http.Error(rw, "Unauthorized: Insufficient privileges", http.StatusUnauthorized)
-		return
-	}
-
-	// Provjeri da li je korisnik vlasnik notifikacije
-	notification, err := a.repo.GetByID(id) // Use the new GetByID function
-	if err != nil {
-		http.Error(rw, "Error getting notification", http.StatusInternalServerError)
-		a.logger.Fatal(err)
-		return
-	}
-
-	idUser, _ := primitive.ObjectIDFromHex(userID)
-
-	if notification.Host.Id != idUser {
-		http.Error(rw, "Unauthorized: User is not the owner of the notification", http.StatusUnauthorized)
-		return
-	}
-
-	a.repo.Delete(id)
-	rw.WriteHeader(http.StatusOK)
 }
 
 func (a *NotificationsHandler) GetUserNotifications(rw http.ResponseWriter, h *http.Request) {
