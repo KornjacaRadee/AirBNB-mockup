@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient,HttpHeaders } from '@angular/common/http';
 import { ConfigService } from '../config.service';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -27,6 +27,11 @@ export class ProfilesService {
     return this.http.get<Profile>(
       `${this.configService._profiles_url}/u/${email}`
     );
+  }
+
+  getUserNotifications(headers: HttpHeaders): Observable<any> {
+    const options = { headers };
+    return this.http.get<any>(`${this.configService._notifications_url}/user-notifications`,options);
   }
 
   updateProfileByEmail(

@@ -47,6 +47,12 @@
       >
         Show Reservations
       </button>
+      <button
+      class="btn btn-primary"
+      (click)="toggleNotifications()"
+    >
+      Show Notifications
+    </button>
     </div>
   </div>
 
@@ -99,4 +105,15 @@
       </div>
     </div>
   </div>
-</div>
+  <div class="notifications">
+    <div *ngIf="showNotifications" class="notification-list">
+      <div *ngFor="let notification of notifications" class="notification">
+        <div class="notification-header" (click)="toggleFullNotification(notification.id)">
+          {{ notification.Text }}
+        </div>
+          {{ notification.time }}
+        </div>
+      </div>
+    </div>
+  </div>
+

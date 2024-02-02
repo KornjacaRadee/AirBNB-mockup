@@ -18,9 +18,11 @@ export class ProfileComponent implements OnInit {
   user: any;
   id: string = '';
   accomms: any[] = [];
+  notifications: any[] = [];
   reservations: any[] = [];
   showAccommodations = false;
   showReservations = false;
+  showNotifications: boolean = false;
 
   profile: any;
 
@@ -34,6 +36,18 @@ export class ProfileComponent implements OnInit {
     private router: Router
   ) {}
 
+  toggleNotifications(): void {
+    this.showNotifications = !this.showNotifications;
+  }
+
+  toggleFullNotification(id: number): void {
+    const notification = this.notifications.find(n => n.id === id);
+    if (notification) {
+      notification.showFull = !notification.showFull;
+    }
+  }
+
+
   ngOnInit(): void {
     if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/login']);
@@ -41,6 +55,7 @@ export class ProfileComponent implements OnInit {
     this.accomms = [];
     //this.getUserAccommodations()
     this.loadUserDetails();
+    this.loadNotifications()
     console.log(this.accomms);
   }
   tempLoadAccoms(): void {
@@ -62,6 +77,25 @@ export class ProfileComponent implements OnInit {
       }
     );
   }
+
+  loadNotifications(): void{
+    const token = this.authService.getAuthToken();
+
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    this.profileService.getUserNotifications(headers).subscribe(
+      (data: any[]) => {
+        this.notifications = data;
+        console.log(data)
+        data.forEach(not =>{
+          not.time = new Date(not.time).toISOString().split('T')[0];
+        } )
+      },
+      (error: any) => {
+        console.error('Error fetching accommodations:', error);
+      }
+    );
+  }
+
   deleteAccomm(id: string): void{
     const token = this.authService.getAuthToken();
 
