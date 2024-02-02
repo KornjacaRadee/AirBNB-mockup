@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
-import { ActivatedRoute } from '@angular/router';
-import {  HttpHeaders } from '@angular/common/http';
+import { HttpClient,HttpHeaders } from '@angular/common/http';
+import { Router,ActivatedRoute } from '@angular/router';
 import { AccomodationService } from '../services/accomodation/accomodation.service';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../services/auth.service';
@@ -65,14 +63,13 @@ export class AddPicutresAccommComponent implements OnInit {
   }
 
   onUpload(): void {
-    const token = this.authService.getAuthToken();
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
 
     if (this.picturesData.length > 0) {
       const jsonData = this.picturesData.map(picture => ({
-        id: picture.id.toString(), // Convert id to string
-        accommodation_id: this.accommID, // Change to underscore notation
-        data: picture.base64Data // Use Base64 data
+        id: picture.id.toString(),
+        accommodation_id: this.accommID,
+        data: picture.base64Data
       }));
 
       this.accommodationService.addAccommodationPictures(jsonData)
@@ -93,7 +90,7 @@ export class AddPicutresAccommComponent implements OnInit {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
-        resolve(reader.result?.toString() || '');
+        resolve(reader.result?.toString() ?? '');
       };
       reader.onerror = reject;
       reader.readAsDataURL(file);
