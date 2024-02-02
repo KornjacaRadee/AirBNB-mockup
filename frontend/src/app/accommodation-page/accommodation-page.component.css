@@ -104,3 +104,52 @@
 .btn-primary:hover {
   background-color: #2980b9;
 }
+.carousel {
+  position: relative;
+  width: 600px; /* Adjust width as needed */
+  margin: auto;
+}
+
+.carousel-inner {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
+.carousel-item {
+  display: none;
+}
+
+.carousel-item.active {
+  display: block;
+}
+
+.carousel img {
+  width: 100%;
+  height: auto;
+}
+
+.carousel-control {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  text-decoration: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 18px;
+  z-index: 1000;
+}
+
+.carousel-control.prev {
+  left: 10px;
+}
+
+.carousel-control.next {
+  right: 10px;
+}
+
+.arrow {
+  display: inline-block;
+}

@@ -2,6 +2,7 @@
 /* styles.css */
 @import '~bootstrap/dist/css/bootstrap.min.css';
 @import 'ngx-toastr/toastr';
+@import 'primeicons/primeicons.css';
 
 
 html,

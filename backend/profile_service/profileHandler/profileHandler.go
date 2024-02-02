@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/promeneili1/AirBNB-mockup/data"
-
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
