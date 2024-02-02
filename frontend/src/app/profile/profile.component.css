@@ -39,9 +39,32 @@
 /* cards for accoms */
 
 
-.cards-wrapper{
+.notifications {
+  margin-top: 20px;
+}
+
+.notification {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
 }
+
+.full-notification {
+  display: none;
+  background-color: #f9f9f9;
+  padding: 10px;
+}
+
+.notification-header {
+  font-weight: bold;
+  cursor: pointer;
+}
+
 .accommodation-card {
   display: flex;
   flex-direction: column;
