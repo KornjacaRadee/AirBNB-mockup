@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"accommodation_service/config"
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,11 +19,11 @@ import (
 // NoSQL: AccommodationRepo struct encapsulating Mongo api client
 type AccommodationRepo struct {
 	cli    *mongo.Client
-	logger *log.Logger
+	logger *config.Logger
 }
 
 // NoSQL: Constructor which reads db configuration from environment
-func New(ctx context.Context, logger *log.Logger) (*AccommodationRepo, error) {
+func New(ctx context.Context, logger *config.Logger) (*AccommodationRepo, error) {
 	dburi := os.Getenv("MONGO_DB_URI")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(dburi))

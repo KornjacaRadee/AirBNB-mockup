@@ -2,11 +2,11 @@ package main
 
 import (
 	"accommodation_service/cache"
+	"accommodation_service/config"
 	"accommodation_service/domain"
 	handlers "accommodation_service/handlers"
 	"accommodation_service/storage"
 	"context"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -28,15 +28,15 @@ func main() {
 	defer cancel()
 
 	//Initialize the logger we are going to use, with prefix and datetime for every log
-	logger := log.New(os.Stdout, "[product-api] ", log.LstdFlags)
-	storeLogger := log.New(os.Stdout, "[accommodation-store] ", log.LstdFlags)
-	imageStorageLogger := log.New(os.Stdout, "[accommodation-image_storage] ", log.LstdFlags)
-	redisLogger := log.New(os.Stdout, "[accommodation-cache] ", log.LstdFlags)
-
+	//logger := log.New(os.Stdout, "[product-api] ", log.LstdFlags)
+	//storeLogger := log.New(os.Stdout, "[accommodation-store] ", log.LstdFlags)
+	//imageStorageLogger := log.New(os.Stdout, "[accommodation-image_storage] ", log.LstdFlags)
+	//redisLogger := log.New(os.Stdout, "[accommodation-cache] ", log.LstdFlags)
+	logger := config.NewLogger("./logging/log.log")
 	// NoSQL: Initialize Accommodation Repository store
-	store, err := domain.New(timeoutContext, storeLogger)
+	store, err := domain.New(timeoutContext, logger)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Fatalf("Failed initializing Accommodation Repository Store", err)
 	}
 	defer store.Disconnect(timeoutContext)
 
@@ -44,13 +44,13 @@ func main() {
 	store.Ping()
 
 	// HDFS: Initializing hdfs storage for images
-	images, err := storage.New(imageStorageLogger)
+	images, err := storage.New(logger)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Fatalf("Failed to initialize hdfs storage for images", err)
 	}
 
 	// Redis: Initializing redis for image caching
-	imageCache := cache.New(redisLogger)
+	imageCache := cache.New(logger)
 	imageCache.Ping()
 
 	defer images.Close()
@@ -114,7 +114,7 @@ func main() {
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil {
-			logger.Fatal(err)
+			logger.Fatalf("Cannot distribute all the connections to goroutines", err)
 		}
 	}()
 
@@ -127,7 +127,7 @@ func main() {
 
 	//Try to shut down gracefully
 	if server.Shutdown(timeoutContext) != nil {
-		logger.Fatal("Cannot gracefully shutdown...")
+		logger.Fatalf("Cannot gracefully shutdown...")
 	}
 	logger.Println("Server stopped")
 }

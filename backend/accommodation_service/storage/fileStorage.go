@@ -1,9 +1,9 @@
 package storage
 
 import (
+	"accommodation_service/config"
 	"fmt"
 	"io"
-	"log"
 	"os"
 
 	"github.com/colinmarc/hdfs/v2"
@@ -12,16 +12,16 @@ import (
 // NoSQL: FileStorage struct encapsulating HDFS client
 type FileStorage struct {
 	client *hdfs.Client
-	logger *log.Logger
+	logger *config.Logger
 }
 
-func New(logger *log.Logger) (*FileStorage, error) {
+func New(logger *config.Logger) (*FileStorage, error) {
 	// Local instance
 	hdfsUri := os.Getenv("HDFS_URI")
 
 	client, err := hdfs.New(hdfsUri)
 	if err != nil {
-		logger.Panic(err)
+		logger.Panicf("Failed to run hdfs", err)
 		return nil, err
 	}
 
