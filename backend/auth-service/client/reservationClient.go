@@ -1,13 +1,13 @@
 package client
 
 import (
+	"auth-service/domain"
 	"context"
 	"encoding/json"
 	"errors"
 	"github.com/sony/gobreaker"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
-	"rating_service/domain"
 	"time"
 )
 
@@ -25,7 +25,7 @@ func NewReservationClient(client *http.Client, address string, cb *gobreaker.Cir
 	}
 }
 
-func (ac ReservationClient) GetReservationsByGuestId(ctx context.Context, id primitive.ObjectID) (ReservationsData, error) {
+func (ac ReservationClient) GetActiveReservationsByGuestId(ctx context.Context, id primitive.ObjectID) (ReservationsData, error) {
 	var timeout time.Duration
 	deadline, reqHasDeadline := ctx.Deadline()
 	if reqHasDeadline {
@@ -37,7 +37,6 @@ func (ac ReservationClient) GetReservationsByGuestId(ctx context.Context, id pri
 		if err != nil {
 			return nil, err
 		}
-		req.Close = true
 		resp, err := ac.client.Do(req)
 		if err != nil {
 			return nil, err
@@ -71,5 +70,12 @@ func (ac ReservationClient) GetReservationsByGuestId(ctx context.Context, id pri
 		return nil, errors.New("invalid response type")
 	}
 
-	return reservations, nil
+	var activeReservations ReservationsData
+	for _, reservation := range reservations {
+		if reservation.StartDate.After(time.Now()) {
+			activeReservations = append(activeReservations, reservation)
+		}
+	}
+
+	return activeReservations, nil
 }

@@ -1,31 +1,76 @@
 package domain
 
-import "errors"
-
-var (
-	errAccommodationNotFound error = errors.New("accommodation not found")
-	errUserNotFound          error = errors.New("user not found")
-	errInvalidCredentials    error = errors.New("incorrect username or password")
-	errInvalidToken          error = errors.New("token invalid")
-	errUnauthorized          error = errors.New("unauthorized")
+import (
+	"fmt"
+	"net/url"
+	"time"
 )
 
-func ErrAccommodationNotFound() error {
-	return errAccommodationNotFound
+type ErrUnknown struct {
+	InnerErr error
 }
 
-func ErrUserNotFound() error {
-	return errUserNotFound
+func (e ErrUnknown) Error() string {
+	return fmt.Sprintf("unknown or unexpected error caused by: %s", e.InnerErr.Error())
 }
 
-func ErrInvalidCredentials() error {
-	return errInvalidCredentials
+type ErrClientSideTimeout struct {
+	URL        string
+	Method     string
+	MaxTimeout time.Duration
 }
 
-func ErrInvalidToken() error {
-	return errInvalidToken
+func (e ErrClientSideTimeout) Error() string {
+	return fmt.Sprintf("client-side timeout [max = %s] for request: HTTP %s\t%s", e.MaxTimeout, e.Method, e.URL)
 }
 
-func ErrUnauthorized() error {
-	return errUnauthorized
+type ErrRespTmp struct {
+	URL        string
+	Method     string
+	StatusCode int
+}
+
+func (e ErrRespTmp) Error() string {
+	return fmt.Sprintf("temporary error [status code %d] for request: HTTP %s\t%s", e.StatusCode, e.Method, e.URL)
+}
+
+// we consider all errors of ErrRespTmp type to be equal
+// this helps retrier determine if it should send another request or not
+func (e ErrRespTmp) Is(err error) bool {
+	_, ok := err.(ErrRespTmp)
+	return ok
+}
+
+type ErrResp struct {
+	URL        string
+	Method     string
+	StatusCode int
+}
+
+func (e ErrResp) Error() string {
+	return fmt.Sprintf("error [status code %d] for request: HTTP %s\t%s", e.StatusCode, e.Method, e.URL)
+}
+
+type ErrConnecting struct {
+	Err *url.Error
+}
+
+func (e ErrConnecting) Error() string {
+	return fmt.Sprintf("error connecting for request: HTTP %s\t%s\nInner error: %s", e.Err.Op, e.Err.URL, e.Err)
+}
+
+type ErrInternal struct {
+	InnerErr error
+}
+
+func (e ErrInternal) Error() string {
+	return e.InnerErr.Error()
+}
+
+type ErrCtxTimeoutl struct {
+	Stack string
+}
+
+func (e ErrCtxTimeoutl) Error() string {
+	return fmt.Sprintf("ctx timed out in: %s", e.Stack)
 }

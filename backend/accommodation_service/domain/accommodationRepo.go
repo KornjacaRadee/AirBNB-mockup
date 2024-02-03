@@ -8,7 +8,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"log"
 	"os"
 
 	"time"
@@ -166,6 +165,7 @@ func (ar *AccommodationRepo) Delete(id string) error {
 	ar.logger.Printf("Documents deleted: %v\n", result.DeletedCount)
 	return nil
 }
+
 func (ar *AccommodationRepo) SearchAccommodations(searchRequest SearchRequest) (Accommodations, error) {
 	// Inicijalizujte context (posle 5 sekundi, prekinite operaciju)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -218,7 +218,6 @@ func (ar *AccommodationRepo) GetAccommodationsByUserID(userID string) (Accommoda
 	}
 	// Create a filter to find accommodations owned by the user
 	filter := bson.M{"owner._id": objID}
-	log.Printf("Iz rikvesta %s", userID)
 
 	// Execute the query
 	cursor, err := accommodationsCollection.Find(ctx, filter)
@@ -235,4 +234,25 @@ func (ar *AccommodationRepo) GetAccommodationsByUserID(userID string) (Accommoda
 	}
 
 	return accommodations, nil
+}
+
+func (ar *AccommodationRepo) DeleteAccommodationsByUserId(userID string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	accommodationsCollection := ar.getCollection()
+
+	objID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		ar.logger.Println(err)
+		return err
+	}
+
+	filter := bson.M{"owner._id": objID}
+	result, err := accommodationsCollection.DeleteMany(ctx, filter)
+	if err != nil {
+		ar.logger.Println(err)
+		return err
+	}
+	ar.logger.Printf("Documents deleted: %v\n", result.DeletedCount)
+	return nil
 }

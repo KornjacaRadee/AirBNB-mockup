@@ -231,6 +231,27 @@ func (rr *ReservationsRepo) GetReservationsByAvailabilityPeriod(id string) (Rese
 	return reservations, nil
 }
 
+func (rr *ReservationsRepo) CheckActiveReservationsByAvailabilityPeriod(id gocql.UUID) (bool, error) {
+	//check if reservation dates overlap with other reservation dates
+	iter := rr.session.Query(`
+        SELECT reservation_id FROM reservations_by_dates 
+        WHERE availability_period_id = ? AND start_date > ?`,
+		id, time.Now()).Iter()
+
+	// Iterate over the result set to check if there are any rows
+	for iter.Scan(nil) {
+		return false, nil
+	}
+
+	if err := iter.Close(); err != nil {
+		rr.logger.Println(err)
+		return false, err
+	}
+
+	// If there are no rows, it means no reservations, so return true
+	return true, nil
+}
+
 func (rr *ReservationsRepo) GetReservationsByUserId(id string) (ReservationsByAvailabilityPeriod, error) {
 	scanner := rr.session.Query(`SELECT availability_period_id, reservation_id, start_date, end_date, accommodation_id, host_id, guest_id, guest_num, price FROM reservations_by_guest WHERE guest_id = ?`,
 		id).Iter().Scanner()

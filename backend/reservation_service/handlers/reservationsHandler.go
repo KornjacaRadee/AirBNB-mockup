@@ -47,6 +47,40 @@ func (r *ReservationsHandler) GetAvailabilityPeriodsByAccommodation(rw http.Resp
 	}
 }
 
+func (r *ReservationsHandler) CheckAccommodationForReservations(rw http.ResponseWriter, h *http.Request) {
+	vars := mux.Vars(h)
+	accommId := vars["id"]
+
+	availabilityPeriodsByAccommodation, err := r.repo.GetAvailabilityPeriodsByAccommodation(accommId)
+	if err != nil {
+		r.logger.Print("Database exception: ", err)
+	}
+
+	if availabilityPeriodsByAccommodation == nil {
+		rw.WriteHeader(http.StatusOK)
+		return
+	}
+
+	hasActiveReservations := false
+
+	for _, period := range availabilityPeriodsByAccommodation {
+		hasReservations, err := r.repo.CheckActiveReservationsByAvailabilityPeriod(period.Id)
+		if err != nil {
+			r.logger.Print("Database exception: ", err)
+		}
+		if !hasReservations {
+			hasActiveReservations = true
+		}
+	}
+
+	if !hasActiveReservations {
+		rw.WriteHeader(http.StatusOK)
+	} else {
+		rw.WriteHeader(http.StatusForbidden)
+	}
+
+}
+
 func (r *ReservationsHandler) GetReservationsByAvailabilityPeriod(rw http.ResponseWriter, h *http.Request) {
 	vars := mux.Vars(h)
 	availabilityPeriodId := vars["id"]
