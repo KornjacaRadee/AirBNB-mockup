@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter,Input  } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 import {  HttpHeaders } from '@angular/common/http';
@@ -7,6 +7,13 @@ import { ProfilesService } from '../services/profile/profiles.service';
 import { ReservationService } from '../services/reservation/reservation.service';
 import { NgToastService } from 'ng-angular-popup';
 import { ToastrService } from 'ngx-toastr';
+interface Review {
+  id: number;
+  GuestId: string;
+  HostId: string;
+  Time: string;
+  Rating: number;
+}
 
 @Component({
   selector: 'app-profile',
@@ -14,6 +21,7 @@ import { ToastrService } from 'ngx-toastr';
   styleUrls: ['./profile.component.css'],
 })
 export class ProfileComponent implements OnInit {
+  @Input() reviews: Review[] = [];
   user: any;
   id: string = '';
   accomms: any[] = [];
@@ -21,12 +29,17 @@ export class ProfileComponent implements OnInit {
   reservations: any[] = [];
   showAccommodations = false;
   showReservations = false;
+  klasica = false;
   showNotifications: boolean = false;
+  showRatings: boolean = false;
   showOverlay: boolean = false;
   reservationHistory: any[] = [];
   activeReservations: any[] = [];
   stars: number[] = [1, 2, 3, 4, 5];
   currentRating: number = 0;
+  pictures: any[] = [];
+  picsdata: any[] = [];
+
   @Output() ratingChanged: EventEmitter<number> = new EventEmitter<number>();
 
 
@@ -57,10 +70,17 @@ export class ProfileComponent implements OnInit {
     this.accommodationService.getAccomodations().subscribe(
       (data: any[]) => {
         this.accomms = data;
+        console.log(this.accomms)
+        console.log(this.user.id)
         this.accomms = data.filter(
-          (accommodation) => accommodation.owner.id === this.id
+          (accommodation) => accommodation.owner.id === this.user.id
 
         );
+        this.accomms.forEach(ac =>{
+          this.loadPictures(ac.id)
+          ac.picture = this.picsdata;
+          console.log(this.picsdata[0])
+        })
         console.log(this.accomms);
         if(this.accomms.length == 0){
           this.toastr.error('User has no accommodations');
@@ -76,6 +96,12 @@ export class ProfileComponent implements OnInit {
     this.reservationHistory = [];
     this.getUserReservations();
     this.showOverlay = !this.showOverlay;
+  }
+
+
+  toggleRatings(): void {
+    this.loadUserRatings();
+    this.showRatings = !this.showRatings;
   }
 
   loadNotifications(): void{
@@ -147,19 +173,35 @@ export class ProfileComponent implements OnInit {
             not.EndDate = new Date(not.EndDate).toISOString().split('T')[0];
             console.log(todaysDate)
             console.log(not.EndDate)
-            if (not.EndDate < todaysDate){
-              this.reservationHistory.push(not)
+            if (not.EndDate > todaysDate){
+              console.log("ulazi")
+              this.loadPictures(not.AccommodationId);
               this.accommodationService.getAccommodation(not.AccommodationId).subscribe(
                 (data: any[]) => {
                   not.accommodation = data;
+                  not.picture = this.picsdata[0];
                   console.log(not)
                 },
                 (error: any) => {
                   console.error('Error fetching accommodations:', error);
                 }
-              );
+                );
+                this.reservationHistory.push(not)
             }else{
-              this.activeReservations.push(not)
+              console.log("else")
+              this.accommodationService.getAccommodation(not.AccommodationId).subscribe(
+                (data: any[]) => {
+                  not.accommodation = data;
+                  not.picture = this.picsdata[0];
+                  this.activeReservations.push(not)
+                  console.log(not)
+                },
+                (error: any) => {
+
+                  console.error('Error fetching accommodations:', error);
+                }
+              );
+
             }
           } )
 
@@ -198,12 +240,35 @@ export class ProfileComponent implements OnInit {
       (data: any[]) => {
         this.toastr.error('Successfully rated accommodation.');
       },
-      (error: any) => {
+      (response: any) => {
+        if(response.error && response.error.includes('502')){
+          this.toastr.success('Successfully rated accommodation.');
+        }else{
+          this.toastr.error('Failed to rate accommodation.');
+        }
         this.toastr.error('Error with rating. Try again later! ');
       }
     );
 
   }
+  loadPictures(id: string){
+    this.pictures = [];
+    this.picsdata = [];
+    this.accommodationService.getAccommodationPictures(id).subscribe(
+      (data: any[]) => {
+        this.pictures = data;
+        this.pictures.forEach(pic =>{
+          this.picsdata.push(pic.data)
+        })
+      },
+      (error: any) => {
+        this.toastr.error('Error fetching accommodation!');
+        console.error('Error fetching accommodations:', error);
+      }
+    );
+  }
+
+
   rateHost(star: number,reservation: any): void {
 
     this.currentRating = star;
@@ -217,9 +282,14 @@ export class ProfileComponent implements OnInit {
     // reservationJSON = JSON.stringify(reservationJSON);
     this.profileService.rateHost(reservationJSON).subscribe(
       (data: any[]) => {
-        this.toastr.error('Successfully rated accommodation.');
+        this.toastr.success('Successfully rated accommodation.');
       },
-      (error: any) => {
+      (response: any) => {
+        if(response.error && response.error.includes('502')){
+          this.toastr.success('Successfully rated accommodation.');
+        }else{
+          this.toastr.error('Failed to rate accommodation.');
+        }
         this.toastr.error('Error with rating. Try again later! ');
       }
     );
@@ -294,4 +364,17 @@ export class ProfileComponent implements OnInit {
       }
     );
   }
+
+  loadUserRatings(){
+    this.profileService.getHostRatings(this.user.id).subscribe(
+      (data) => {
+        this.reviews = data;
+        console.log(this.reviews);
+      },
+      (error) => {
+        console.error('Error fetching user details', error);
+      }
+    );
+  }
+
 }

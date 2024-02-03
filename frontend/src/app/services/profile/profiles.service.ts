@@ -38,6 +38,10 @@ export class ProfilesService {
     return this.http.post<any[]>(this.configService._rating_url + '/host-rating',accomm);
   }
 
+  getHostRatings(id: string): Observable<any[]> {
+    return this.http.get<any[]>(this.configService._rating_url + `/host/${id}/host-ratings`);
+  }
+
   updateProfileByEmail(
     email: string,
     updatedProfile: Profile

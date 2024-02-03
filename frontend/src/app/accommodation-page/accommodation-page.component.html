@@ -4,8 +4,8 @@
   <div class="left">
 
   <div class="carousel">
-    <div class="carousel-inner" *ngFor="let picture of pictures">
-      <div class="carousel-item">
+    <div class="carousel-inner" >
+      <div class="carousel-item" *ngFor="let picture of pictures">
           <img [src]="'data:image/jpeg;base64,'+picture.data" alt="{{ picture.id }}" class="img-fluid">
       </div>
 
