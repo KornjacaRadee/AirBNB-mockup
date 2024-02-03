@@ -267,8 +267,10 @@ func HandleGetAllUsers(dbClient *mongo.Client) http.HandlerFunc {
 	}
 }
 
-func HandleDeleteUser(dbClient *mongo.Client) http.HandlerFunc {
+func HandleDeleteUser(dbClient *mongo.Client, rc client.ReservationClient, ac client.AccommodationClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		tokenStr := extractTokenFromHeader(r)
 		// Extract user ID from JWT token
 		userIDFromToken, err := extractUserIDFromToken(r)
 		if err != nil {
@@ -276,9 +278,12 @@ func HandleDeleteUser(dbClient *mongo.Client) http.HandlerFunc {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
 		}
-
-		log.Printf("Received token: %s", r.Header.Get("Authorization"))
-
+		role, err := getRoleFromToken(r)
+		if err != nil {
+			logger.Errorf("Invalid token: %v", err)
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			return
+		}
 		// Convert user ID from string to primitive.ObjectID
 		objectIDFromToken, err := primitive.ObjectIDFromHex(userIDFromToken)
 		if err != nil {
@@ -287,14 +292,43 @@ func HandleDeleteUser(dbClient *mongo.Client) http.HandlerFunc {
 			return
 		}
 
-		// Perform the deletion using the converted user ID
-		if err := data.DeleteUser(dbClient, objectIDFromToken); err != nil {
-			logger.Errorf("Error deleting user: %v", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		canDelete := false
+
+		if role == "host" {
+			ok, err := ac.DeleteAccommodations(r.Context(), tokenStr)
+			if err != nil {
+				writeResp(err, http.StatusServiceUnavailable, w)
+				return
+			}
+			if !ok {
+				writeResp("Can't delete accommodations for user, he has active reservations", http.StatusBadRequest, w)
+				return
+			}
+			canDelete = ok
+		} else if role == "guest" {
+			// Check if guest has reservations
+			reservations, err := rc.GetActiveReservationsByGuestId(r.Context(), objectIDFromToken)
+			if err != nil {
+				log.Printf("Error getting user reservations: %v", err)
+				http.Error(w, "Error getting user reservations", http.StatusServiceUnavailable)
+			}
+			if len(reservations) == 0 {
+				canDelete = true
+			} else {
+				log.Printf("Guest has reservations, so he can't delete account")
+				http.Error(w, "Guest has reservations, so he can't delete account", http.StatusForbidden)
+			}
 		}
 
-		w.WriteHeader(http.StatusOK)
+		if canDelete {
+			// Perform the deletion using the converted user ID
+			if err := data.DeleteUser(dbClient, objectIDFromToken); err != nil {
+				logger.Errorf("Error deleting user: %v", err)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+		}
 	}
 }
 
@@ -365,6 +399,14 @@ func HandlePasswordReset(dbClient *mongo.Client) http.HandlerFunc {
 		response := map[string]string{"status": "success", "message": "Password reset allowed"}
 		json.NewEncoder(w).Encode(response)
 	}
+}
+
+func extractTokenFromHeader(rr *http.Request) string {
+	token := rr.Header.Get("Authorization")
+	if token != "" {
+		return token[len("Bearer "):]
+	}
+	return ""
 }
 
 func extractUserIDFromToken(r *http.Request) (string, error) {
@@ -482,4 +524,47 @@ func extractResetToken(r *http.Request) (string, error) {
 	}
 
 	return token, nil
+}
+
+func getRoleFromToken(r *http.Request) (string, error) {
+	// Extract the token from the Authorization header
+	tokenString := r.Header.Get("Authorization")
+	if tokenString == "" {
+		return "", errors.New("missing Authorization header")
+	}
+
+	// Remove 'Bearer ' prefix if present
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Check the signing method
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		// Provide the secret key used to sign the token
+		return []byte(jwtSecret), nil
+	})
+	if err != nil {
+		return "", fmt.Errorf("Invalid token: %v", err)
+	}
+
+	// Check if the token is valid
+	if !token.Valid {
+		return "", fmt.Errorf("Invalid token")
+	}
+
+	// Extract user role from claims
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", fmt.Errorf("Invalid token claims")
+	}
+
+	// Get user role
+	role, ok := claims["roles"].(string)
+	if !ok {
+		return "", fmt.Errorf("User role not found in token claims")
+	}
+
+	return role, nil
 }

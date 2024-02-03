@@ -29,6 +29,7 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - HDFS_URI=namenode:9000
+      - RESERVATION_SERVICE_URI=${RESERVATION_SERVICE_URI}
     depends_on:
       accommodation_db:
         condition: service_healthy
@@ -155,6 +156,8 @@ services:
       - PORT=8082
       - MONGO_DB_URI=mongodb://root:pass@auth_db:27017
       - PROFILE_SERVICE_URI=${PROFILE_SERVICE_URI}
+      - RESERVATION_SERVICE_URI=${RESERVATION_SERVICE_URI}
+      - ACCOMMODATION_SERVICE_URI=${ACCOMMODATION_SERVICE_URI}
     depends_on:
       auth_db:
         condition: service_healthy

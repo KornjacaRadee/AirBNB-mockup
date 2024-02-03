@@ -116,6 +116,8 @@ func main() {
 	getAvailabilityRouter := router.Methods(http.MethodGet).Subrouter()
 	getAvailabilityRouter.HandleFunc("/accomm/{id}/availability", reservationHandler.GetAvailabilityPeriodsByAccommodation)
 
+	getAvailabilityRouter.HandleFunc("/accomm/{id}/check", reservationHandler.CheckAccommodationForReservations)
+
 	getReservationsRouter := router.Methods(http.MethodGet).Subrouter()
 	getReservationsRouter.HandleFunc("/availability/{id}/reservations", reservationHandler.GetReservationsByAvailabilityPeriod)
 

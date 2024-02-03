@@ -72,14 +72,74 @@ func main() {
 		},
 	)
 
+	reservationClient := &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConns:        10,
+			MaxIdleConnsPerHost: 10,
+			MaxConnsPerHost:     10,
+		},
+	}
+	reservationBreaker := gobreaker.NewCircuitBreaker(
+		gobreaker.Settings{
+			Name:        "reservation",
+			MaxRequests: 1,
+			Timeout:     10 * time.Second,
+			Interval:    0,
+			ReadyToTrip: func(counts gobreaker.Counts) bool {
+				return counts.ConsecutiveFailures > 2
+			},
+			OnStateChange: func(name string, from, to gobreaker.State) {
+				logger.Printf("CB '%s' changed from '%s' to '%s'\n", name, from, to)
+			},
+			IsSuccessful: func(err error) bool {
+				if err == nil {
+					return true
+				}
+				errResp, ok := err.(domain.ErrResp)
+				return ok && errResp.StatusCode >= 400 && errResp.StatusCode < 500
+			},
+		},
+	)
+
+	accommClient := &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConns:        10,
+			MaxIdleConnsPerHost: 10,
+			MaxConnsPerHost:     10,
+		},
+	}
+	accommBreaker := gobreaker.NewCircuitBreaker(
+		gobreaker.Settings{
+			Name:        "accommodation",
+			MaxRequests: 1,
+			Timeout:     10 * time.Second,
+			Interval:    0,
+			ReadyToTrip: func(counts gobreaker.Counts) bool {
+				return counts.ConsecutiveFailures > 2
+			},
+			OnStateChange: func(name string, from, to gobreaker.State) {
+				logger.Printf("CB '%s' changed from '%s' to '%s'\n", name, from, to)
+			},
+			IsSuccessful: func(err error) bool {
+				if err == nil {
+					return true
+				}
+				errResp, ok := err.(domain.ErrResp)
+				return ok && errResp.StatusCode >= 400 && errResp.StatusCode < 500
+			},
+		},
+	)
+
 	//Initialize clients for other services
 	profile := client.NewProfileClient(profileClient, os.Getenv("PROFILE_SERVICE_URI"), profileBreaker)
+	reservation := client.NewReservationClient(reservationClient, os.Getenv("RESERVATION_SERVICE_URI"), reservationBreaker)
+	accommodation := client.NewAccommodationClient(accommClient, os.Getenv("ACCOMMODATION_SERVICE_URI"), accommBreaker)
 
 	r := mux.NewRouter()
 	r.HandleFunc("/register", authHandlers.HandleRegister(dbClient, profile)).Methods("POST")
 	r.HandleFunc("/login", authHandlers.HandleLogin(dbClient)).Methods("POST")
 	r.HandleFunc("/users", authHandlers.HandleGetAllUsers(dbClient)).Methods("GET")
-	r.HandleFunc("/user", authHandlers.HandleDeleteUser(dbClient)).Methods("DELETE")
+	r.HandleFunc("/user", authHandlers.HandleDeleteUser(dbClient, reservation, accommodation)).Methods("DELETE")
 	r.HandleFunc("/users/{id}", authHandlers.HandleGetUserByID(dbClient)).Methods("GET")
 	// change user passwrod
 	r.HandleFunc("/change-password", authHandlers.HandleChangePassword(dbClient)).Methods("POST")
@@ -107,8 +167,8 @@ func main() {
 		Addr:         ":" + port,
 		Handler:      handlerWithCORS,
 		IdleTimeout:  120 * time.Second,
-		ReadTimeout:  1 * time.Second,
-		WriteTimeout: 1 * time.Second,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 
 	logger.Println("Server listening on port", port)

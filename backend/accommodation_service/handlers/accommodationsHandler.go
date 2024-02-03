@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"accommodation_service/cache"
+	"accommodation_service/client"
 	"accommodation_service/config"
 	"accommodation_service/domain"
 	"accommodation_service/storage"
@@ -21,15 +22,16 @@ import (
 type KeyProduct struct{}
 
 type AccommodationsHandler struct {
-	logger     *config.Logger
-	repo       *domain.AccommodationRepo
-	imageCache *cache.ImageCache
-	images     *storage.FileStorage
+	logger            *config.Logger
+	repo              *domain.AccommodationRepo
+	imageCache        *cache.ImageCache
+	images            *storage.FileStorage
+	reservationClient client.ReservationClient
 }
 
 // NewAccommodationsHandler Injecting the logger makes this code much more testable.
-func NewAccommodationsHandler(l *config.Logger, r *domain.AccommodationRepo, ic *cache.ImageCache, i *storage.FileStorage) *AccommodationsHandler {
-	return &AccommodationsHandler{l, r, ic, i}
+func NewAccommodationsHandler(l *config.Logger, r *domain.AccommodationRepo, ic *cache.ImageCache, i *storage.FileStorage, rc client.ReservationClient) *AccommodationsHandler {
+	return &AccommodationsHandler{l, r, ic, i, rc}
 }
 
 func (a *AccommodationsHandler) GetAllAccommodations(rw http.ResponseWriter, h *http.Request) {
@@ -284,6 +286,55 @@ func (a *AccommodationsHandler) GetUserAcommodations(rw http.ResponseWriter, h *
 		return
 	}
 
+}
+
+func (a *AccommodationsHandler) DeleteUserAccommodations(rw http.ResponseWriter, h *http.Request) {
+	tokenString := h.Header.Get("Authorization")
+	if tokenString == "" {
+		http.Error(rw, "Missing Authorization header", http.StatusUnauthorized)
+		return
+	}
+
+	// Remove 'Bearer ' prefix if present
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	userID, err := getUserIdFromToken(tokenString)
+	if err != nil {
+		http.Error(rw, fmt.Sprintf("Error extracting user ID: %v", err), http.StatusUnauthorized)
+		return
+	}
+	ok, err := a.CheckIfOkToDeleteUserAccommodations(h.Context(), userID)
+	if ok {
+		err = a.repo.DeleteAccommodationsByUserId(userID)
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("Error getting accommodations: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		// Return the accommodations as JSON
+		rw.WriteHeader(http.StatusOK)
+	} else {
+		http.Error(rw, "Can't delete accommodations for user, he has active reservations", http.StatusBadRequest)
+	}
+
+}
+
+func (a *AccommodationsHandler) CheckIfOkToDeleteUserAccommodations(ctx context.Context, userID string) (bool, error) {
+	accommodations, err := a.repo.GetAccommodationsByUserID(userID)
+	if err != nil {
+		return false, err
+	}
+	isOk := true
+	for _, accommodation := range accommodations {
+		//check if it has active reservations
+		ok, err := a.reservationClient.CheckReservationsByAccommodationId(ctx, accommodation.Id)
+		if err != nil {
+			return false, err
+		}
+		if ok {
+			isOk = false
+		}
+	}
+	return isOk, nil
 }
 
 func (a *AccommodationsHandler) MiddlewareAccommodationDeserialization(next http.Handler) http.Handler {
