@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"sync"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -14,6 +15,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"os"
 	"strings"
+)
+
+var (
+	blacklistMap     = make(map[string]struct{})
+	blacklistMapOnce sync.Once
 )
 
 var logger = config.NewLogger("./logging/log.log")
@@ -167,28 +173,35 @@ func HashPassword(password string) (string, error) {
 	}
 	return string(hashedPassword), nil
 }
-
-func CheckPasswordInBlacklist(password string) (bool, error) {
+func initBlacklistMap() {
+	// This function is used to initialize the blacklistMap once
 	file, err := os.Open("blacklist/blacklist.txt")
 	if err != nil {
 		logger.Errorf("Error opening blacklist file: %v", err)
-		return false, err
+		return
 	}
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		if strings.TrimSpace(scanner.Text()) == password {
-			logger.Warnf("Password found in blacklist: '%s'", password)
-			return false, nil
-		}
+		blacklistMap[strings.TrimSpace(scanner.Text())] = struct{}{}
 	}
 
 	if err := scanner.Err(); err != nil {
 		logger.Errorf("Error scanning blacklist: %v", err)
-		return false, err
+	}
+}
+func CheckPasswordInBlacklist(password string) (bool, error) {
+	// Use sync.Once to initialize the blacklistMap only once
+	blacklistMapOnce.Do(initBlacklistMap)
+
+	// Check if the password is in the blacklistMap
+	_, found := blacklistMap[password]
+	if found {
+		logger.Warnf("Password found in blacklist")
+		return false, nil
 	}
 
-	logger.Debugf("Password '%s' not found in blacklist", password)
+	logger.Debugf("Password not found in blacklist")
 	return true, nil
 }
