@@ -1,10 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import {  HttpHeaders } from '@angular/common/http';
 import { AccomodationService } from '../services/accomodation/accomodation.service';
 import { ProfilesService } from '../services/profile/profiles.service';
-import { CommonModule } from '@angular/common';
 import { ReservationService } from '../services/reservation/reservation.service';
 import { NgToastService } from 'ng-angular-popup';
 import { ToastrService } from 'ngx-toastr';
@@ -23,6 +22,13 @@ export class ProfileComponent implements OnInit {
   showAccommodations = false;
   showReservations = false;
   showNotifications: boolean = false;
+  showOverlay: boolean = false;
+  reservationHistory: any[] = [];
+  activeReservations: any[] = [];
+  stars: number[] = [1, 2, 3, 4, 5];
+  currentRating: number = 0;
+  @Output() ratingChanged: EventEmitter<number> = new EventEmitter<number>();
+
 
   profile: any;
 
@@ -36,17 +42,6 @@ export class ProfileComponent implements OnInit {
     private router: Router
   ) {}
 
-  toggleNotifications(): void {
-    this.showNotifications = !this.showNotifications;
-  }
-
-  toggleFullNotification(id: number): void {
-    const notification = this.notifications.find(n => n.id === id);
-    if (notification) {
-      notification.showFull = !notification.showFull;
-    }
-  }
-
 
   ngOnInit(): void {
     if (!this.authService.isAuthenticated()) {
@@ -55,7 +50,7 @@ export class ProfileComponent implements OnInit {
     this.accomms = [];
     //this.getUserAccommodations()
     this.loadUserDetails();
-    this.loadNotifications()
+    this.loadNotifications();
     console.log(this.accomms);
   }
   tempLoadAccoms(): void {
@@ -76,6 +71,11 @@ export class ProfileComponent implements OnInit {
         console.error('Error fetching accommodations:', error);
       }
     );
+  }
+  toggleOverlay(): void {
+    this.reservationHistory = [];
+    this.getUserReservations();
+    this.showOverlay = !this.showOverlay;
   }
 
   loadNotifications(): void{
@@ -130,20 +130,100 @@ export class ProfileComponent implements OnInit {
   }
 
   getUserReservations(): void {
+    this.activeReservations = [];
+    this.reservationHistory = [];
+    this.reservations = [];
     this.reservationService.getUserReservations(this.id).subscribe(
       (data: any[]) => {
         console.log(data);
         this.reservations = data;
         console.log(this.reservations)
         if(this.reservations == null){
-          this.toastr.error('User has no reservations');
+
+        }else{
+          data.forEach(not =>{
+            var todaysDate = new Date().toISOString().split('T')[0]
+            not.StartDate = new Date(not.StartDate).toISOString().split('T')[0];
+            not.EndDate = new Date(not.EndDate).toISOString().split('T')[0];
+            console.log(todaysDate)
+            console.log(not.EndDate)
+            if (not.EndDate < todaysDate){
+              this.reservationHistory.push(not)
+              this.accommodationService.getAccommodation(not.AccommodationId).subscribe(
+                (data: any[]) => {
+                  not.accommodation = data;
+                  console.log(not)
+                },
+                (error: any) => {
+                  console.error('Error fetching accommodations:', error);
+                }
+              );
+            }else{
+              this.activeReservations.push(not)
+            }
+          } )
+
         }
       },
       (error: any) => {
-        this.toastr.error('User has no reservations');
         console.error('Error fetching accommodations:', error);
       }
     );
+  }
+
+  fill(star: number): void {
+    this.currentRating = star;
+  }
+
+  reset(): void {
+    if (this.currentRating === 0) {
+      return;
+    }
+    this.currentRating = 0;
+  }
+
+  rate(star: number,reservation: any): void {
+
+    this.currentRating = star;
+    this.ratingChanged.emit(this.currentRating);
+    const reservationJSON = {
+      HostId: reservation.accommodation.owner.id,
+      GuestId: reservation.GuestId,
+      AccommodationId: reservation.accommodation.id,
+      time: new Date(),
+      rating: star
+    }
+    // reservationJSON = JSON.stringify(reservationJSON);
+    this.accommodationService.rateAccommodation(reservationJSON).subscribe(
+      (data: any[]) => {
+        this.toastr.error('Successfully rated accommodation.');
+      },
+      (error: any) => {
+        this.toastr.error('Error with rating. Try again later! ');
+      }
+    );
+
+  }
+  rateHost(star: number,reservation: any): void {
+
+    this.currentRating = star;
+    this.ratingChanged.emit(this.currentRating);
+    const reservationJSON = {
+      HostId: reservation.accommodation.owner.id,
+      GuestId: reservation.GuestId,
+      time: new Date(),
+      rating: star
+    }
+    // reservationJSON = JSON.stringify(reservationJSON);
+    this.profileService.rateHost(reservationJSON).subscribe(
+      (data: any[]) => {
+        this.toastr.error('Successfully rated accommodation.');
+      },
+      (error: any) => {
+        this.toastr.error('Error with rating. Try again later! ');
+      }
+    );
+
   }
 
   logout(): void {
@@ -196,6 +276,9 @@ export class ProfileComponent implements OnInit {
 
   toggleReservations() {
     this.getUserReservations();
+    if(this.activeReservations.length == 0){
+      this.toastr.error('User has no reservations');
+    }
     this.showReservations = !this.showReservations;
   }
 

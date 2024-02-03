@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient,HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Router,ActivatedRoute } from '@angular/router';
 import { AccomodationService } from '../services/accomodation/accomodation.service';
 import { ToastrService } from 'ngx-toastr';

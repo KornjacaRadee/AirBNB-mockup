@@ -22,6 +22,7 @@ export class ConfigService {
   _createReservation: string;
   _profiles_url:string;
   _notifications_url:string;
+  _rating_url:string;
 
 
   constructor() {
@@ -50,6 +51,8 @@ export class ConfigService {
 
     this._notifications_url = this._api_url +'notifications';
 
+
+    this._rating_url = this._api_url +'ratings';
 
   }
 }

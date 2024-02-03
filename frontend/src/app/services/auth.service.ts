@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient,HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable,tap } from 'rxjs';
 import { ConfigService } from './config.service';
-import { tap } from 'rxjs';
-import * as jwt_decode_ from 'jwt-decode';
 import { Router } from '@angular/router';
 import { JwtHelperService } from '@auth0/angular-jwt';
 
@@ -15,7 +13,6 @@ interface User {
   firstName?: string;
   address?: string;
 
-  // Dodajte druge atribute korisnika prema potrebi
 }
 
 interface LoginCredentials {

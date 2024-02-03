@@ -18,16 +18,8 @@
       <button class="btn btn-danger" (click)="deleteProfile()">
         Delete Account
       </button>
-      <!-- <a
-        [queryParams]="{ email: profile.email }"
-        [routerLink]="[profile.email]"
-      >
-        <button class="btn btn-warning" >
-          Edit Account
-        </button>
-      </a> -->
       <button class="btn btn-warning">
-        <a
+        <a class="btn-edit"
           [routerLink]="'/update-profile'"
           [queryParams]="{ email: profile.email }"
           >Edit</a
@@ -47,12 +39,6 @@
       >
         Show Reservations
       </button>
-      <button
-      class="btn btn-primary"
-      (click)="toggleNotifications()"
-    >
-      Show Notifications
-    </button>
     </div>
   </div>
 
@@ -85,14 +71,13 @@
         >Add Pictures</a
       >
         <a class="btn btn-danger" (click)='deleteAccomm(accommodation.id)'>Delete</a>
-        <!-- <a href="#" class="btn btn-danger" (click)="handleDelete(accommodation.id)">Delete</a> -->
       </div>
     </div>
   </div>
 
   <div *ngIf="showReservations" class="cards-wrapper">
     <div
-      *ngFor="let reservation of reservations"
+      *ngFor="let reservation of activeReservations"
       class="card"
       style="width: 18rem"
     >
@@ -106,14 +91,38 @@
     </div>
   </div>
   <div class="notifications">
-    <div *ngIf="showNotifications" class="notification-list">
+    <div  class="notification-list">
       <div *ngFor="let notification of notifications" class="notification">
-        <div class="notification-header" (click)="toggleFullNotification(notification.id)">
-          {{ notification.Text }}
-        </div>
-          {{ notification.time }}
+        <div class="alert alert-primary" role="alert">
+          <b>{{ notification.Text }}</b><br> <span> Sent on: </span>{{notification.time}}
         </div>
       </div>
     </div>
   </div>
+  <div class="overlay" *ngIf="showOverlay" (click)="toggleOverlay()">
+  <div class="history-wrap" *ngFor="let reservation of reservationHistory">
+    <div class="card" style="width: 18rem;">
+      <img class="card-img-top" src="..." alt="Card image cap">
+      <div class="card-body">
+        <h5 class="card-title">{{reservation.StartDate}}</h5>
+        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+        <a href="#" class="btn btn-primary">Go somewhere</a>
+        <div class="rating" (mouseleave)="reset()">
+          <p>Rate accommodation:</p>
+          <span class="star" *ngFor="let star of stars" (mouseenter)="fill(star)" (click)="rate(star, reservation)">
+            <i class="fa" [ngClass]="star <= currentRating ? 'fa-star' : 'fa-star-o'"></i>
+          </span>
+        </div>
+        <p>Rate host:</p>
+        <div class="rating" (mouseleave)="reset()">
+          <span class="star" *ngFor="let star of stars" (mouseenter)="fill(star)" (click)="rateHost(star, reservation)">
+            <i class="fa" [ngClass]="star <= currentRating ? 'fa-star' : 'fa-star-o'"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <button (click)="toggleOverlay()">Show Overlay</button>
 

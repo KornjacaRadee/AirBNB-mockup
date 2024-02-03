@@ -34,6 +34,10 @@ export class ProfilesService {
     return this.http.get<any>(`${this.configService._notifications_url}/user-notifications`,options);
   }
 
+  rateHost(accomm: any): Observable<any[]> {
+    return this.http.post<any[]>(this.configService._rating_url + '/host-rating',accomm);
+  }
+
   updateProfileByEmail(
     email: string,
     updatedProfile: Profile
