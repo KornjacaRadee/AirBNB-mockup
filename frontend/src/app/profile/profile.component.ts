@@ -348,6 +348,7 @@ export class ProfileComponent implements OnInit {
   }
 
 
+
   toggleAccommodations() {
     this.tempLoadAccoms();
     this.showAccommodations = !this.showAccommodations;

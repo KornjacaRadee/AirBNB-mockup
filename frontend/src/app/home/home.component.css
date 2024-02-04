@@ -161,3 +161,47 @@
   flex-direction: row;
   margin-top: 200px;
 }
+
+.hero-section{
+  display: flex;
+
+  width: 100vw;
+  height: 100vh;
+  background-image: url("https://i.ibb.co/4WY9wCY/wp6848917-vacation-mountain-wallpapers.jpg");
+  background-size: cover;
+  justify-content: center;
+  align-items: center;
+}
+
+.shadowing-hero{
+  height: 100%;
+  width: 100%;
+  background-color: #1c1e1fa7;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.heading-div{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.heading{
+  color: white;
+  font-size: 70px;
+  font-weight: 500;
+}
+.heading-div h6{
+color:rgb(130, 130, 130);
+font-size: 20px;
+width: 500px;
+text-align: center;
+font-weight: lighter;
+margin-top: 50px;
+line-height: 25px;
+margin-bottom: 30px;
+}
+
+.btn-hero{
+  padding: 15px;
+}
