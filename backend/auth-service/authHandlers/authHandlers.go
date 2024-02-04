@@ -264,6 +264,28 @@ func HandleGetAllUsers(dbClient *mongo.Client) http.HandlerFunc {
 	}
 }
 
+func HandleDeleteUserByEmail(dbClient *mongo.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Parsiranje email adrese iz URL-a
+		email := mux.Vars(r)["email"]
+
+		// Provera da li je email adresa prazna
+		if email == "" {
+			http.Error(w, "Email is required", http.StatusBadRequest)
+			return
+		}
+
+		// Izvršavanje brisanja korisnika preko email adrese
+		if err := data.DeleteUserByEmail(dbClient, email); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Uspešan odgovor
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
 func HandleDeleteUser(dbClient *mongo.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Extract user ID from JWT token

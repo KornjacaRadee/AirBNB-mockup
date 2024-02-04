@@ -173,6 +173,15 @@ func GetUserByEmail(client *mongo.Client, email string) (*User, error) {
 	return &user, nil
 }
 
+func DeleteUserByEmail(client *mongo.Client, email string) error {
+	userCollection := client.Database("authDB").Collection("users")
+
+	filter := bson.D{{"email", email}}
+
+	_, err := userCollection.DeleteOne(context.TODO(), filter)
+	return err
+}
+
 func HashPassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {

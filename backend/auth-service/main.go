@@ -83,6 +83,7 @@ func main() {
 	// change user passwrod
 	r.HandleFunc("/change-password", authHandlers.HandleChangePassword(dbClient)).Methods("POST")
 
+	r.HandleFunc("/user/{email}", authHandlers.HandleDeleteUserByEmail(dbClient)).Methods("DELETE")
 	// initiate password recovery
 	r.HandleFunc("/password-recovery", authHandlers.HandlePasswordRecovery(dbClient)).Methods("POST")
 
