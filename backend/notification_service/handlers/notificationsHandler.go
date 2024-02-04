@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"log"
 	"net/http"
 	"notification_service/client"
+	"notification_service/config"
 	"notification_service/domain"
 	"strings"
 )
@@ -15,13 +15,13 @@ import (
 type KeyProduct struct{}
 
 type NotificationsHandler struct {
-	logger        *log.Logger
+	logger        *config.Logger
 	repo          *domain.NotificationsRepo
 	profileClient client.ProfileClient
 }
 
 // NewNotificationsHandler Injecting the logger makes this code much more testable.
-func NewNotificationsHandler(l *log.Logger, r *domain.NotificationsRepo, pc client.ProfileClient) *NotificationsHandler {
+func NewNotificationsHandler(l *config.Logger, r *domain.NotificationsRepo, pc client.ProfileClient) *NotificationsHandler {
 	return &NotificationsHandler{l, r, pc}
 }
 
@@ -39,7 +39,7 @@ func (a *NotificationsHandler) GetAllNotifications(rw http.ResponseWriter, h *ht
 	err = notifications.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
-		a.logger.Fatal("Unable to convert to json :", err)
+		a.logger.Fatalf("Unable to convert to json :", err)
 		return
 	}
 }
@@ -51,21 +51,21 @@ func (a *NotificationsHandler) PostNotification(rw http.ResponseWriter, h *http.
 	err := a.repo.Insert(notification)
 	if err != nil {
 		http.Error(rw, "Unable to post notification", http.StatusBadRequest)
-		a.logger.Fatal(err)
+		a.logger.Fatalf("Unable to post notification", err)
 		return
 	}
 
 	user, err := a.profileClient.GetAllInformationsByUserID(h.Context(), notification.Host.Id.Hex())
 	if err != nil {
 		http.Error(rw, "Unable to get user", http.StatusBadRequest)
-		a.logger.Fatal(err)
+		a.logger.Fatalf("Unable to get user", err)
 		return
 	}
 
 	_, err = SendEmail(user.Email, notification.Text)
 	if err != nil {
 		http.Error(rw, "Error sending email", http.StatusBadRequest)
-		a.logger.Fatal(err)
+		a.logger.Fatalf("Error sending email", err)
 		return
 	}
 
@@ -117,7 +117,7 @@ func (a *NotificationsHandler) MiddlewareNotificationDeserialization(next http.H
 		err := notification.FromJSON(h.Body)
 		if err != nil {
 			http.Error(rw, "Unable to decode json", http.StatusBadRequest)
-			a.logger.Fatal(err)
+			a.logger.Fatalf("Unable to decode json", err)
 			return
 		}
 

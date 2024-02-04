@@ -3,7 +3,8 @@ package main
 import (
 	"context"
 	"github.com/sony/gobreaker"
-	"log"
+	"notification_service/config"
+
 	"net/http"
 	"notification_service/client"
 	"notification_service/domain"
@@ -28,13 +29,14 @@ func main() {
 	defer cancel()
 
 	//Initialize the logger we are going to use, with prefix and datetime for every log
-	logger := log.New(os.Stdout, "[notification-api] ", log.LstdFlags)
-	storeLogger := log.New(os.Stdout, "[notification-store] ", log.LstdFlags)
+	//logger := log.New(os.Stdout, "[notification-api] ", log.LstdFlags)
+	//storeLogger := log.New(os.Stdout, "[notification-store] ", log.LstdFlags)
 
+	logger := config.NewLogger("./logging/log.log")
 	// NoSQL: Initialize Accommodation Repository store
-	store, err := domain.NewNotificationsRepo(storeLogger)
+	store, err := domain.NewNotificationsRepo(logger)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Fatalf("Error initializing accommodation repository store", err)
 	}
 
 	profileClient := &http.Client{
@@ -108,7 +110,7 @@ func main() {
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil {
-			logger.Fatal(err)
+			logger.Fatalf("Erorr while trying to distribute all the connections to goroutines", err)
 		}
 	}()
 
@@ -121,7 +123,7 @@ func main() {
 
 	//Try to shut down gracefully
 	if server.Shutdown(timeoutContext) != nil {
-		logger.Fatal("Cannot gracefully shutdown...")
+		logger.Fatalf("Cannot gracefully shutdown...")
 	}
 	logger.Println("Server stopped")
 }

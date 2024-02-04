@@ -4,18 +4,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/consul/api"
-	"log"
+	"notification_service/config"
 	"os"
 	"time"
 )
 
 type NotificationsRepo struct {
 	cli    *api.Client
-	logger *log.Logger
+	logger *config.Logger
 }
 
 // Constructs Redis Client
-func NewNotificationsRepo(logger *log.Logger) (*NotificationsRepo, error) {
+func NewNotificationsRepo(logger *config.Logger) (*NotificationsRepo, error) {
 	db := os.Getenv("DB")
 	dbport := os.Getenv("DBPORT")
 
