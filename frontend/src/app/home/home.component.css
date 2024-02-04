@@ -205,3 +205,60 @@ margin-bottom: 30px;
 .btn-hero{
   padding: 15px;
 }
+.main-section{
+  width: 100vw;
+display: flex;
+align-items: center;
+justify-content: center;
+overflow: hidden;
+
+
+}
+.scroll-carousel{
+  width: 80vw;
+  display: flex;
+  gap: 50px;
+  flex-direction: row;
+  overflow-x: scroll;
+  justify-content: center;
+  align-items: center;
+  height: 500px;
+}
+
+
+.card-body{
+  min-width: 300px;
+  width: 300px;
+}
+
+.card{
+  min-width: 200px;
+  width: 200px;
+}
+
+.about-us{
+  width: 100vw;
+  padding: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.about-heading{
+  width: 100%;
+
+}
+
+.about-heading h1{
+  font-size: 60px;
+  text-align: center;
+
+}
+
+.about-heading p{
+  font-size: 20px;
+  font-weight: lighter;
+  text-align: center;
+  color: rgb(43, 43, 43);
+  line-height: 35px;
+  margin-top: 50px;
+}
