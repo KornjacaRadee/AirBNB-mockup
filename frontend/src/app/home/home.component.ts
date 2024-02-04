@@ -20,6 +20,7 @@ export class HomeComponent {
   allAccoms: Accommodation[] = [];
   filteredAccommodations: any[] = [];
   searchSuccess = false;
+  picsData: any[] = [];
 
   constructor(private accommodationService: AccomodationService) {}
 
@@ -31,6 +32,18 @@ export class HomeComponent {
     this.accommodationService.getAccomodations().subscribe(
       (data: any[]) => {
         this.accommodations = data;
+        this.accommodations.forEach(ac => {
+          this.accommodationService.getAccommodationPictures(ac.id).subscribe(
+            (data: any[]) => {
+              ac.photos = data;
+              console.log(ac.photos)
+
+            },
+            (error: any) => {
+              console.error('Error fetching accommodations:', error);
+            }
+            );
+        })
       },
       (error: any) => {
         console.error('Error fetching accommodations:', error);

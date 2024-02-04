@@ -31,6 +31,10 @@ export class AccomodationService {
       options
     );
   }
+
+  rateAccommodation(accomm: any): Observable<any[]> {
+    return this.http.post<any[]>(this.configService._rating_url + '/accommodation-rating',accomm);
+  }
   getUserAccommodations(headers: HttpHeaders): Observable<any[]> {
     const options = { headers };
     return this.http.get<any[]>(this.configService._userAccoms_url, options);

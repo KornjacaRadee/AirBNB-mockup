@@ -1,4 +1,4 @@
-<div class="wrapper">
+<!-- <div class="wrapper">
   <div class="container">
     <mat-form-field class="search-bar">
       <input matInput placeholder="Location" [(ngModel)]="searchTerm" />
@@ -82,4 +82,72 @@
       </div>
     </div>
   </div>
+</div> -->
+
+
+
+<div class="wrap">
+<div class="hero-section">
+  <div class="shadowing-hero">
+  <div class="heading-div">
+
+    <h1 class="heading">TRAVELING DREAM TEAM</h1>
+    <h6>Embark on a journey to destinations that inspire awe and ignite your sense of wonder. From serene beaches to majestic mountains, our curated collection of accommodations awaits your arrival.</h6>
+    <a class="btn btn-outline-primary btn-hero"> Explore accommodations </a>
+    <div class="search-wrapper">
+      <mat-form-field class="search-bar">
+        <input matInput placeholder="Location" [(ngModel)]="searchTerm" />
+        <div class="guest-inputs">
+          <input
+            matInput
+            type="number"
+            placeholder="Min Guests"
+            [(ngModel)]="minGuests"
+          />
+          <span class="separator">-</span>
+          <input
+            matInput
+            type="number"
+            placeholder="Max Guests"
+            [(ngModel)]="maxGuests"
+          />
+        </div>
+        <button mat-button matSuffix (click)="onSearchButtonClicked()">
+          <mat-icon>search</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+  </div>
+  </div>
+
 </div>
+<div class="main-section">
+<div class="scroll-carousel">
+  <div class="card" *ngFor="let accommodation of accommodations">
+    <img class="card-img-top" src="https://i.ibb.co/zGGCFTH/TAL-airbnb-listing-NEWAIRBNB1123-a67a0e07c4e846e2ae4e653d201e47af.jpg" alt="Card image cap">
+  <div class="card-body" >
+    <h5 class="card-title">{{ accommodation.name }}</h5>
+    <p class="card-text">{{ accommodation.location }}</p>
+    <a
+      [routerLink]="'/accommodation-page'"
+      [queryParams]="{ id: accommodation.id }"
+      class="btn btn-primary"
+      >View More</a
+    >
+  </div>
+</div>
+</div>
+</div>
+
+<div class="about-us">
+  <div class="about-heading">
+<h1>About us</h1>
+  </div>
+  <div class="about-heading">
+    <p>At Airbnb, we believe in the transformative power of travel and its ability to connect people from all walks of life. Founded in 2008, Airbnb has become a global community marketplace that offers unique stays and experiences around the world.
+
+      Our platform is built on the idea that every person should be able to belong anywhere. Whether you're a traveler seeking authentic experiences or a host looking to share your space and passions, Airbnb provides a platform that fosters connections and creates memorable moments.</p>
+  </div>
+</div>
+</div>
+

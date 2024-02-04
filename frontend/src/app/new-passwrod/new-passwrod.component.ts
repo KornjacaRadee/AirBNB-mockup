@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http'
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 @Component({
@@ -16,7 +15,6 @@ export class NewPasswrodComponent {
   constructor(private authService: AuthService, private router: Router) {}
 
   validateToken() {
-    const payload = { token: this.recoveryToken };
 
     this.authService.validateToken(this.recoveryToken).subscribe(
       (response) => {

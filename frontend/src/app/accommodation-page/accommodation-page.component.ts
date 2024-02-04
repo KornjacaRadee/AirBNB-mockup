@@ -5,11 +5,9 @@ import { AuthService } from '../services/auth.service';
 import { AccomodationService } from '../services/accomodation/accomodation.service';
 import { ReservationService } from '../services/reservation/reservation.service';
 import { DatePipe } from '@angular/common';
-import { formatDate } from '@angular/common';
 
 import { ToastrService } from 'ngx-toastr';
 import { PrimeNGConfig } from 'primeng/api';
-import { GalleriaModule } from 'primeng/galleria';
 import { each } from 'jquery';
 
 @Component({
@@ -38,6 +36,7 @@ export class AccommodationPageComponent implements OnInit,AfterViewInit  {
     StartDate: null,
     EndDate: null,
     GuestId: null,
+    HostId: null,
     GuestNum: 1,
   };
 
@@ -169,6 +168,11 @@ export class AccommodationPageComponent implements OnInit,AfterViewInit  {
     this.reservationData.StartDate = this.parsedStartDate;
     this.reservationData.EndDate = this.parsedEndDate;
     this.reservationData.GuestId = this.currentUserID;
+    this.reservationData.HostId = this.accommodation.owner.id
+    console.log(this.reservationData.HostId)
+    console.log(this.accommodation.owner.id)
+
+
 
     this.reservationService.postReservation(this.reservationData)
       .subscribe(
