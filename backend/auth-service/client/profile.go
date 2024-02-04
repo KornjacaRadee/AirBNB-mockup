@@ -63,6 +63,35 @@ func (c *ProfileClient) SendUserData(ctx context.Context, user data.User) (inter
 	return true, nil
 }
 
+func (c *ProfileClient) DeleteProfile(ctx context.Context, id string) (interface{}, error) {
+	var timeout time.Duration
+	deadline, reqHasDeadline := ctx.Deadline()
+	if reqHasDeadline {
+		timeout = time.Until(deadline)
+	}
+
+	cbResp, err := c.cb.Execute(func() (interface{}, error) {
+		req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.address+"/delete/"+id, nil)
+		if err != nil {
+			return nil, err
+		}
+		return c.client.Do(req)
+	})
+	if err != nil {
+		return nil, handleHttpReqErr(err, c.address+"/delete/"+id, http.MethodDelete, timeout)
+	}
+	resp := cbResp.(*http.Response)
+	if resp.StatusCode != http.StatusOK {
+		return nil, domain.ErrResp{
+			URL:        resp.Request.URL.String(),
+			Method:     resp.Request.Method,
+			StatusCode: resp.StatusCode,
+		}
+	}
+
+	return true, nil
+}
+
 func convertUser(user data.User) UserData {
 	userData := UserData{
 		ID:        user.ID,

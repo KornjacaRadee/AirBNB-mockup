@@ -267,7 +267,7 @@ func HandleGetAllUsers(dbClient *mongo.Client) http.HandlerFunc {
 	}
 }
 
-func HandleDeleteUser(dbClient *mongo.Client, rc client.ReservationClient, ac client.AccommodationClient) http.HandlerFunc {
+func HandleDeleteUser(dbClient *mongo.Client, rc client.ReservationClient, ac client.AccommodationClient, pc client.ProfileClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		tokenStr := extractTokenFromHeader(r)
@@ -321,6 +321,14 @@ func HandleDeleteUser(dbClient *mongo.Client, rc client.ReservationClient, ac cl
 		}
 
 		if canDelete {
+			_, err = pc.DeleteProfile(r.Context(), userIDFromToken)
+			if err != nil {
+				logger.Errorf("Error deleting user profile in profile service: %v", err)
+
+				http.Error(w, "Service not available", http.StatusServiceUnavailable)
+				writeResp(err, http.StatusServiceUnavailable, w)
+				return
+			}
 			// Perform the deletion using the converted user ID
 			if err := data.DeleteUser(dbClient, objectIDFromToken); err != nil {
 				logger.Errorf("Error deleting user: %v", err)
