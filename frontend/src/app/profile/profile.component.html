@@ -233,7 +233,7 @@
                 <div class="row">
                   <div class="col-sm-12">
                     <a class="btn btn-info " [routerLink]="'/update-profile'"[queryParams]="{ email: profile.email }" target="__blank">Edit</a>
-                    <a class="btn btn-outline-primary " *ngIf="isHost()" (click)="toggleOverlay()">Show Your Rating</a>
+                    <a class="btn btn-outline-primary " *ngIf="isHost()" (click)="toggleRatings()">Show Your Rating</a>
                     <a class="btn btn-outline-primary " *ngIf="!isHost()" (click)="toggleOverlay()">Show Reservation History</a>
                   </div>
                 </div>
@@ -245,10 +245,40 @@
 
 
 
-
-
+                  <div>
+                    <div *ngIf="showRatings" class="reviews-wrap" >
+                      <h1>Host Reviews</h1>
+                    <div *ngFor="let review of reviews" class="review">
+                      <p><span><b>Name: </b></span>{{ review.Guest.name }} {{ review.Guest.last_name }}</p>
+                      <p><span><b>Time: </b> </span>{{ review.Time }}</p>
+                      <div class="rating">
+                        <span style="color:black;"><b>Review: </b> </span><span class="star" *ngFor="let star of stars" [ngClass]="star <= review.Rating ? 'filled' : ''">&#9733;</span>
+                      </div>
+                      <hr>
+                    </div>
+                  </div>
 
                   <div>
+                    <div *ngIf="showRatings"  class="reviews-wrap">
+                      <h1>Accommodation Reviews</h1>
+                      <div class="scroll-reviews">
+                    <div *ngFor="let review of accomReviews" class="review">
+                      <p><span><b>Name: </b></span>{{ review.Guest.name }} {{ review.Guest.last_name }}</p>
+                      <p><span><b>Time: </b> </span>{{ review.Time }}</p>
+                      <div class="rating">
+                        <span style="color:black;"><b>Review: </b> </span><span class="star" *ngFor="let star of stars" [ngClass]="star <= review.Rating ? 'filled' : ''">&#9733;</span>
+                      </div>
+                      <hr>
+                    </div>
+                  </div>
+                  </div>
+
+
+
+
+
+
+                <div>
                   <div *ngIf="showAccommodations" class="card-body cards-down">
                     <div   *ngFor="let accommodation of accomms">
                     <div class="card-wrap" >
@@ -338,15 +368,15 @@
                   </div>
 
 
-                  <div>
-                    <div *ngIf="showRatings">
+                  <!-- <div>
+                    <div *ngIf="showRatings"  >
                     <div *ngFor="let review of reviews" class="review">
                       <p>{{ review.GuestId }}</p>
                       <div class="rating">
                         <span class="star" *ngFor="let star of stars" [ngClass]="star <= review.Rating ? 'filled' : ''">&#9733;</span>
                       </div>
                     </div>
-                  </div>
+                  </div> -->
 
 
                </div>

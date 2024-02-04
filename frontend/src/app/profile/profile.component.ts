@@ -12,6 +12,8 @@ interface Review {
   GuestId: string;
   HostId: string;
   Time: string;
+  AccommodationId: string;
+  Guest: any,
   Rating: number;
 }
 
@@ -22,6 +24,8 @@ interface Review {
 })
 export class ProfileComponent implements OnInit {
   @Input() reviews: Review[] = [];
+
+  @Input() accomReviews: Review[] = [];
   user: any;
   id: string = '';
   accomms: any[] = [];
@@ -39,6 +43,7 @@ export class ProfileComponent implements OnInit {
   currentRating: number = 0;
   pictures: any[] = [];
   picsdata: any[] = [];
+
 
   @Output() ratingChanged: EventEmitter<number> = new EventEmitter<number>();
 
@@ -101,7 +106,9 @@ export class ProfileComponent implements OnInit {
 
   toggleRatings(): void {
     this.loadUserRatings();
+    this.loadAccommodationRatings();
     this.showRatings = !this.showRatings;
+    this.showAccommodations = false;
   }
 
   loadNotifications(): void{
@@ -339,9 +346,12 @@ export class ProfileComponent implements OnInit {
       }
     );
   }
+
+
   toggleAccommodations() {
     this.tempLoadAccoms();
     this.showAccommodations = !this.showAccommodations;
+    this.showRatings = false;
   }
 
   toggleReservations() {
@@ -369,7 +379,42 @@ export class ProfileComponent implements OnInit {
     this.profileService.getHostRatings(this.user.id).subscribe(
       (data) => {
         this.reviews = data;
-        console.log(this.reviews);
+        this.reviews.forEach(ac => {
+          ac.Time =  new Date(ac.Time).toISOString().split('T')[0];
+          this.authService.getUserById(ac.GuestId).subscribe(
+            (response) => {
+              ac.Guest = response;
+            },
+            (error) => {
+              console.error('Error fetching user details', error);
+            }
+          );
+        })
+
+      },
+      (error) => {
+        console.error('Error fetching user details', error);
+      }
+    );
+  }
+
+
+  loadAccommodationRatings(){
+    this.profileService.getAccommodationRatings(this.user.id).subscribe(
+      (data) => {
+        this.accomReviews = data;
+        this.accomReviews.forEach(ac => {
+          ac.Time =  new Date(ac.Time).toISOString().split('T')[0];
+          this.authService.getUserById(ac.GuestId).subscribe(
+            (response) => {
+              ac.Guest = response;
+            },
+            (error) => {
+              console.error('Error fetching user details', error);
+            }
+          );
+        })
+
       },
       (error) => {
         console.error('Error fetching user details', error);

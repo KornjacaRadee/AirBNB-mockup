@@ -221,3 +221,17 @@ body{
 .mb-0{
   font-size: 17px;
 }
+
+.reviews-wrap{
+  margin-bottom: 50px;
+}
+
+.review{
+  margin-right: 50px;
+}
+
+.scroll-reviews{
+  display: flex;
+  flex-direction: row;
+  overflow-x: scroll;
+}

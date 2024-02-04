@@ -35,4 +35,5 @@ export class ReservationService {
     return this.http.post<any[]>(this.configService._createReservation, availability);
 
   }
+
 }
