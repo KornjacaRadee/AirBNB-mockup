@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"github.com/gocql/gocql"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"log"
 	"os"
+	"reservation_service/config"
 	"time"
 )
 
 type ReservationsRepo struct {
 	session *gocql.Session
-	logger  *log.Logger
+	logger  *config.Logger
 }
 
 // NoSQL: Constructor which reads db configuration from environment and creates a keyspace
-func New(logger *log.Logger) (*ReservationsRepo, error) {
+func New(logger *config.Logger) (*ReservationsRepo, error) {
 	db := os.Getenv("CASS_DB")
 
 	// Connect to default keyspace

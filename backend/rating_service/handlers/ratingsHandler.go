@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"rating_service/client"
+	"rating_service/config"
 	"rating_service/domain"
 	"strings"
 	"time"
@@ -16,13 +17,13 @@ import (
 type KeyProduct struct{}
 
 type RatingsHandler struct {
-	logger             *log.Logger
+	logger             *config.Logger
 	repo               *domain.RatingsRepo
 	reservationClient  client.ReservationClient
 	notificationClient client.NotificationClient
 }
 
-func NewRatingsHandler(l *log.Logger, r *domain.RatingsRepo, rc client.ReservationClient, nc client.NotificationClient) *RatingsHandler {
+func NewRatingsHandler(l *config.Logger, r *domain.RatingsRepo, rc client.ReservationClient, nc client.NotificationClient) *RatingsHandler {
 	return &RatingsHandler{l, r, rc, nc}
 }
 
@@ -42,7 +43,7 @@ func (r *RatingsHandler) GetHostRatingsByHost(rw http.ResponseWriter, h *http.Re
 	err = ratings.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
-		r.logger.Fatal("Unable to convert to json :", err)
+		r.logger.Fatalf("Unable to convert to json :", err)
 		return
 	}
 }
@@ -63,7 +64,7 @@ func (r *RatingsHandler) GetHostRatingsByGuest(rw http.ResponseWriter, h *http.R
 	err = ratings.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
-		r.logger.Fatal("Unable to convert to json :", err)
+		r.logger.Fatalf("Unable to convert to json :", err)
 		return
 	}
 }
@@ -84,7 +85,7 @@ func (r *RatingsHandler) GetAccommodationRatingsByAccommodation(rw http.Response
 	err = ratings.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
-		r.logger.Fatal("Unable to convert to json :", err)
+		r.logger.Fatalf("Unable to convert to json :", err)
 		return
 	}
 }
@@ -105,7 +106,7 @@ func (r *RatingsHandler) GetAccommodationRatingsByGuest(rw http.ResponseWriter, 
 	err = ratings.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
-		r.logger.Fatal("Unable to convert to json :", err)
+		r.logger.Fatalf("Unable to convert to json :", err)
 		return
 	}
 }
@@ -126,7 +127,7 @@ func (r *RatingsHandler) GetAccommodationRatingsByHost(rw http.ResponseWriter, h
 	err = ratings.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
-		r.logger.Fatal("Unable to convert to json :", err)
+		r.logger.Fatalf("Unable to convert to json :", err)
 		return
 	}
 }
@@ -304,7 +305,7 @@ func (a *RatingsHandler) MiddlewareHostRatingDeserialization(next http.Handler) 
 		err := rating.FromJSON(h.Body)
 		if err != nil {
 			http.Error(rw, "Unable to decode json", http.StatusBadRequest)
-			a.logger.Fatal(err)
+			a.logger.Println(err)
 			return
 		}
 
@@ -321,7 +322,7 @@ func (a *RatingsHandler) MiddlewareAccommodationRatingDeserialization(next http.
 		err := rating.FromJSON(h.Body)
 		if err != nil {
 			http.Error(rw, "Unable to decode json", http.StatusBadRequest)
-			a.logger.Fatal(err)
+			a.logger.Println(err)
 			return
 		}
 
