@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"github.com/sony/gobreaker"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"rating_service/client"
+	"rating_service/config"
 	"rating_service/domain"
 	"rating_service/handlers"
 	"time"
@@ -28,13 +28,14 @@ func main() {
 	defer cancel()
 
 	//Initialize the logger we are going to use, with prefix and datetime for every log
-	logger := log.New(os.Stdout, "[product-api] ", log.LstdFlags)
-	storeLogger := log.New(os.Stdout, "[availability-store] ", log.LstdFlags)
+	//logger := log.New(os.Stdout, "[product-api] ", log.LstdFlags)
+	//storeLogger := log.New(os.Stdout, "[availability-store] ", log.LstdFlags)
 
+	logger := config.NewLogger("./logging/log.log")
 	// NoSQL: Initialize Product Repository store
-	store, err := domain.New(storeLogger)
+	store, err := domain.New(logger)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Fatalf("Error trying to initialize repository", err)
 	}
 	store.CreateTables()
 
@@ -154,7 +155,7 @@ func main() {
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil {
-			logger.Fatal(err)
+			logger.Println(err)
 		}
 	}()
 
@@ -167,7 +168,7 @@ func main() {
 
 	//Try to shut down gracefully
 	if server.Shutdown(timeoutContext) != nil {
-		logger.Fatal("Cannot gracefully shutdown...")
+		logger.Fatalf("Cannot gracefully shutdown...")
 	}
 	logger.Println("Server stopped")
 }

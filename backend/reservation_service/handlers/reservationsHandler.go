@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"reservation_service/client"
+	"reservation_service/config"
 	"reservation_service/domain"
 	"strings"
 	"time"
@@ -16,13 +17,13 @@ import (
 type KeyProduct struct{}
 
 type ReservationsHandler struct {
-	logger              *log.Logger
+	logger              *config.Logger
 	repo                *domain.ReservationsRepo
 	accommodationClient client.AccommodationClient
 	notificationClient  client.NotificationClient
 }
 
-func NewReservationsHandler(l *log.Logger, r *domain.ReservationsRepo, ac client.AccommodationClient, nc client.NotificationClient) *ReservationsHandler {
+func NewReservationsHandler(l *config.Logger, r *domain.ReservationsRepo, ac client.AccommodationClient, nc client.NotificationClient) *ReservationsHandler {
 	return &ReservationsHandler{l, r, ac, nc}
 }
 
@@ -42,7 +43,7 @@ func (r *ReservationsHandler) GetAvailabilityPeriodsByAccommodation(rw http.Resp
 	err = availabilityPeriodsByAccommodation.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
-		r.logger.Fatal("Unable to convert to json :", err)
+		r.logger.Fatalf("Unable to convert to json :", err)
 		return
 	}
 }
@@ -97,7 +98,7 @@ func (r *ReservationsHandler) GetReservationsByAvailabilityPeriod(rw http.Respon
 	err = reservationsByAvailabilityPeriod.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
-		r.logger.Fatal("Unable to convert to json :", err)
+		r.logger.Fatalf("Unable to convert to json :", err)
 		return
 	}
 }
@@ -118,7 +119,7 @@ func (r *ReservationsHandler) GetReservationsByGuestId(rw http.ResponseWriter, h
 	err = reservationsByAvailabilityPeriod.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
-		r.logger.Fatal("Unable to convert to json :", err)
+		r.logger.Fatalf("Unable to convert to json :", err)
 		return
 	}
 }
@@ -232,7 +233,7 @@ func (a *ReservationsHandler) MiddlewareAvailabilityPeriodDeserialization(next h
 		err := availabilityPeriod.FromJSON(h.Body)
 		if err != nil {
 			http.Error(rw, "Unable to decode json", http.StatusBadRequest)
-			a.logger.Fatal(err)
+			a.logger.Println(err)
 			return
 		}
 
@@ -249,7 +250,7 @@ func (a *ReservationsHandler) MiddlewareReservationDeserialization(next http.Han
 		err := reservation.FromJSON(h.Body)
 		if err != nil {
 			http.Error(rw, "Unable to decode json", http.StatusBadRequest)
-			a.logger.Fatal(err)
+			a.logger.Println(err)
 			return
 		}
 

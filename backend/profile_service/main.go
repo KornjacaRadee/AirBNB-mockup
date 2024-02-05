@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"github.com/promeneili1/AirBNB-mockup/config"
 	"log"
 	"net/http"
 	"os"
@@ -26,8 +27,8 @@ func main() {
 	defer client.Disconnect(context.TODO())
 
 	// Konfiguracija logera
-	logger := log.New(os.Stdout, "[profile-api] ", log.LstdFlags)
-
+	//logger := log.New(os.Stdout, "[profile-api] ", log.LstdFlags)
+	logger := config.NewLogger("./logging/log.log")
 	// Postavljanje servera
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
@@ -56,7 +57,7 @@ func main() {
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil {
-			logger.Fatal(err)
+			logger.Println(err)
 		}
 	}()
 
@@ -69,7 +70,7 @@ func main() {
 	logger.Println("Received terminate, graceful shutdown", sig)
 
 	if err := server.Shutdown(context.TODO()); err != nil {
-		logger.Fatal("Cannot gracefully shutdown...")
+		logger.Fatalf("Cannot gracefully shutdown...")
 	}
 	logger.Println("Server stopped")
 }
