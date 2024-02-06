@@ -183,7 +183,7 @@ func HandleChangePassword(dbClient *mongo.Client) http.HandlerFunc {
 		// Extract user ID from JWT token
 		userIDFromToken, err := extractUserIDFromToken(r)
 		if err != nil {
-			logger.Errorf("Invalid token: %v", err)
+			logger.Errorf("Invalid token of user of ID: "+userIDFromToken, err)
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
 		}
@@ -202,7 +202,7 @@ func HandleChangePassword(dbClient *mongo.Client) http.HandlerFunc {
 			http.Error(w, "Error reading raw request body", http.StatusInternalServerError)
 			return
 		}
-		logger.Infof("Raw request body: %s", rawRequestBody)
+		logger.Infof("Raw request body: ", rawRequestBody)
 
 		// Decode the JSON request body
 		var passwordChange struct {
@@ -210,7 +210,7 @@ func HandleChangePassword(dbClient *mongo.Client) http.HandlerFunc {
 			NewPassword string `json:"new_password"`
 		}
 		if err := json.Unmarshal(rawRequestBody, &passwordChange); err != nil {
-			logger.Errorf("Error decoding JSON: %v", err)
+			logger.Errorf("Error decoding JSON: ", err)
 			http.Error(w, "Error decoding JSON", http.StatusBadRequest)
 			return
 		}
@@ -218,7 +218,7 @@ func HandleChangePassword(dbClient *mongo.Client) http.HandlerFunc {
 
 		user, err := validateOldPasswordAndGetUser(dbClient, userID, passwordChange.OldPassword)
 		if err != nil {
-			log.Printf("Error validating old password: %v", err)
+			log.Printf("Error validating old password: ", err)
 			http.Error(w, "Error validating old password", http.StatusInternalServerError)
 			return
 		}
@@ -230,7 +230,7 @@ func HandleChangePassword(dbClient *mongo.Client) http.HandlerFunc {
 
 		// Update the user's password in the database
 		if err := data.UpdatePassword(dbClient, userID, passwordChange.NewPassword); err != nil {
-			logger.Errorf("Error updating password: %v", err)
+			logger.Errorf("Error updating password: ", err)
 			http.Error(w, "Error updating password", http.StatusInternalServerError)
 			return
 		}
@@ -274,20 +274,20 @@ func HandleDeleteUser(dbClient *mongo.Client, rc client.ReservationClient, ac cl
 		// Extract user ID from JWT token
 		userIDFromToken, err := extractUserIDFromToken(r)
 		if err != nil {
-			logger.Errorf("Invalid token: %v", err)
+			logger.Errorf("Invalid token: ", err)
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
 		}
 		role, err := getRoleFromToken(r)
 		if err != nil {
-			logger.Errorf("Invalid token: %v", err)
+			logger.Errorf("Invalid token: ", err)
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
 		}
 		// Convert user ID from string to primitive.ObjectID
 		objectIDFromToken, err := primitive.ObjectIDFromHex(userIDFromToken)
 		if err != nil {
-			log.Printf("Error converting user ID: %v", err)
+			log.Errorf("Error converting user ID: "+userIDFromToken, err)
 			http.Error(w, "Invalid user ID in token", http.StatusInternalServerError)
 			return
 		}
@@ -331,7 +331,7 @@ func HandleDeleteUser(dbClient *mongo.Client, rc client.ReservationClient, ac cl
 			}
 			// Perform the deletion using the converted user ID
 			if err := data.DeleteUser(dbClient, objectIDFromToken); err != nil {
-				logger.Errorf("Error deleting user: %v", err)
+				logger.Errorf("Error deleting user with ID: "+userIDFromToken, err)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -355,7 +355,7 @@ func HandlePasswordRecovery(dbClient *mongo.Client) http.HandlerFunc {
 		// Validate the email and get the user
 		user, err := data.GetUserByEmail(dbClient, request.Email)
 		if err != nil {
-			logger.Errorf("Error retrieving user: %v"+request.Email, err)
+			logger.Errorf("Error retrieving user: "+request.Email, err)
 			http.Error(w, "Error retrieving user", http.StatusInternalServerError)
 			return
 		}
@@ -370,7 +370,7 @@ func HandlePasswordRecovery(dbClient *mongo.Client) http.HandlerFunc {
 		recoveryToken, err := data.GenerateRecoveryToken(dbClient, user.ID)
 		if err != nil {
 			// Handle the error, for example:
-			logger.Errorf("Error generating recovery token: %v", err)
+			logger.Errorf("Error generating recovery token: ", err)
 			http.Error(w, "Error generating recovery token", http.StatusInternalServerError)
 			return
 		}
