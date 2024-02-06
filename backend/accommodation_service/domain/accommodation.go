@@ -17,11 +17,10 @@ type Accommodation struct {
 	Amenities   []string           `bson:"amenities,omitempty" json:"amenities"`
 }
 type SearchRequest struct {
-	Location    string    `json:"location"`
-	MinGuestNum int       `json:"minGuestNum"`
-	MaxGuestNum int       `json:"maxGuestNum"`
-	StartDate   time.Time `json:"startDate"`
-	EndDate     time.Time `json:"endDate"`
+	Location  string    `json:"location"`
+	GuestNum  int       `json:"guestNum"`
+	StartDate time.Time `json:"startDate"`
+	EndDate   time.Time `json:"endDate"`
 }
 
 func (sr *SearchRequest) FromJSON(r io.Reader) error {

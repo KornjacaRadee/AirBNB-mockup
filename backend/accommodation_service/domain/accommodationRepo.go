@@ -176,12 +176,8 @@ func (ar *AccommodationRepo) SearchAccommodations(searchRequest SearchRequest) (
 	// Pravljenje filtera na osnovu kriterijuma pretrage
 	filter := bson.M{
 		"location":    searchRequest.Location,
-		"minGuestNum": bson.M{"$lte": searchRequest.MaxGuestNum},
-		"maxGuestNum": bson.M{"$gte": searchRequest.MinGuestNum},
-		"reservations": bson.M{"$not": bson.M{"$elemMatch": bson.M{
-			"startDate": bson.M{"$lt": searchRequest.EndDate},
-			"endDate":   bson.M{"$gt": searchRequest.StartDate},
-		}}},
+		"minGuestNum": bson.M{"$lte": searchRequest.GuestNum},
+		"maxGuestNum": bson.M{"$gte": searchRequest.GuestNum},
 	}
 
 	// Izvršavanje upita

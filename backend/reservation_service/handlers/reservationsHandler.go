@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"net/http"
 	"reservation_service/client"
@@ -225,6 +227,54 @@ func (r *ReservationsHandler) DeleteReservationByAvailabilityPeriod(rw http.Resp
 	}
 
 	rw.WriteHeader(http.StatusOK)
+}
+
+func (r *ReservationsHandler) FilterAccommodationsByDates(rw http.ResponseWriter, h *http.Request) {
+	var accommodations domain.SearchReqs
+	if err := json.NewDecoder(h.Body).Decode(&accommodations); err != nil {
+		http.Error(rw, "Failed to decode request body", http.StatusBadRequest)
+		return
+	}
+	var accommodationIds []*primitive.ObjectID
+
+	for _, accommodation := range accommodations {
+		periods, err := r.repo.GetAvailabilityPeriodsByAccommodation(accommodation.AccommodationId.Hex())
+		if err != nil {
+			r.logger.Print("Database exception: ", err)
+		}
+
+		if periods == nil {
+			continue
+		}
+
+		accommodationFree := false
+		for _, period := range periods {
+			if !(period.StartDate.Before(accommodation.StartDate) && period.EndDate.After(accommodation.EndDate)) {
+				continue
+			}
+
+			periodFree, err := r.repo.CheckIfDatesFree(accommodation.StartDate, accommodation.EndDate, period.Id)
+			if err != nil {
+				r.logger.Print("Database exception: ", err)
+			}
+
+			if periodFree {
+				accommodationFree = periodFree
+				break
+			}
+		}
+		if accommodationFree {
+			accommodationIds = append(accommodationIds, &accommodation.AccommodationId)
+		}
+	}
+
+	e := json.NewEncoder(rw)
+	err := e.Encode(accommodationIds)
+	if err != nil {
+		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
+		r.logger.Print(err)
+	}
+
 }
 
 func (a *ReservationsHandler) MiddlewareAvailabilityPeriodDeserialization(next http.Handler) http.Handler {

@@ -370,7 +370,36 @@ func (a *AccommodationsHandler) SearchAccommodations(rw http.ResponseWriter, h *
 		return
 	}
 
-	err = accommodations.ToJSON(rw)
+	var datesCheckReq client.SearchReqs
+
+	for _, accommodation := range accommodations {
+		dateCheckReq := client.SearchReq{
+			AccommodationId: accommodation.Id,
+			StartDate:       searchRequest.StartDate,
+			EndDate:         searchRequest.EndDate,
+		}
+		datesCheckReq = append(datesCheckReq, &dateCheckReq)
+	}
+
+	accommodationIds, err := a.reservationClient.CheckDates(h.Context(), datesCheckReq)
+	if err != nil {
+		http.Error(rw, "Cant check if accommodations are free", http.StatusInternalServerError)
+		a.logger.Println("Unable to convert to json:", err)
+		return
+	}
+
+	var accommodationsChecked domain.Accommodations
+
+	for _, accommodation := range accommodations {
+		for _, id := range accommodationIds {
+			if accommodation.Id.Hex() == id.Hex() {
+				accommodationsChecked = append(accommodationsChecked, accommodation)
+				continue
+			}
+		}
+	}
+
+	err = accommodationsChecked.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
 		a.logger.Fatalf("Unable to convert to json:", err)
