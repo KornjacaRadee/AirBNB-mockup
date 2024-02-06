@@ -266,13 +266,13 @@ func (r *ReservationsHandler) FilterAccommodationsByDates(rw http.ResponseWriter
 		if accommodationFree {
 			accommodationIds = append(accommodationIds, &accommodation.AccommodationId)
 		}
+	}
 
-		e := json.NewEncoder(rw)
-		err = e.Encode(accommodationIds)
-		if err != nil {
-			http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
-			r.logger.Print(err)
-		}
+	e := json.NewEncoder(rw)
+	err := e.Encode(accommodationIds)
+	if err != nil {
+		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
+		r.logger.Print(err)
 	}
 
 }

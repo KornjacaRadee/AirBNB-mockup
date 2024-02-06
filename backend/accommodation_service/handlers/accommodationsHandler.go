@@ -392,7 +392,7 @@ func (a *AccommodationsHandler) SearchAccommodations(rw http.ResponseWriter, h *
 
 	for _, accommodation := range accommodations {
 		for _, id := range accommodationIds {
-			if accommodation.Id == *id {
+			if accommodation.Id.Hex() == id.Hex() {
 				accommodationsChecked = append(accommodationsChecked, accommodation)
 				continue
 			}

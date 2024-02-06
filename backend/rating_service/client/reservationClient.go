@@ -54,9 +54,7 @@ func (ac ReservationClient) GetReservationsByGuestId(ctx context.Context, id pri
 
 		var reservations ReservationsData
 
-		if err := json.NewDecoder(resp.Body).Decode(&reservations); err.Error() == "EOF" {
-			return reservations, nil
-		} else if err != nil {
+		if err := json.NewDecoder(resp.Body).Decode(&reservations); err != nil {
 			return nil, err
 		}
 
