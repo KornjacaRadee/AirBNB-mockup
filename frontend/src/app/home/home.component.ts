@@ -20,6 +20,9 @@ export class HomeComponent {
   allAccoms: Accommodation[] = [];
   filteredAccommodations: any[] = [];
   searchSuccess = false;
+  picsData: any[] = [];
+  startDate: string = '';
+  endDate: string = '';
 
   constructor(private accommodationService: AccomodationService) {}
 
@@ -31,6 +34,17 @@ export class HomeComponent {
     this.accommodationService.getAccomodations().subscribe(
       (data: any[]) => {
         this.accommodations = data;
+        this.accommodations.forEach((ac) => {
+          this.accommodationService.getAccommodationPictures(ac.id).subscribe(
+            (data: any[]) => {
+              ac.photos = data;
+              console.log(ac.photos);
+            },
+            (error: any) => {
+              console.error('Error fetching accommodations:', error);
+            }
+          );
+        });
       },
       (error: any) => {
         console.error('Error fetching accommodations:', error);
@@ -40,13 +54,28 @@ export class HomeComponent {
 
   onSearch() {
     this.enterPressed = true;
+    if(this.endDate != ""){
+      this.endDate = this.endDate + 'T00:00:00Z';
+    }
+    if(this.startDate != ""){
+      this.startDate = this.startDate + 'T00:00:00Z';
+    }
+
+
 
     console.log('Search Term:', this.searchTerm);
     console.log('Min Guests:', this.minGuests);
     console.log('Max Guests:', this.maxGuests);
+    console.log('Max Guests:', this.startDate);
+    console.log('Max Guests:', this.endDate);
 
     this.accommodationService
-      .searchAccomodations(this.searchTerm, this.minGuests, this.maxGuests)
+      .searchAccomodations(
+        this.searchTerm,
+        this.minGuests,
+        this.startDate,
+        this.endDate
+      )
       .subscribe(
         (response) => {
           console.log('Server Response:', response);
@@ -86,7 +115,6 @@ export class HomeComponent {
     this.searchSuccess = false;
     this.searchTerm = '';
     this.minGuests = 0;
-    this.maxGuests = 0;
   }
 
   filterAccommodations(): any[] {

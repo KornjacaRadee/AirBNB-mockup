@@ -2,12 +2,15 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"net/http"
 	"reservation_service/client"
+	"reservation_service/config"
 	"reservation_service/domain"
 	"strings"
 	"time"
@@ -16,13 +19,13 @@ import (
 type KeyProduct struct{}
 
 type ReservationsHandler struct {
-	logger              *log.Logger
+	logger              *config.Logger
 	repo                *domain.ReservationsRepo
 	accommodationClient client.AccommodationClient
 	notificationClient  client.NotificationClient
 }
 
-func NewReservationsHandler(l *log.Logger, r *domain.ReservationsRepo, ac client.AccommodationClient, nc client.NotificationClient) *ReservationsHandler {
+func NewReservationsHandler(l *config.Logger, r *domain.ReservationsRepo, ac client.AccommodationClient, nc client.NotificationClient) *ReservationsHandler {
 	return &ReservationsHandler{l, r, ac, nc}
 }
 
@@ -42,9 +45,43 @@ func (r *ReservationsHandler) GetAvailabilityPeriodsByAccommodation(rw http.Resp
 	err = availabilityPeriodsByAccommodation.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
-		r.logger.Fatal("Unable to convert to json :", err)
+		r.logger.Fatalf("Unable to convert to json :", err)
 		return
 	}
+}
+
+func (r *ReservationsHandler) CheckAccommodationForReservations(rw http.ResponseWriter, h *http.Request) {
+	vars := mux.Vars(h)
+	accommId := vars["id"]
+
+	availabilityPeriodsByAccommodation, err := r.repo.GetAvailabilityPeriodsByAccommodation(accommId)
+	if err != nil {
+		r.logger.Print("Database exception: ", err)
+	}
+
+	if availabilityPeriodsByAccommodation == nil {
+		rw.WriteHeader(http.StatusOK)
+		return
+	}
+
+	hasActiveReservations := false
+
+	for _, period := range availabilityPeriodsByAccommodation {
+		hasReservations, err := r.repo.CheckActiveReservationsByAvailabilityPeriod(period.Id)
+		if err != nil {
+			r.logger.Print("Database exception: ", err)
+		}
+		if !hasReservations {
+			hasActiveReservations = true
+		}
+	}
+
+	if !hasActiveReservations {
+		rw.WriteHeader(http.StatusOK)
+	} else {
+		rw.WriteHeader(http.StatusForbidden)
+	}
+
 }
 
 func (r *ReservationsHandler) GetReservationsByAvailabilityPeriod(rw http.ResponseWriter, h *http.Request) {
@@ -63,7 +100,7 @@ func (r *ReservationsHandler) GetReservationsByAvailabilityPeriod(rw http.Respon
 	err = reservationsByAvailabilityPeriod.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
-		r.logger.Fatal("Unable to convert to json :", err)
+		r.logger.Fatalf("Unable to convert to json :", err)
 		return
 	}
 }
@@ -84,7 +121,7 @@ func (r *ReservationsHandler) GetReservationsByGuestId(rw http.ResponseWriter, h
 	err = reservationsByAvailabilityPeriod.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
-		r.logger.Fatal("Unable to convert to json :", err)
+		r.logger.Fatalf("Unable to convert to json :", err)
 		return
 	}
 }
@@ -192,13 +229,61 @@ func (r *ReservationsHandler) DeleteReservationByAvailabilityPeriod(rw http.Resp
 	rw.WriteHeader(http.StatusOK)
 }
 
+func (r *ReservationsHandler) FilterAccommodationsByDates(rw http.ResponseWriter, h *http.Request) {
+	var accommodations domain.SearchReqs
+	if err := json.NewDecoder(h.Body).Decode(&accommodations); err != nil {
+		http.Error(rw, "Failed to decode request body", http.StatusBadRequest)
+		return
+	}
+	var accommodationIds []*primitive.ObjectID
+
+	for _, accommodation := range accommodations {
+		periods, err := r.repo.GetAvailabilityPeriodsByAccommodation(accommodation.AccommodationId.Hex())
+		if err != nil {
+			r.logger.Print("Database exception: ", err)
+		}
+
+		if periods == nil {
+			continue
+		}
+
+		accommodationFree := false
+		for _, period := range periods {
+			if !(period.StartDate.Before(accommodation.StartDate) && period.EndDate.After(accommodation.EndDate)) {
+				continue
+			}
+
+			periodFree, err := r.repo.CheckIfDatesFree(accommodation.StartDate, accommodation.EndDate, period.Id)
+			if err != nil {
+				r.logger.Print("Database exception: ", err)
+			}
+
+			if periodFree {
+				accommodationFree = periodFree
+				break
+			}
+		}
+		if accommodationFree {
+			accommodationIds = append(accommodationIds, &accommodation.AccommodationId)
+		}
+	}
+
+	e := json.NewEncoder(rw)
+	err := e.Encode(accommodationIds)
+	if err != nil {
+		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
+		r.logger.Print(err)
+	}
+
+}
+
 func (a *ReservationsHandler) MiddlewareAvailabilityPeriodDeserialization(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, h *http.Request) {
 		availabilityPeriod := &domain.AvailabilityPeriodByAccommodation{}
 		err := availabilityPeriod.FromJSON(h.Body)
 		if err != nil {
 			http.Error(rw, "Unable to decode json", http.StatusBadRequest)
-			a.logger.Fatal(err)
+			a.logger.Println(err)
 			return
 		}
 
@@ -215,7 +300,7 @@ func (a *ReservationsHandler) MiddlewareReservationDeserialization(next http.Han
 		err := reservation.FromJSON(h.Body)
 		if err != nil {
 			http.Error(rw, "Unable to decode json", http.StatusBadRequest)
-			a.logger.Fatal(err)
+			a.logger.Println(err)
 			return
 		}
 

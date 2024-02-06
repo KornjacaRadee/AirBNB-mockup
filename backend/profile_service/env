@@ -1,6 +1,0 @@
-ACCOMMODATION_SERVICE_URI=http://accommodation_service:8080
-NOTIFICATION_SERVICE_URI=http://notification_service:8085
-PROFILE_SERVICE_URI=http://profile_service:8084
-RESERVATION_SERVICE_URI=http://reservation_service:8081
-MAIL_ADDRESS=djuricamilorad11@gmail.com
-MAIL_PASSWORD=rkrfytynrphjmhfn

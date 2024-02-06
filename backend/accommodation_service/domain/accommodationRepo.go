@@ -1,13 +1,13 @@
 package domain
 
 import (
+	"accommodation_service/config"
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"log"
 	"os"
 
 	"time"
@@ -18,11 +18,11 @@ import (
 // NoSQL: AccommodationRepo struct encapsulating Mongo api client
 type AccommodationRepo struct {
 	cli    *mongo.Client
-	logger *log.Logger
+	logger *config.Logger
 }
 
 // NoSQL: Constructor which reads db configuration from environment
-func New(ctx context.Context, logger *log.Logger) (*AccommodationRepo, error) {
+func New(ctx context.Context, logger *config.Logger) (*AccommodationRepo, error) {
 	dburi := os.Getenv("MONGO_DB_URI")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(dburi))
@@ -165,6 +165,7 @@ func (ar *AccommodationRepo) Delete(id string) error {
 	ar.logger.Printf("Documents deleted: %v\n", result.DeletedCount)
 	return nil
 }
+
 func (ar *AccommodationRepo) SearchAccommodations(searchRequest SearchRequest) (Accommodations, error) {
 	// Inicijalizujte context (posle 5 sekundi, prekinite operaciju)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -175,12 +176,8 @@ func (ar *AccommodationRepo) SearchAccommodations(searchRequest SearchRequest) (
 	// Pravljenje filtera na osnovu kriterijuma pretrage
 	filter := bson.M{
 		"location":    searchRequest.Location,
-		"minGuestNum": bson.M{"$lte": searchRequest.MaxGuestNum},
-		"maxGuestNum": bson.M{"$gte": searchRequest.MinGuestNum},
-		"reservations": bson.M{"$not": bson.M{"$elemMatch": bson.M{
-			"startDate": bson.M{"$lt": searchRequest.EndDate},
-			"endDate":   bson.M{"$gt": searchRequest.StartDate},
-		}}},
+		"minGuestNum": bson.M{"$lte": searchRequest.GuestNum},
+		"maxGuestNum": bson.M{"$gte": searchRequest.GuestNum},
 	}
 
 	// Izvršavanje upita
@@ -217,7 +214,6 @@ func (ar *AccommodationRepo) GetAccommodationsByUserID(userID string) (Accommoda
 	}
 	// Create a filter to find accommodations owned by the user
 	filter := bson.M{"owner._id": objID}
-	log.Printf("Iz rikvesta %s", userID)
 
 	// Execute the query
 	cursor, err := accommodationsCollection.Find(ctx, filter)
@@ -234,4 +230,25 @@ func (ar *AccommodationRepo) GetAccommodationsByUserID(userID string) (Accommoda
 	}
 
 	return accommodations, nil
+}
+
+func (ar *AccommodationRepo) DeleteAccommodationsByUserId(userID string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	accommodationsCollection := ar.getCollection()
+
+	objID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		ar.logger.Println(err)
+		return err
+	}
+
+	filter := bson.M{"owner._id": objID}
+	result, err := accommodationsCollection.DeleteMany(ctx, filter)
+	if err != nil {
+		ar.logger.Println(err)
+		return err
+	}
+	ar.logger.Printf("Documents deleted: %v\n", result.DeletedCount)
+	return nil
 }

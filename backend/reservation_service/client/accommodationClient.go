@@ -52,6 +52,7 @@ func (ac AccommodationClient) GetAccommodation(ctx context.Context, id primitive
 		}
 
 		var accomm AccommodationData
+
 		if err := json.NewDecoder(resp.Body).Decode(&accomm); err != nil {
 			return nil, err
 		}

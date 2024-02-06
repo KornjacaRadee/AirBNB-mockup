@@ -1,9 +1,9 @@
 package cache
 
 import (
+	"accommodation_service/config"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -12,11 +12,11 @@ import (
 
 type ImageCache struct {
 	cli    *redis.Client
-	logger *log.Logger
+	logger *config.Logger
 }
 
 // Constructs Redis Client
-func New(logger *log.Logger) *ImageCache {
+func New(logger *config.Logger) *ImageCache {
 	redisHost := os.Getenv("REDIS_HOST")
 	redistPort := os.Getenv("REDIS_PORT")
 	redisAddress := fmt.Sprintf("%s:%s", redisHost, redistPort)

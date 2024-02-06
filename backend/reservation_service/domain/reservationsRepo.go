@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"github.com/gocql/gocql"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"log"
 	"os"
+	"reservation_service/config"
 	"time"
 )
 
 type ReservationsRepo struct {
 	session *gocql.Session
-	logger  *log.Logger
+	logger  *config.Logger
 }
 
 // NoSQL: Constructor which reads db configuration from environment and creates a keyspace
-func New(logger *log.Logger) (*ReservationsRepo, error) {
+func New(logger *config.Logger) (*ReservationsRepo, error) {
 	db := os.Getenv("CASS_DB")
 
 	// Connect to default keyspace
@@ -88,6 +88,15 @@ func (rr *ReservationsRepo) CreateTables() {
 					PRIMARY KEY ((guest_id), reservation_id)) 
 					WITH CLUSTERING ORDER BY (reservation_id ASC)`,
 			"reservations_by_guest")).Exec()
+	if err != nil {
+		rr.logger.Println(err)
+	}
+
+	err = rr.session.Query(
+		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s 
+					(availability_period_id UUID, reservation_id UUID, start_date TIMESTAMP, end_date TIMESTAMP,
+					PRIMARY KEY ((availability_period_id), start_date, end_date, reservation_id))`,
+			"reservations_by_dates")).Exec()
 	if err != nil {
 		rr.logger.Println(err)
 	}
@@ -222,6 +231,27 @@ func (rr *ReservationsRepo) GetReservationsByAvailabilityPeriod(id string) (Rese
 	return reservations, nil
 }
 
+func (rr *ReservationsRepo) CheckActiveReservationsByAvailabilityPeriod(id gocql.UUID) (bool, error) {
+	//check if reservation dates overlap with other reservation dates
+	iter := rr.session.Query(`
+        SELECT reservation_id FROM reservations_by_dates 
+        WHERE availability_period_id = ? AND start_date > ?`,
+		id, time.Now()).Iter()
+
+	// Iterate over the result set to check if there are any rows
+	for iter.Scan(nil) {
+		return false, nil
+	}
+
+	if err := iter.Close(); err != nil {
+		rr.logger.Println(err)
+		return false, err
+	}
+
+	// If there are no rows, it means no reservations, so return true
+	return true, nil
+}
+
 func (rr *ReservationsRepo) GetReservationsByUserId(id string) (ReservationsByAvailabilityPeriod, error) {
 	scanner := rr.session.Query(`SELECT availability_period_id, reservation_id, start_date, end_date, accommodation_id, host_id, guest_id, guest_num, price FROM reservations_by_guest WHERE guest_id = ?`,
 		id).Iter().Scanner()
@@ -350,6 +380,15 @@ func (rr *ReservationsRepo) InsertReservationByAvailabilityPeriod(reservation *R
 		rr.logger.Println(err)
 		return err
 	}
+
+	err = rr.session.Query(
+		`INSERT INTO reservations_by_dates (availability_period_id, reservation_id, start_date, end_date) 
+		VALUES (?, ?, ?, ?)`,
+		reservation.AvailabilityPeriodId, id, reservation.StartDate, reservation.EndDate).Exec()
+	if err != nil {
+		rr.logger.Println(err)
+		return err
+	}
 	return nil
 }
 
@@ -358,10 +397,32 @@ func (rr *ReservationsRepo) checkReservationDates(reservation *ReservationByAvai
 
 	//check if reservation dates overlap with other reservation dates
 	iter := rr.session.Query(`
-        SELECT reservation_id FROM reservations_by_availability_period 
-        WHERE availability_period_id = ? AND start_date < ? AND end_date > ?
-        ALLOW FILTERING`,
+        SELECT reservation_id FROM reservations_by_dates 
+        WHERE availability_period_id = ? AND start_date < ? AND end_date > ? ALLOW FILTERING`,
 		reservation.AvailabilityPeriodId, reservation.EndDate, reservation.StartDate).Iter()
+
+	// Iterate over the result set to check if there are any rows
+	for iter.Scan(nil) {
+		return false, nil
+	}
+
+	if err := iter.Close(); err != nil {
+		rr.logger.Println(err)
+		return false, err
+	}
+
+	// If there are no rows, it means no overlap, so return true
+	return true, nil
+}
+
+// returns true if dates are free, and false if they are taken
+func (rr *ReservationsRepo) CheckIfDatesFree(start, end time.Time, period gocql.UUID) (bool, error) {
+
+	//check if reservation dates overlap with other reservation dates
+	iter := rr.session.Query(`
+        SELECT reservation_id FROM reservations_by_dates 
+        WHERE availability_period_id = ? AND start_date < ? AND end_date > ? ALLOW FILTERING`,
+		period, end, start).Iter()
 
 	// Iterate over the result set to check if there are any rows
 	for iter.Scan(nil) {
@@ -394,6 +455,12 @@ func (rr *ReservationsRepo) DeleteReservationByIdAndGuestId(id, guestId string) 
 	}
 
 	if err := rr.session.Query(`DELETE FROM reservations_by_guest WHERE reservation_id = ? AND guest_id = ?`, id, reservation.GuestId.Hex()).Exec(); err != nil {
+		rr.logger.Println(err)
+		return nil, err
+	}
+
+	if err := rr.session.Query(`DELETE FROM reservations_by_dates WHERE reservation_id = ? AND availability_period_id = ? AND
+                                        start_date = ? AND end_date = ?`, id, reservation.AvailabilityPeriodId, reservation.StartDate, reservation.EndDate).Exec(); err != nil {
 		rr.logger.Println(err)
 		return nil, err
 	}

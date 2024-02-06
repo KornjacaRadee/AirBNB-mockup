@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"accommodation_service/cache"
+	"accommodation_service/client"
+	"accommodation_service/config"
 	"accommodation_service/domain"
 	"accommodation_service/storage"
 	"context"
@@ -11,7 +13,7 @@ import (
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io"
-	"log"
+	//"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -20,15 +22,16 @@ import (
 type KeyProduct struct{}
 
 type AccommodationsHandler struct {
-	logger     *log.Logger
-	repo       *domain.AccommodationRepo
-	imageCache *cache.ImageCache
-	images     *storage.FileStorage
+	logger            *config.Logger
+	repo              *domain.AccommodationRepo
+	imageCache        *cache.ImageCache
+	images            *storage.FileStorage
+	reservationClient client.ReservationClient
 }
 
 // NewAccommodationsHandler Injecting the logger makes this code much more testable.
-func NewAccommodationsHandler(l *log.Logger, r *domain.AccommodationRepo, ic *cache.ImageCache, i *storage.FileStorage) *AccommodationsHandler {
-	return &AccommodationsHandler{l, r, ic, i}
+func NewAccommodationsHandler(l *config.Logger, r *domain.AccommodationRepo, ic *cache.ImageCache, i *storage.FileStorage, rc client.ReservationClient) *AccommodationsHandler {
+	return &AccommodationsHandler{l, r, ic, i, rc}
 }
 
 func (a *AccommodationsHandler) GetAllAccommodations(rw http.ResponseWriter, h *http.Request) {
@@ -45,7 +48,7 @@ func (a *AccommodationsHandler) GetAllAccommodations(rw http.ResponseWriter, h *
 	err = accommodations.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
-		a.logger.Fatal("Unable to convert to json :", err)
+		a.logger.Fatalf("Unable to convert to json :", err)
 		return
 	}
 }
@@ -68,7 +71,7 @@ func (a *AccommodationsHandler) GetAccommodation(rw http.ResponseWriter, h *http
 	err = accommodation.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
-		a.logger.Fatal("Unable to convert to json :", err)
+		a.logger.Fatalf("Unable to convert to json :", err)
 		return
 	}
 }
@@ -109,7 +112,7 @@ func (a *AccommodationsHandler) PostAccommodation(rw http.ResponseWriter, h *htt
 	erra := a.repo.Insert(accommodation)
 	if erra != nil {
 		http.Error(rw, "Unable to post accommodation", http.StatusBadRequest)
-		a.logger.Fatal(erra)
+		a.logger.Fatalf("Unable to post accommodation", erra)
 		return
 	}
 
@@ -238,7 +241,7 @@ func (a *AccommodationsHandler) DeleteAccommodation(rw http.ResponseWriter, h *h
 	accommodation, err := a.repo.GetByID(id) // Use the new GetByID function
 	if err != nil {
 		http.Error(rw, "Error getting accommodation", http.StatusInternalServerError)
-		a.logger.Fatal(err)
+		a.logger.Fatalf("Error getting accommodation", err)
 		return
 	}
 
@@ -285,13 +288,62 @@ func (a *AccommodationsHandler) GetUserAcommodations(rw http.ResponseWriter, h *
 
 }
 
+func (a *AccommodationsHandler) DeleteUserAccommodations(rw http.ResponseWriter, h *http.Request) {
+	tokenString := h.Header.Get("Authorization")
+	if tokenString == "" {
+		http.Error(rw, "Missing Authorization header", http.StatusUnauthorized)
+		return
+	}
+
+	// Remove 'Bearer ' prefix if present
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	userID, err := getUserIdFromToken(tokenString)
+	if err != nil {
+		http.Error(rw, fmt.Sprintf("Error extracting user ID: %v", err), http.StatusUnauthorized)
+		return
+	}
+	ok, err := a.CheckIfOkToDeleteUserAccommodations(h.Context(), userID)
+	if ok {
+		err = a.repo.DeleteAccommodationsByUserId(userID)
+		if err != nil {
+			http.Error(rw, fmt.Sprintf("Error getting accommodations: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		// Return the accommodations as JSON
+		rw.WriteHeader(http.StatusOK)
+	} else {
+		http.Error(rw, "Can't delete accommodations for user, he has active reservations", http.StatusBadRequest)
+	}
+
+}
+
+func (a *AccommodationsHandler) CheckIfOkToDeleteUserAccommodations(ctx context.Context, userID string) (bool, error) {
+	accommodations, err := a.repo.GetAccommodationsByUserID(userID)
+	if err != nil {
+		return false, err
+	}
+	isOk := true
+	for _, accommodation := range accommodations {
+		//check if it has active reservations
+		ok, err := a.reservationClient.CheckReservationsByAccommodationId(ctx, accommodation.Id)
+		if err != nil {
+			return false, err
+		}
+		if ok {
+			isOk = false
+		}
+	}
+	return isOk, nil
+}
+
 func (a *AccommodationsHandler) MiddlewareAccommodationDeserialization(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, h *http.Request) {
 		accommodation := &domain.Accommodation{}
 		err := accommodation.FromJSON(h.Body)
 		if err != nil {
 			http.Error(rw, "Unable to decode json", http.StatusBadRequest)
-			a.logger.Fatal(err)
+			a.logger.Fatalf("Unable to decode json", err)
 			return
 		}
 
@@ -307,21 +359,50 @@ func (a *AccommodationsHandler) SearchAccommodations(rw http.ResponseWriter, h *
 	err := searchRequest.FromJSON(h.Body)
 	if err != nil {
 		http.Error(rw, "Unable to decode search request", http.StatusBadRequest)
-		a.logger.Fatal(err)
+		a.logger.Fatalf("Unable to decode search request", err)
 		return
 	}
 
 	accommodations, err := a.repo.SearchAccommodations(searchRequest)
 	if err != nil {
 		http.Error(rw, "Error searching accommodations", http.StatusInternalServerError)
-		a.logger.Fatal(err)
+		a.logger.Fatalf("Error searching accommodations", err)
 		return
 	}
 
-	err = accommodations.ToJSON(rw)
+	var datesCheckReq client.SearchReqs
+
+	for _, accommodation := range accommodations {
+		dateCheckReq := client.SearchReq{
+			AccommodationId: accommodation.Id,
+			StartDate:       searchRequest.StartDate,
+			EndDate:         searchRequest.EndDate,
+		}
+		datesCheckReq = append(datesCheckReq, &dateCheckReq)
+	}
+
+	accommodationIds, err := a.reservationClient.CheckDates(h.Context(), datesCheckReq)
+	if err != nil {
+		http.Error(rw, "Cant check if accommodations are free", http.StatusInternalServerError)
+		a.logger.Println("Unable to convert to json:", err)
+		return
+	}
+
+	var accommodationsChecked domain.Accommodations
+
+	for _, accommodation := range accommodations {
+		for _, id := range accommodationIds {
+			if accommodation.Id.Hex() == id.Hex() {
+				accommodationsChecked = append(accommodationsChecked, accommodation)
+				continue
+			}
+		}
+	}
+
+	err = accommodationsChecked.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to convert to json", http.StatusInternalServerError)
-		a.logger.Fatal("Unable to convert to json:", err)
+		a.logger.Fatalf("Unable to convert to json:", err)
 		return
 	}
 }
@@ -349,7 +430,7 @@ func (a *AccommodationsHandler) MiddlewareCacheAllHit(next http.Handler) http.Ha
 			err = images.ToJSON(rw)
 			if err != nil {
 				http.Error(rw, "Unable to convert image to JSON", http.StatusInternalServerError)
-				a.logger.Fatal("Unable to convert image to JSON: ", err)
+				a.logger.Fatalf("Unable to convert image to JSON: ", err)
 				return
 			}
 		}

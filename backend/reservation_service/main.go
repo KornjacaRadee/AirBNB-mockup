@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"github.com/sony/gobreaker"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"reservation_service/client"
+	"reservation_service/config"
 	"reservation_service/domain"
 	"reservation_service/handlers"
 	"time"
@@ -28,13 +28,14 @@ func main() {
 	defer cancel()
 
 	//Initialize the logger we are going to use, with prefix and datetime for every log
-	logger := log.New(os.Stdout, "[product-api] ", log.LstdFlags)
-	storeLogger := log.New(os.Stdout, "[availability-store] ", log.LstdFlags)
-
+	//logger := log.New(os.Stdout, "[product-api] ", log.LstdFlags)
+	//storeLogger := log.New(os.Stdout, "[availability-store] ", log.LstdFlags)
+	logger := config.NewLogger("./logging/log.log")
 	// NoSQL: Initialize Product Repository store
-	store, err := domain.New(storeLogger)
+
+	store, err := domain.New(logger)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Println(err)
 	}
 	store.CreateTables()
 
@@ -116,6 +117,8 @@ func main() {
 	getAvailabilityRouter := router.Methods(http.MethodGet).Subrouter()
 	getAvailabilityRouter.HandleFunc("/accomm/{id}/availability", reservationHandler.GetAvailabilityPeriodsByAccommodation)
 
+	getAvailabilityRouter.HandleFunc("/accomm/{id}/check", reservationHandler.CheckAccommodationForReservations)
+
 	getReservationsRouter := router.Methods(http.MethodGet).Subrouter()
 	getReservationsRouter.HandleFunc("/availability/{id}/reservations", reservationHandler.GetReservationsByAvailabilityPeriod)
 
@@ -131,6 +134,9 @@ func main() {
 
 	deleteRouter := router.Methods(http.MethodDelete).Subrouter()
 	deleteRouter.HandleFunc("/reservation/delete/{id}", reservationHandler.DeleteReservationByAvailabilityPeriod)
+
+	getSearchRouter := router.Methods(http.MethodGet).Subrouter()
+	getSearchRouter.HandleFunc("/check-dates", reservationHandler.FilterAccommodationsByDates)
 
 	cors := gorillaHandlers.CORS(gorillaHandlers.AllowedOrigins([]string{"*"}))
 
@@ -148,7 +154,7 @@ func main() {
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil {
-			logger.Fatal(err)
+			logger.Println(err)
 		}
 	}()
 
@@ -161,7 +167,7 @@ func main() {
 
 	//Try to shut down gracefully
 	if server.Shutdown(timeoutContext) != nil {
-		logger.Fatal("Cannot gracefully shutdown...")
+		logger.Fatalf("Cannot gracefully shutdown...")
 	}
 	logger.Println("Server stopped")
 }

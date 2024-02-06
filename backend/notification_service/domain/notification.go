@@ -8,10 +8,10 @@ import (
 )
 
 type Notification struct {
-	Id   primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Host User               `bson:"host,omitempty" json:"host"`
-	Text string             `bson:"text" json:"text"`
-	Time time.Time          `bson:"time" json:"time"`
+	Id   string    `json:"id"`
+	Host User      `json:"host"`
+	Text string    `son:"text"`
+	Time time.Time `json:"time"`
 }
 
 type Notifications []*Notification

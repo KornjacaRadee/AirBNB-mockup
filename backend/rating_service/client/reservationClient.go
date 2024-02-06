@@ -37,6 +37,7 @@ func (ac ReservationClient) GetReservationsByGuestId(ctx context.Context, id pri
 		if err != nil {
 			return nil, err
 		}
+		req.Close = true
 		resp, err := ac.client.Do(req)
 		if err != nil {
 			return nil, err
@@ -52,6 +53,7 @@ func (ac ReservationClient) GetReservationsByGuestId(ctx context.Context, id pri
 		}
 
 		var reservations ReservationsData
+
 		if err := json.NewDecoder(resp.Body).Decode(&reservations); err != nil {
 			return nil, err
 		}

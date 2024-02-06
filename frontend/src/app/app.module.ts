@@ -26,6 +26,7 @@ import { ReservationService } from './services/reservation/reservation.service';
 import { DatePipe } from '@angular/common';
 import { NgToastModule } from 'ng-angular-popup';
 import { GalleriaModule } from 'primeng/galleria';
+import { JQueryStyleEventEmitter } from 'rxjs/internal/observable/fromEvent';
 
 import {
   RECAPTCHA_SETTINGS,

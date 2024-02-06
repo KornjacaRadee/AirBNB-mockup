@@ -20,7 +20,7 @@ export class CreateAccommodationComponent {
     maxGuestNum: 0,
     amenities: []
   };
-  amenities: string[] = ['WiFi', 'Parking', 'Kitchen', 'Pool']; // Add your amenities
+  amenities: string[] = ['WiFi', 'Parking', 'Kitchen', 'Pool'];
 
   constructor(
     private toastr: ToastrService,
@@ -39,17 +39,16 @@ export class CreateAccommodationComponent {
 
       this.accommodationService.createAccommodation(headers, this.accommodation).subscribe(
         (response) => {
+          console.log(this.accommodation.amenities)
           this.toastr.success('Accommodation created successfully! Add pictures on your profile page! :D');
           console.log('Accommodation created successfully', response);
         },
         (error) => {
-          // Handle error, e.g., show an error message
           this.toastr.error('Failed to create accommodation!');
           console.error('Failed to create accommodation', error);
         }
       );
     } else {
-      // User is not authenticated, handle accordingly
       this.toastr.error('Please log in');
       console.error('User is not authenticated');
     }
