@@ -32,18 +32,17 @@ export class HomeComponent {
     this.accommodationService.getAccomodations().subscribe(
       (data: any[]) => {
         this.accommodations = data;
-        this.accommodations.forEach(ac => {
+        this.accommodations.forEach((ac) => {
           this.accommodationService.getAccommodationPictures(ac.id).subscribe(
             (data: any[]) => {
               ac.photos = data;
-              console.log(ac.photos)
-
+              console.log(ac.photos);
             },
             (error: any) => {
               console.error('Error fetching accommodations:', error);
             }
-            );
-        })
+          );
+        });
       },
       (error: any) => {
         console.error('Error fetching accommodations:', error);
@@ -59,7 +58,7 @@ export class HomeComponent {
     console.log('Max Guests:', this.maxGuests);
 
     this.accommodationService
-      .searchAccomodations(this.searchTerm, this.minGuests, this.maxGuests)
+      .searchAccomodations(this.searchTerm, this.minGuests)
       .subscribe(
         (response) => {
           console.log('Server Response:', response);
@@ -99,7 +98,6 @@ export class HomeComponent {
     this.searchSuccess = false;
     this.searchTerm = '';
     this.minGuests = 0;
-    this.maxGuests = 0;
   }
 
   filterAccommodations(): any[] {

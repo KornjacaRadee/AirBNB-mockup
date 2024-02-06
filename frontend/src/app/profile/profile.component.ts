@@ -1,7 +1,7 @@
-import { Component, OnInit, Output, EventEmitter,Input  } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
-import {  HttpHeaders } from '@angular/common/http';
+import { HttpHeaders } from '@angular/common/http';
 import { AccomodationService } from '../services/accomodation/accomodation.service';
 import { ProfilesService } from '../services/profile/profiles.service';
 import { ReservationService } from '../services/reservation/reservation.service';
@@ -13,7 +13,7 @@ interface Review {
   HostId: string;
   Time: string;
   AccommodationId: string;
-  Guest: any,
+  Guest: any;
   Rating: number;
 }
 
@@ -44,9 +44,7 @@ export class ProfileComponent implements OnInit {
   pictures: any[] = [];
   picsdata: any[] = [];
 
-
   @Output() ratingChanged: EventEmitter<number> = new EventEmitter<number>();
-
 
   profile: any;
 
@@ -60,7 +58,6 @@ export class ProfileComponent implements OnInit {
     private router: Router
   ) {}
 
-
   ngOnInit(): void {
     if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/login']);
@@ -69,7 +66,6 @@ export class ProfileComponent implements OnInit {
     //this.getUserAccommodations()
     this.loadUserDetails();
     this.loadNotifications();
-
   }
   tempLoadAccoms(): void {
     this.accommodationService.getAccomodations().subscribe(
@@ -78,15 +74,13 @@ export class ProfileComponent implements OnInit {
 
         this.accomms = data.filter(
           (accommodation) => accommodation.owner.id === this.user.id
-
         );
-        this.accomms.forEach(ac =>{
-          this.loadPictures(ac.id)
+        this.accomms.forEach((ac) => {
+          this.loadPictures(ac.id);
           ac.picture = this.picsdata;
+        });
 
-        })
-
-        if(this.accomms.length == 0){
+        if (this.accomms.length == 0) {
           this.toastr.error('User has no accommodations');
         }
       },
@@ -102,7 +96,6 @@ export class ProfileComponent implements OnInit {
     this.showOverlay = !this.showOverlay;
   }
 
-
   toggleRatings(): void {
     this.loadUserRatings();
     this.loadAccommodationRatings();
@@ -110,7 +103,7 @@ export class ProfileComponent implements OnInit {
     this.showAccommodations = false;
   }
 
-  loadNotifications(): void{
+  loadNotifications(): void {
     const token = this.authService.getAuthToken();
 
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
@@ -118,24 +111,38 @@ export class ProfileComponent implements OnInit {
       (data: any[]) => {
         this.notifications = data;
 
-        data.forEach(not =>{
+        data.forEach((not) => {
           not.time = new Date(not.time).toISOString().split('T')[0];
-        } )
+        });
       },
       (error: any) => {
         console.error('Error fetching accommodations:', error);
       }
     );
   }
-
-  deleteAccomm(id: string): void{
+  cancelReservation(id: string): void {
     const token = this.authService.getAuthToken();
 
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    this.accommodationService.deleteAccommodation(id,headers).subscribe(
+    this.reservationService.cancelReservations(id, headers).subscribe(
+      (response) => {
+        this.getUserReservations;
+        this.toastr.success('Successfully canceled reservation');
+      },
+      (error: any) => {
+        this.toastr.error('Error deleting accommodation');
+        console.error('Error deleting:', error);
+      }
+    );
+  }
+  deleteAccomm(id: string): void {
+    const token = this.authService.getAuthToken();
+
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    this.accommodationService.deleteAccommodation(id, headers).subscribe(
       (response) => {
         this.tempLoadAccoms();
-        this.toastr.success("Successfully deleted accommodation");
+        this.toastr.success('Successfully deleted accommodation');
       },
       (error: any) => {
         this.toastr.error('Error deleting accommodation');
@@ -151,7 +158,6 @@ export class ProfileComponent implements OnInit {
 
     this.accommodationService.getUserAccommodations(headers).subscribe(
       (data: any[]) => {
-
         this.accomms = data;
       },
       (error: any) => {
@@ -167,51 +173,44 @@ export class ProfileComponent implements OnInit {
     this.reservations = [];
     this.reservationService.getUserReservations(this.id).subscribe(
       (data: any[]) => {
-
         this.reservations = data;
 
-        if(this.reservations == null){
-
-        }else{
-          data.forEach(not =>{
-            var todaysDate = new Date().toISOString().split('T')[0]
+        if (this.reservations == null) {
+          this.toastr.error('User has no reservations');
+        } else {
+          data.forEach((not) => {
+            var todaysDate = new Date().toISOString().split('T')[0];
             not.StartDate = new Date(not.StartDate).toISOString().split('T')[0];
             not.EndDate = new Date(not.EndDate).toISOString().split('T')[0];
-            console.log(not.EndDate)
-            console.log(todaysDate)
             this.loadPictures(not.AccommodationId);
-            if (not.EndDate < todaysDate){
-              this.accommodationService.getAccommodation(not.AccommodationId).subscribe(
-                (data: any[]) => {
-                  not.accommodation = data;
-                  not.picture = this.picsdata;
-                  this.reservationHistory.push(not)
-
-
-                },
-                (error: any) => {
-                  console.error('Error fetching accommodations:', error);
-                }
+            if (not.EndDate < todaysDate) {
+              this.accommodationService
+                .getAccommodation(not.AccommodationId)
+                .subscribe(
+                  (data: any[]) => {
+                    not.accommodation = data;
+                    not.picture = this.picsdata;
+                    this.reservationHistory.push(not);
+                  },
+                  (error: any) => {
+                    console.error('Error fetching accommodations:', error);
+                  }
                 );
-            }else{
-              this.accommodationService.getAccommodation(not.AccommodationId).subscribe(
-                (data: any[]) => {
-                  not.accommodation = data;
-                  not.picture = this.picsdata;
-                  this.activeReservations.push(not)
-
-
-                },
-                (error: any) => {
-                  this.toastr.error('User has no reservations');
-
-                  console.error('Error fetching accommodations:', error);
-                }
-              );
-
+            } else {
+              this.accommodationService
+                .getAccommodation(not.AccommodationId)
+                .subscribe(
+                  (data: any[]) => {
+                    not.accommodation = data;
+                    not.picture = this.picsdata;
+                    this.activeReservations.push(not);
+                  },
+                  (error: any) => {
+                    console.error('Error fetching accommodations:', error);
+                  }
+                );
             }
-          } )
-
+          });
         }
       },
       (error: any) => {
@@ -231,8 +230,7 @@ export class ProfileComponent implements OnInit {
     this.currentRating = 0;
   }
 
-  rate(star: number,reservation: any): void {
-
+  rate(star: number, reservation: any): void {
     this.currentRating = star;
     this.ratingChanged.emit(this.currentRating);
     const reservationJSON = {
@@ -240,33 +238,32 @@ export class ProfileComponent implements OnInit {
       GuestId: reservation.GuestId,
       AccommodationId: reservation.accommodation.id,
       time: new Date(),
-      rating: star
-    }
+      rating: star,
+    };
     // reservationJSON = JSON.stringify(reservationJSON);
     this.accommodationService.rateAccommodation(reservationJSON).subscribe(
       (data: any[]) => {
         this.toastr.error('Successfully rated accommodation.');
       },
       (response: any) => {
-        if(response.error && response.error.includes('502')){
+        if (response.error && response.error.includes('502')) {
           this.toastr.success('Successfully rated accommodation.');
-        }else{
+        } else {
           this.toastr.error('Failed to rate accommodation.');
         }
         this.toastr.error('Error with rating. Try again later! ');
       }
     );
-
   }
-  loadPictures(id: string){
+  loadPictures(id: string) {
     this.pictures = [];
     this.picsdata = [];
     this.accommodationService.getAccommodationPictures(id).subscribe(
       (data: any[]) => {
         this.pictures = data;
-        this.pictures.forEach(pic =>{
-          this.picsdata.push(pic.data)
-        })
+        this.pictures.forEach((pic) => {
+          this.picsdata.push(pic.data);
+        });
       },
       (error: any) => {
         this.toastr.error('Error fetching accommodation!');
@@ -275,32 +272,29 @@ export class ProfileComponent implements OnInit {
     );
   }
 
-
-  rateHost(star: number,reservation: any): void {
-
+  rateHost(star: number, reservation: any): void {
     this.currentRating = star;
     this.ratingChanged.emit(this.currentRating);
     const reservationJSON = {
       HostId: reservation.accommodation.owner.id,
       GuestId: reservation.GuestId,
       time: new Date(),
-      rating: star
-    }
+      rating: star,
+    };
     // reservationJSON = JSON.stringify(reservationJSON);
     this.profileService.rateHost(reservationJSON).subscribe(
       (data: any[]) => {
         this.toastr.success('Successfully rated accommodation.');
       },
       (response: any) => {
-        if(response.error && response.error.includes('502')){
+        if (response.error && response.error.includes('502')) {
           this.toastr.success('Successfully rated accommodation.');
-        }else{
+        } else {
           this.toastr.error('Failed to rate accommodation.');
         }
         this.toastr.error('Error with rating. Try again later! ');
       }
     );
-
   }
 
   logout(): void {
@@ -347,8 +341,6 @@ export class ProfileComponent implements OnInit {
     );
   }
 
-
-
   toggleAccommodations() {
     this.tempLoadAccoms();
     this.showAccommodations = !this.showAccommodations;
@@ -373,12 +365,12 @@ export class ProfileComponent implements OnInit {
     );
   }
 
-  loadUserRatings(){
+  loadUserRatings() {
     this.profileService.getHostRatings(this.user.id).subscribe(
       (data) => {
         this.reviews = data;
-        this.reviews.forEach(ac => {
-          ac.Time =  new Date(ac.Time).toISOString().split('T')[0];
+        this.reviews.forEach((ac) => {
+          ac.Time = new Date(ac.Time).toISOString().split('T')[0];
           this.authService.getUserById(ac.GuestId).subscribe(
             (response) => {
               ac.Guest = response;
@@ -387,8 +379,7 @@ export class ProfileComponent implements OnInit {
               console.error('Error fetching user details', error);
             }
           );
-        })
-
+        });
       },
       (error) => {
         console.error('Error fetching user details', error);
@@ -396,13 +387,12 @@ export class ProfileComponent implements OnInit {
     );
   }
 
-
-  loadAccommodationRatings(){
+  loadAccommodationRatings() {
     this.profileService.getAccommodationRatings(this.user.id).subscribe(
       (data) => {
         this.accomReviews = data;
-        this.accomReviews.forEach(ac => {
-          ac.Time =  new Date(ac.Time).toISOString().split('T')[0];
+        this.accomReviews.forEach((ac) => {
+          ac.Time = new Date(ac.Time).toISOString().split('T')[0];
           this.authService.getUserById(ac.GuestId).subscribe(
             (response) => {
               ac.Guest = response;
@@ -411,13 +401,11 @@ export class ProfileComponent implements OnInit {
               console.error('Error fetching user details', error);
             }
           );
-        })
-
+        });
       },
       (error) => {
         console.error('Error fetching user details', error);
       }
     );
   }
-
 }

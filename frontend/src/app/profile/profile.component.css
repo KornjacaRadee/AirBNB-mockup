@@ -1,5 +1,5 @@
-.wrapper{
-  margin-top:200px;
+.wrapper {
+  margin-top: 200px;
 }
 
 .profile-container {
@@ -36,11 +36,9 @@
   margin: 0 10px;
 }
 
-
-
 .notifications {
   margin-top: 20px;
-  position:absolute;
+  position: absolute;
   top: 123px;
   right: 50px;
 }
@@ -49,7 +47,6 @@
   padding: 10px;
   margin-bottom: 10px;
   cursor: pointer;
-
 }
 .rating {
   color: #ffd700;
@@ -117,7 +114,7 @@
   font-weight: 600;
   color: #007bff;
 }
-.cards-wrapper{
+.cards-wrapper {
   padding-left: 200px;
   display: flex;
   flex-direction: row;
@@ -125,29 +122,26 @@
   gap: 30px;
 }
 
-.btn-edit{
+.btn-edit {
   color: white;
   text-decoration: none;
 }
 
-
-
 /* NEW CSS PAGE */
-.container{
-  margin-top:120px;
+.container {
+  margin-top: 120px;
 }
-body{
-  margin-top:20px;
+body {
+  margin-top: 20px;
   color: #1a202c;
   text-align: left;
   background-color: #e2e8f0;
 }
 .main-body {
-
   padding: 15px;
 }
 .card {
-  box-shadow: 0 1px 3px 0 rgba(0,0,0,.1), 0 1px 2px 0 rgba(0,0,0,.06);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
 .card {
@@ -158,18 +152,17 @@ body{
   word-wrap: break-word;
   background-color: #fff;
   background-clip: border-box;
-  border: 0 solid rgba(0,0,0,.125);
-  border-radius: .25rem;
+  border: 0 solid rgba(0, 0, 0, 0.125);
+  border-radius: 0.25rem;
 }
 
 .card-body {
-
   flex: 1 1 auto;
   min-height: 1px;
   padding: 1rem;
 }
 
-.cards-down{
+.cards-down {
   width: 600px;
   overflow-x: scroll;
   display: flex;
@@ -177,13 +170,13 @@ body{
   gap: 40px;
 }
 
-.card-wrap{
+.card-wrap {
   width: 250px;
   padding-left: 20px;
   padding-right: 20px;
   position: static;
 }
-.links{
+.links {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -192,45 +185,48 @@ body{
   margin-right: -8px;
   margin-left: -8px;
 }
-.text-rate{
-  color:black;
+.text-rate {
+  color: black;
 }
-.card-link{
+.card-link {
   text-align: left;
   margin: 0;
   padding: 0;
   padding-bottom: 10px;
+  cursor: pointer;
 }
-.gutters-sm>.col, .gutters-sm>[class*=col-] {
+.gutters-sm > .col,
+.gutters-sm > [class*="col-"] {
   padding-right: 8px;
   padding-left: 8px;
 }
-.mb-3, .my-3 {
-  margin-bottom: 1rem!important;
+.mb-3,
+.my-3 {
+  margin-bottom: 1rem !important;
 }
 
 .bg-gray-300 {
   background-color: #e2e8f0;
 }
 .h-100 {
-  height: 100%!important;
+  height: 100% !important;
 }
 .shadow-none {
-  box-shadow: none!important;
+  box-shadow: none !important;
 }
-.mb-0{
+.mb-0 {
   font-size: 17px;
 }
 
-.reviews-wrap{
+.reviews-wrap {
   margin-bottom: 50px;
 }
 
-.review{
+.review {
   margin-right: 50px;
 }
 
-.scroll-reviews{
+.scroll-reviews {
   display: flex;
   flex-direction: row;
   overflow-x: scroll;

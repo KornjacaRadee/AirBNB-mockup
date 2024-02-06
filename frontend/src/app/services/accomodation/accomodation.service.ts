@@ -33,7 +33,10 @@ export class AccomodationService {
   }
 
   rateAccommodation(accomm: any): Observable<any[]> {
-    return this.http.post<any[]>(this.configService._rating_url + '/accommodation-rating',accomm);
+    return this.http.post<any[]>(
+      this.configService._rating_url + '/accommodation-rating',
+      accomm
+    );
   }
   getUserAccommodations(headers: HttpHeaders): Observable<any[]> {
     const options = { headers };
@@ -46,30 +49,34 @@ export class AccomodationService {
     );
   }
 
-  deleteAccommodation(id: string,headers: HttpHeaders): Observable<any[]> {
+  deleteAccommodation(id: string, headers: HttpHeaders): Observable<any[]> {
     const options = { headers };
-    return this.http.delete<any[]>(this.configService._accomodations_url + '/delete/' + id, options);
+    return this.http.delete<any[]>(
+      this.configService._accomodations_url + '/delete/' + id,
+      options
+    );
   }
 
   addAccommodationPictures(pictures: any): Observable<any[]> {
-
-    return this.http.post<any[]>(this.configService._accomodations_url + '/accommodation/images', pictures);
+    return this.http.post<any[]>(
+      this.configService._accomodations_url + '/accommodation/images',
+      pictures
+    );
   }
 
   getAccommodationPictures(id: any): Observable<any[]> {
-
-    return this.http.get<any[]>(this.configService._accomodations_url +'/accommodation/' + id + '/images');
+    return this.http.get<any[]>(
+      this.configService._accomodations_url + '/accommodation/' + id + '/images'
+    );
   }
 
   searchAccomodations(
     searchTerm: string,
-    minGuests: number,
-    maxGuests: number
+    minGuests: number
   ): Observable<any[]> {
     const body = {
       location: searchTerm,
-      minGuestNum: minGuests,
-      maxGuestNum: maxGuests,
+      GuestNum: minGuests,
     };
 
     return this.http.post<any[]>(
