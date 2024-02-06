@@ -106,6 +106,20 @@
                 [(ngModel)]="minGuests"
               />
             </div>
+            <label for="startDate">Start Date:</label>
+            <input
+              type="date"
+              id="startDate"
+              class="form-control"
+              [(ngModel)]="startDate"
+            />
+            <label for="endDate">End Date:</label>
+            <input
+              type="date"
+              id="endDate"
+              class="form-control"
+              [(ngModel)]="endDate"
+            />
             <button mat-button matSuffix (click)="onSearchButtonClicked()">
               <mat-icon>search</mat-icon>
             </button>

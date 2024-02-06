@@ -72,11 +72,15 @@ export class AccomodationService {
 
   searchAccomodations(
     searchTerm: string,
-    minGuests: number
+    minGuests: number,
+    startDate: string,
+    endDate: string
   ): Observable<any[]> {
     const body = {
       location: searchTerm,
       GuestNum: minGuests,
+      startDate: startDate,
+      endDate: endDate,
     };
 
     return this.http.post<any[]>(
