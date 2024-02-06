@@ -126,7 +126,7 @@ export class ProfileComponent implements OnInit {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     this.reservationService.cancelReservations(id, headers).subscribe(
       (response) => {
-        this.getUserReservations;
+        this.getUserReservations();
         this.toastr.success('Successfully canceled reservation');
       },
       (error: any) => {
