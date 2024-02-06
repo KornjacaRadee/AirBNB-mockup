@@ -70,7 +70,7 @@ export class AccomodationService {
     );
   }
 
-  searchAccomodations(
+   searchAccomodations(
     searchTerm: string,
     minGuests: number,
     startDate: string,
@@ -78,7 +78,7 @@ export class AccomodationService {
   ): Observable<any[]> {
     const body = {
       location: searchTerm,
-      GuestNum: minGuests,
+      guestNum: minGuests,
       startDate: startDate,
       endDate: endDate,
     };

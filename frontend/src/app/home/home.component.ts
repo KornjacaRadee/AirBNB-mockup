@@ -54,8 +54,15 @@ export class HomeComponent {
 
   onSearch() {
     this.enterPressed = true;
-    this.endDate = this.endDate + 'T00:00:00Z';
-    this.startDate = this.startDate + 'T00:00:00Z';
+    if(this.endDate != ""){
+      this.endDate = this.endDate + 'T00:00:00Z';
+    }
+    if(this.startDate != ""){
+      this.startDate = this.startDate + 'T00:00:00Z';
+    }
+
+
+
     console.log('Search Term:', this.searchTerm);
     console.log('Min Guests:', this.minGuests);
     console.log('Max Guests:', this.maxGuests);
