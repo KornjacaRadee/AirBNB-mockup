@@ -126,7 +126,17 @@
   </div>
   <button (click)="toggleOverlay()">Show Overlay</button>
  -->
-
+<div class="notifications">
+  <div class="notification-list">
+    <div *ngFor="let notification of notifications" class="notification">
+      <div class="alert alert-primary" role="alert">
+        <b>{{ notification.Text }}</b
+        ><br />
+        <span> Sent on: </span>{{ notification.time }}
+      </div>
+    </div>
+  </div>
+</div>
 <div class="container">
   <div class="main-body">
     <nav aria-label="breadcrumb" class="main-breadcrumb">

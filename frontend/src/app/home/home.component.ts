@@ -21,6 +21,8 @@ export class HomeComponent {
   filteredAccommodations: any[] = [];
   searchSuccess = false;
   picsData: any[] = [];
+  startDate: string = '';
+  endDate: string = '';
 
   constructor(private accommodationService: AccomodationService) {}
 
@@ -52,13 +54,21 @@ export class HomeComponent {
 
   onSearch() {
     this.enterPressed = true;
-
+    this.endDate = this.endDate + 'T00:00:00Z';
+    this.startDate = this.startDate + 'T00:00:00Z';
     console.log('Search Term:', this.searchTerm);
     console.log('Min Guests:', this.minGuests);
     console.log('Max Guests:', this.maxGuests);
+    console.log('Max Guests:', this.startDate);
+    console.log('Max Guests:', this.endDate);
 
     this.accommodationService
-      .searchAccomodations(this.searchTerm, this.minGuests)
+      .searchAccomodations(
+        this.searchTerm,
+        this.minGuests,
+        this.startDate,
+        this.endDate
+      )
       .subscribe(
         (response) => {
           console.log('Server Response:', response);

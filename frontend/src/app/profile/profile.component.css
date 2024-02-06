@@ -41,6 +41,7 @@
   position: absolute;
   top: 123px;
   right: 50px;
+  z-index: 10;
 }
 
 .notification {
