@@ -150,7 +150,7 @@
                     <h4><span>{{profile.name}}</span><span> {{profile.last_name}}</span></h4>
                     <p class="text-secondary mb-1">{{profile.role}}</p>
                     <p class="text-muted font-size-sm">{{profile.address}}</p>
-                    <button class="btn btn-danger">Delete</button>
+                    <button class="btn btn-danger" (click)="deleteProfile()">Delete</button>
                     <button  *ngIf="!isHost()" (click)="toggleReservations()" class="btn btn-outline-primary">Show Reservations</button>
                     <button  *ngIf="isHost()" (click)="toggleAccommodations()" class="btn btn-outline-primary">Show Accommodations</button>
                   </div>
@@ -316,13 +316,13 @@
                   <div *ngIf="showReservations" class="card-body cards-down">
                     <div   *ngFor="let reservation of activeReservations">
                     <div class="card-wrap" >
-                      <img class="card-img-top" [src]="'data:image/jpeg;base64,'+reservation.picture" alt="Card image cap">
+                      <img class="card-img-top" [src]="'data:image/jpeg;base64,'+reservation.picture[0]" alt="Card image cap">
                       <div class="card-body">
                         <h5 class="card-title" style="font-size: 18px; padding: 0;">{{reservation.accommodation.name}}</h5>
                         </div>
                       <ul class="list-group list-group-flush">
                         <li class="list-group-item"><span><b>Start Date: </b></span>{{reservation.StartDate}}</li>
-                        <li class="list-group-item"><span><b>End Date: </b></span>{{reservation.StartDate}}</li>
+                        <li class="list-group-item"><span><b>End Date: </b></span>{{reservation.EndDate}}</li>
                         <li class="list-group-item"><span><b>Guest Num: </b></span>{{reservation.GuestNum}}</li>
                         <li class="list-group-item"><span><b>Price: </b></span>{{reservation.Price}}€</li>
                       </ul>
@@ -338,15 +338,15 @@
 
                 <div>
                   <div *ngIf="showOverlay" class="card-body cards-down">
-                    <div   *ngFor="let reservation of activeReservations">
+                    <div   *ngFor="let reservation of reservationHistory">
                     <div class="card-wrap" >
-                      <img class="card-img-top" [src]="'data:image/jpeg;base64,'+reservation.picture" alt="Card image cap">
+                      <img class="card-img-top" [src]="'data:image/jpeg;base64,'+reservation.picture[0]" alt="Card image cap">
                       <div class="card-body">
                         <h5 class="card-title" style="font-size: 18px; padding: 0;">{{reservation.accommodation.name}}</h5>
                         </div>
                       <ul class="list-group list-group-flush">
                         <li class="list-group-item"><span><b>Start Date: </b></span>{{reservation.StartDate}}</li>
-                        <li class="list-group-item"><span><b>End Date: </b></span>{{reservation.StartDate}}</li>
+                        <li class="list-group-item"><span><b>End Date: </b></span>{{reservation.EndDate}}</li>
                         <li class="list-group-item"><span><b>Guest Num: </b></span>{{reservation.GuestNum}}</li>
                         <li class="list-group-item"><span><b>Price: </b></span>{{reservation.Price}}€</li>
                       </ul>

@@ -69,14 +69,13 @@ export class ProfileComponent implements OnInit {
     //this.getUserAccommodations()
     this.loadUserDetails();
     this.loadNotifications();
-    console.log(this.accomms);
+
   }
   tempLoadAccoms(): void {
     this.accommodationService.getAccomodations().subscribe(
       (data: any[]) => {
         this.accomms = data;
-        console.log(this.accomms)
-        console.log(this.user.id)
+
         this.accomms = data.filter(
           (accommodation) => accommodation.owner.id === this.user.id
 
@@ -84,9 +83,9 @@ export class ProfileComponent implements OnInit {
         this.accomms.forEach(ac =>{
           this.loadPictures(ac.id)
           ac.picture = this.picsdata;
-          console.log(this.picsdata[0])
+
         })
-        console.log(this.accomms);
+
         if(this.accomms.length == 0){
           this.toastr.error('User has no accommodations');
         }
@@ -118,7 +117,7 @@ export class ProfileComponent implements OnInit {
     this.profileService.getUserNotifications(headers).subscribe(
       (data: any[]) => {
         this.notifications = data;
-        console.log(data)
+
         data.forEach(not =>{
           not.time = new Date(not.time).toISOString().split('T')[0];
         } )
@@ -152,7 +151,7 @@ export class ProfileComponent implements OnInit {
 
     this.accommodationService.getUserAccommodations(headers).subscribe(
       (data: any[]) => {
-        console.log(data);
+
         this.accomms = data;
       },
       (error: any) => {
@@ -168,9 +167,9 @@ export class ProfileComponent implements OnInit {
     this.reservations = [];
     this.reservationService.getUserReservations(this.id).subscribe(
       (data: any[]) => {
-        console.log(data);
+
         this.reservations = data;
-        console.log(this.reservations)
+
         if(this.reservations == null){
 
         }else{
@@ -178,32 +177,33 @@ export class ProfileComponent implements OnInit {
             var todaysDate = new Date().toISOString().split('T')[0]
             not.StartDate = new Date(not.StartDate).toISOString().split('T')[0];
             not.EndDate = new Date(not.EndDate).toISOString().split('T')[0];
-            console.log(todaysDate)
             console.log(not.EndDate)
-            if (not.EndDate > todaysDate){
-              console.log("ulazi")
-              this.loadPictures(not.AccommodationId);
+            console.log(todaysDate)
+            this.loadPictures(not.AccommodationId);
+            if (not.EndDate < todaysDate){
               this.accommodationService.getAccommodation(not.AccommodationId).subscribe(
                 (data: any[]) => {
                   not.accommodation = data;
-                  not.picture = this.picsdata[0];
-                  console.log(not)
+                  not.picture = this.picsdata;
+                  this.reservationHistory.push(not)
+
+
                 },
                 (error: any) => {
                   console.error('Error fetching accommodations:', error);
                 }
                 );
-                this.reservationHistory.push(not)
             }else{
-              console.log("else")
               this.accommodationService.getAccommodation(not.AccommodationId).subscribe(
                 (data: any[]) => {
                   not.accommodation = data;
-                  not.picture = this.picsdata[0];
+                  not.picture = this.picsdata;
                   this.activeReservations.push(not)
-                  console.log(not)
+
+
                 },
                 (error: any) => {
+                  this.toastr.error('User has no reservations');
 
                   console.error('Error fetching accommodations:', error);
                 }
@@ -357,9 +357,7 @@ export class ProfileComponent implements OnInit {
 
   toggleReservations() {
     this.getUserReservations();
-    if(this.activeReservations.length == 0){
-      this.toastr.error('User has no reservations');
-    }
+
     this.showReservations = !this.showReservations;
   }
 
@@ -368,7 +366,6 @@ export class ProfileComponent implements OnInit {
       (response) => {
         // Map the response to the 'user' property
         this.profile = response;
-        console.log(this.profile);
       },
       (error) => {
         console.error('Error fetching user details', error);
