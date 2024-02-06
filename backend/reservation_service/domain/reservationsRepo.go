@@ -415,6 +415,29 @@ func (rr *ReservationsRepo) checkReservationDates(reservation *ReservationByAvai
 	return true, nil
 }
 
+// returns true if dates are free, and false if they are taken
+func (rr *ReservationsRepo) CheckIfDatesFree(start, end time.Time, period gocql.UUID) (bool, error) {
+
+	//check if reservation dates overlap with other reservation dates
+	iter := rr.session.Query(`
+        SELECT reservation_id FROM reservations_by_dates 
+        WHERE availability_period_id = ? AND start_date < ? AND end_date > ? ALLOW FILTERING`,
+		period, end, start).Iter()
+
+	// Iterate over the result set to check if there are any rows
+	for iter.Scan(nil) {
+		return false, nil
+	}
+
+	if err := iter.Close(); err != nil {
+		rr.logger.Println(err)
+		return false, err
+	}
+
+	// If there are no rows, it means no overlap, so return true
+	return true, nil
+}
+
 func (rr *ReservationsRepo) DeleteReservationByIdAndGuestId(id, guestId string) (*ReservationByAvailabilityPeriod, error) {
 	reservation, err := rr.GetReservationByIdAndGuestId(id, guestId)
 	if err != nil {

@@ -19,3 +19,11 @@ type ReservationData struct {
 }
 
 type ReservationsData []*ReservationData
+
+type SearchReq struct {
+	StartDate       time.Time
+	EndDate         time.Time
+	AccommodationId primitive.ObjectID
+}
+
+type SearchReqs []*SearchReq

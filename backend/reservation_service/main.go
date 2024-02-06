@@ -135,6 +135,9 @@ func main() {
 	deleteRouter := router.Methods(http.MethodDelete).Subrouter()
 	deleteRouter.HandleFunc("/reservation/delete/{id}", reservationHandler.DeleteReservationByAvailabilityPeriod)
 
+	getSearchRouter := router.Methods(http.MethodGet).Subrouter()
+	getSearchRouter.HandleFunc("/check-dates", reservationHandler.FilterAccommodationsByDates)
+
 	cors := gorillaHandlers.CORS(gorillaHandlers.AllowedOrigins([]string{"*"}))
 
 	//Initialize the server

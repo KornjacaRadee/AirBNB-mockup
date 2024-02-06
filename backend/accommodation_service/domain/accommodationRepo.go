@@ -178,10 +178,6 @@ func (ar *AccommodationRepo) SearchAccommodations(searchRequest SearchRequest) (
 		"location":    searchRequest.Location,
 		"minGuestNum": bson.M{"$lte": searchRequest.MaxGuestNum},
 		"maxGuestNum": bson.M{"$gte": searchRequest.MinGuestNum},
-		"reservations": bson.M{"$not": bson.M{"$elemMatch": bson.M{
-			"startDate": bson.M{"$lt": searchRequest.EndDate},
-			"endDate":   bson.M{"$gt": searchRequest.StartDate},
-		}}},
 	}
 
 	// Izvršavanje upita
